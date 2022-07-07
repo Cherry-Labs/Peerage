@@ -57,3 +57,11 @@ At the end of the 32 bits, we have made 4 cycles of the variables.
 
 After all the bits in S are set, we save it, and we skip over to the next chunk. At the end we are left with howmuchever 32-bit S values. We XOR them from number 1 to number n and there, we have our hash value!
 
+
+
+
+## Parts of the Application
+
+### Binary Utils
+
+Binary utils are used across the application for binary needs. It contains bit, byte, and word.
