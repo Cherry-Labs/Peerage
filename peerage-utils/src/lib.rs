@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-pub mod  bin_utils;
+pub mod bin_utils;
 
 
 #[cfg(test)]

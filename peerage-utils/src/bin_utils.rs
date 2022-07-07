@@ -341,6 +341,18 @@ impl ByteWord {
         Self::from_byte_vec(bytes)
     }
 
+    pub fn from_4_integers(uv: Vec<u8>) -> Self {
+        let mut bytes: Vec<Byte> = vec![];
+
+        for i in uv {
+            let b = Byte::from_decimal(i, Endian::Little);
+
+            bytes.push(b);
+        }
+
+        Self::from_byte_vec(bytes)
+    }
+
     pub fn from_byte_vec(v: Vec<Byte>) -> Self {
         Self { upper_byte: v[0], up_mid_byte: v[1], low_mid_byte: v[2], lower_byte: v[3] }
     }
