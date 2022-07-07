@@ -457,3 +457,18 @@ impl std::ops::BitXor for ByteWord {
     }
 }
 
+impl std::ops::Shl<usize> for ByteWord {
+    type Output = ByteWord;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        self.shift_left(rhs)
+    }
+}
+
+impl std::ops::Shr<usize> for ByteWord {
+    type Output = ByteWord;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        self.shift_right(rhs)
+    }
+}
