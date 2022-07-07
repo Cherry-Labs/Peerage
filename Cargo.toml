@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "peerage-merkle-tree",
+    "peerage-crypto",
+    "peerage-hash",
+    "peerage-utils"
+]
