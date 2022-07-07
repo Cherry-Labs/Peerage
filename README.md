@@ -47,7 +47,7 @@ G = (A >> 12) | (B << 8)
 Step 8
 H = (A | B) ^ C
 
-So now we add these numbers togther. Just a straightforward addition, nothing fancy. If It was odd, then we set the bit as 1. Else 0.
+So now we add these numbers togther. Just a straightforward addition, nothing fancy. If at the end the number was was odd, then we set the bit as 1. Else 0.
 
 Then we repeat this 32 times, with the same chunk, but this time, we scooch over the variables by one. So A becomes B, B becomes C...
 

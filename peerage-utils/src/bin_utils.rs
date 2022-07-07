@@ -1,7 +1,99 @@
 // NODE: all these are unsigned
 
+use std::collections::HashMap;
 
-#[derive(Clone, Copy)]
+lazy_static! {
+    static ref HEX_MAP: HashMap<Vec<Bit>, String> = {
+        let mut hm = HashMap::<Vec<Bit>, String>::new();
+
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::Zero], "0".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::One], "1".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::One, 
+            Bit::Zero], "2".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::One, 
+            Bit::One], "3".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::One, 
+            Bit::Zero,
+             Bit::Zero], "4".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::One, 
+            Bit::Zero, 
+            Bit::One], "5".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::One, 
+            Bit::One, 
+            Bit::Zero], "6".to_string());
+        hm.insert(vec![
+            Bit::Zero, 
+            Bit::One, 
+            Bit::One, 
+            Bit::One], "7".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::Zero], "8".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::Zero, 
+            Bit::Zero, 
+            Bit::One], "9".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::Zero, 
+            Bit::One, 
+            Bit::Zero], "A".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::Zero, 
+            Bit::One, 
+            Bit::One], "B".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::One, 
+            Bit::Zero, 
+            Bit::Zero], "C".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::One, 
+            Bit::Zero, 
+            Bit::One], "D".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::One, 
+            Bit::One, 
+            Bit::Zero], "E".to_string());
+        hm.insert(vec![
+            Bit::One, 
+            Bit::One, 
+            Bit::One, 
+            Bit::One], "F".to_string());
+
+        hm
+    };
+
+}
+
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Bit {
     One,
     Zero,
@@ -94,6 +186,17 @@ impl std::ops::BitXor for Bit {
     }
 }
 
+
+impl std::ops::Add for Bit {
+    type Output = u8;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let a: u8 = self.into();
+        let b: u8 = rhs.into();
+
+        a + b
+    }
+}
 
 impl From<u8> for Bit {
     fn from(u: u8) -> Self {
@@ -287,6 +390,19 @@ impl Byte {
         }
     }
 
+    pub fn into_hex(&self) -> String {
+        let bits = self.unravel();
+
+        let fh = &bits[0..4].to_vec();
+        let sh = &bits[4..7].to_vec();
+
+        let hmap_clone = HEX_MAP.clone();
+
+        let first_hex = hmap_clone.get(fh).unwrap();
+        let second_hex = hmap_clone.get(sh).unwrap();
+
+        format!("{}{}", first_hex, second_hex)
+    }
     
 }
 
@@ -315,7 +431,7 @@ impl std::ops::BitXor for Byte {
     }
 }
 
-
+#[derive(Clone, Copy)]
 pub struct ByteWord {
     upper_byte: Byte,
     up_mid_byte: Byte,
@@ -440,6 +556,80 @@ impl ByteWord {
         let bits_cloned = bits_splice.clone();
 
         Self::from_32_bits(bits_cloned)
+    }
+
+    pub fn set_at_index(&mut self, index: usize, set: Bit) {
+        if index > 31 {
+            panic!("Index should be smaller than 31");
+        }
+
+        let mut bits = self.unravel_bit();
+
+        bits[index] = set;
+
+        let new_obj = Self::from_32_bits(bits);
+
+
+        *self = new_obj;
+    }
+
+    pub fn assert_is_odd(&self) -> bool {
+        let bits = self.unravel_bit();
+
+        let last = bits.last().unwrap();
+
+        match *last {
+            Bit::One => true,
+            Bit::Zero => false,
+        }
+    }
+
+    pub fn add(&self, other: Self) -> ByteWord {
+        let self_bits = self.unravel_bit();
+        let other_bits = other.unravel_bit();
+
+        let mut ai = 31;
+        let mut bi = 31;
+
+        let mut carry = 0;
+
+        let mut res: Vec<Bit> = vec![];
+
+        loop {
+            let mut val = self_bits[ai] + self_bits[bi] + carry;
+            
+            carry = match val > 1 {
+                true => {
+                    val %= 2;
+
+                    1
+                },
+                false => 0,
+            };
+
+            let vb: Bit = val.into();
+
+            res.push(vb);
+
+            ai -= 1;
+            bi -= 1;
+            
+        }
+
+        Self::from_32_bits(res)
+    }
+
+    pub fn into_hex(&self) -> String {
+        let bytes = self.unravel_byte();
+
+        let mut ret = String::new();
+
+        for b in bytes {
+            let hex_str = b.into_hex();
+            ret = format!("{}{}", ret, hex_str);
+        }
+
+        ret
     }
 
 }
