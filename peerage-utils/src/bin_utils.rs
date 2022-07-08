@@ -984,6 +984,59 @@ impl QuadrupleWord {
         Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
     }
 
+    pub fn from_128_bits(v: Vec<Bit>) -> Self {
+        let upper_bits_ref = &v[0..32].to_vec();
+        let mid_upper_bits_ref = &v[32..64].to_vec();
+        let mid_lower_bits_ref = &v[64..96].to_vec();
+        let lower_bits_ref = &v[96..128].to_vec();
+
+        let (
+            upper_bits,
+            mid_upper_bits,
+            mid_lower_bits,
+            lower_bits
+        ) = (
+            upper_bits_ref.clone(),
+            mid_upper_bits_ref.clone(),
+            mid_lower_bits_ref.clone(),
+            lower_bits_ref.clone()
+        );
+
+        let upper_word = ByteWord::from_32_bits(upper_bits);
+        let mid_upper_word = ByteWord::from_32_bits(mid_upper_bits);
+        let mid_lower_word = ByteWord::from_32_bits(mid_lower_bits);
+        let lower_word = ByteWord::from_32_bits(lower_bits);
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn from_16_bytes(v: Vec<Byte>) -> Self {
+        let upper_bytes_ref = &v[0..4].to_vec();
+        let mid_upper_bytes_ref = &v[4..8].to_vec();
+        let mid_lower_bytes_ref = &v[8..12].to_vec();
+        let lower_bytes_ref = &v[12..16].to_vec();
+
+        let (
+            upper_bytes,
+            mid_upper_bytes,
+            mid_lower_bytes,
+            lower_bytes
+        ) = (
+            upper_bytes_ref.clone(),
+            mid_upper_bytes_ref.clone(),
+            mid_lower_bytes_ref.clone(),
+            lower_bytes_ref.clone()
+        );
+
+        let upper_word = ByteWord::from_byte_vec(upper_bytes);
+        let mid_upper_word = ByteWord::from_byte_vec(mid_upper_bytes);
+        let mid_lower_word = ByteWord::from_byte_vec(mid_lower_bytes);
+        let lower_word = ByteWord::from_byte_vec(lower_bytes);
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+
+    }
+
     pub fn from_octaplet_words_add_pairs(v: Vec<ByteWord>) -> Self {
         let upper_word = v[0] + v[7];
         let mid_upper_word = v[1] + v[6];
@@ -998,6 +1051,42 @@ impl QuadrupleWord {
         let mid_upper_word = self.mid_upper_word + other.mid_upper_word;
         let mid_lower_word = self.mid_lower_word + other.mid_lower_word;
         let lower_word = self.lower_word + other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn multiply_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word * other.upper_word;
+        let mid_upper_word = self.mid_upper_word * other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word * other.mid_lower_word;
+        let lower_word = self.lower_word * other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn quotient_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word / other.upper_word;
+        let mid_upper_word = self.mid_upper_word / other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word / other.mid_lower_word;
+        let lower_word = self.lower_word / other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn rem_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word % other.upper_word;
+        let mid_upper_word = self.mid_upper_word % other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word % other.mid_lower_word;
+        let lower_word = self.lower_word % other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn subtract_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word - other.upper_word;
+        let mid_upper_word = self.mid_upper_word - other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word - other.mid_lower_word;
+        let lower_word = self.lower_word - other.lower_word;
 
         Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
     }
@@ -1121,6 +1210,30 @@ impl std::ops::Shr<usize> for QuadrupleWord {
 
     fn shr(self, rhs: usize) -> Self::Output {
         self.shift_right(rhs)
+    }
+}
+
+impl std::ops::Sub for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.subtract_together(rhs)
+    }
+}
+
+impl std::ops::Div for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.quotient_together(rhs)
+    }
+}
+
+impl std::ops::Rem for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        self.rem_together(rhs)
     }
 }
 
