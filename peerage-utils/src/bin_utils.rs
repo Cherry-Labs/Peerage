@@ -563,10 +563,10 @@ impl ByteWord {
         Self::from_byte_vec(v)
     }
 
-    pub fn assert_is_zero_or_smaller(&self) -> bool {
+    pub fn assert_is_zero(&self) -> bool {
         let bits = self.unravel_bit();
 
-        bits[0] == Bit::One || bits == vec![Bit::Zero; 32]
+        bits == vec![Bit::Zero; 32]
     }
 
     pub fn shift_left(&self, num: usize) -> ByteWord {
@@ -639,7 +639,7 @@ impl ByteWord {
             other_clone = other_clone >> 1;
             self_clone = self_clone << 1;
 
-            if other_clone.assert_is_zero_or_smaller() {
+            if other_clone.assert_is_zero() {
                  break;
             }
        }
