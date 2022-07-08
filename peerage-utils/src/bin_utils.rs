@@ -781,7 +781,7 @@ impl ByteWord {
     }
 
 
-
+    
     pub fn add_together(&self, other: Self) -> ByteWord {
         let self_bits = self.unravel_bit();
         let other_bits = other.unravel_bit();
@@ -1161,6 +1161,16 @@ impl QuadrupleWord {
             .map(|x| x.into_u8())
             .collect::<Vec<u8>>() 
     }
+
+    pub fn shuffle_fields(&mut self) {
+        let new_shuffle = crate::rng::shufle_between_0_and_3();
+
+        for (i, u) in new_shuffle.into_iter().enumerate() {
+            self[i] = self[u]
+        }
+
+
+    }
 }
 
 
@@ -1247,6 +1257,33 @@ impl std::ops::Index<&'static str> for QuadrupleWord {
             "mid_lower" => &self.mid_lower_word,
             "lower" => &self.lower_word,
             _ => panic!("Index can only be: upper, mid_upper, mid_lower, lower"),
+        }
+    }
+}
+
+impl std::ops::Index<usize> for QuadrupleWord {
+    type Output = ByteWord;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.upper_word,
+            1 => &self.mid_upper_word,
+            2 => &self.mid_lower_word,
+            3 => &self.lower_word,
+            _ => panic!("Index can only be between 0 and 3."),
+        }
+    }
+}
+
+
+impl std::ops::IndexMut<usize> for QuadrupleWord {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.upper_word,
+            1 => &mut self.mid_upper_word,
+            2 => &mut self.mid_lower_word,
+            3 => &mut self.lower_word,
+            _ => panic!("Index can only be between 0 and 3."),
         }
     }
 }
