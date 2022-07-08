@@ -1,0 +1,10 @@
+[package]
+name = "peerage-binary"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+peerage-hash  = { path = "../peerage-hash" }
+peerage-utils  = { path = "../peerage-utils" }

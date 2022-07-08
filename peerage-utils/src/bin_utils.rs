@@ -1,6 +1,6 @@
 // NODE: all these are unsigned
 
-use std::collections::HashMap;
+use std::{collections::HashMap, vec};
 
 lazy_static! {
     static ref HEX_MAP: HashMap<Vec<Bit>, String> = {
@@ -93,7 +93,7 @@ lazy_static! {
 }
 
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Bit {
     One,
     Zero,
@@ -105,6 +105,13 @@ impl Bit {
             1 => Self::One,
             0 => Self::Zero,
             _ => panic!("Wrong binary digit")
+        }
+    }
+
+    pub fn into_u8(&self) -> u8 {
+        match self {
+            Bit::One => 1u8,
+            Bit::Zero => 0u8,
         }
     }
 
@@ -198,6 +205,18 @@ impl std::ops::Add for Bit {
     }
 }
 
+impl std::ops::Sub for Bit {
+    type Output = u8;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let a: u8 = self.into();
+        let b: u8 = rhs.into();
+
+        a - b
+    }
+}
+
+
 impl From<u8> for Bit {
     fn from(u: u8) -> Self {
         match u {
@@ -218,13 +237,13 @@ impl Into<u8> for Bit {
 }
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Endian {
     Little,
     Big,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Byte {
     msb: Bit,
     msb1: Bit,
@@ -317,6 +336,10 @@ impl Byte {
             }
         }
 
+        let diff = vec![Bit::Zero; 8 - remainders.len()];
+
+        remainders.splice(0..0, diff);
+
         match endian {
             Endian::Big => Self::from_bit_vec_be(remainders),
             Endian::Little => {
@@ -394,7 +417,7 @@ impl Byte {
         let bits = self.unravel();
 
         let fh = &bits[0..4].to_vec();
-        let sh = &bits[4..7].to_vec();
+        let sh = &bits[4..8].to_vec();
 
         let hmap_clone = HEX_MAP.clone();
 
@@ -431,7 +454,7 @@ impl std::ops::BitXor for Byte {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ByteWord {
     upper_byte: Byte,
     up_mid_byte: Byte,
@@ -471,6 +494,18 @@ impl ByteWord {
 
     pub fn from_byte_vec(v: Vec<Byte>) -> Self {
         Self { upper_byte: v[0], up_mid_byte: v[1], low_mid_byte: v[2], lower_byte: v[3] }
+    }
+
+    pub fn new_zeros() -> Self {
+        let zero_bits = vec![Bit::Zero; 32];
+
+        Self::from_32_bits(zero_bits)
+    }
+
+    pub fn new_ones() -> Self {
+        let zero_bits = vec![Bit::One; 32];
+
+        Self::from_32_bits(zero_bits)
     }
 
     pub fn unravel_byte(&self) -> Vec<Byte> {
@@ -528,15 +563,21 @@ impl ByteWord {
         Self::from_byte_vec(v)
     }
 
+    pub fn assert_is_zero_or_smaller(&self) -> bool {
+        let bits = self.unravel_bit();
+
+        bits[0] == Bit::One || bits == vec![Bit::Zero; 32]
+    }
+
     pub fn shift_left(&self, num: usize) -> ByteWord {
         let bits = self.unravel_bit();
         
         let bits_truncated = &bits[num..].to_vec();
 
-        let rem = vec![Bit::Zero; 32 - num];
+        let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-
+        
         trunc_clone.extend(rem);
 
         Self::from_32_bits(trunc_clone)
@@ -584,7 +625,164 @@ impl ByteWord {
         }
     }
 
-    pub fn add(&self, other: Self) -> ByteWord {
+    pub fn multiply_together(&self, other: Self) -> ByteWord {
+       let mut self_clone = self.clone();
+       let mut other_clone = other.clone();
+
+       let mut res = Self::new_zeros();
+
+       loop {
+            if other_clone.assert_is_odd() {
+                res = res + self_clone;
+            }
+
+            other_clone = other_clone >> 1;
+            self_clone = self_clone << 1;
+
+            if other_clone.assert_is_zero_or_smaller() {
+                 break;
+            }
+       }
+
+
+       res
+
+    }
+
+
+    pub fn divide_together(&self, other: Self) -> (ByteWord, ByteWord) {
+        let mut q = ByteWord::new_zeros();
+        let mut r = ByteWord::new_zeros();
+
+        let mut i = 31;
+
+        let mut n = self.clone();
+        let mut d = other.clone();
+
+        let mut n_bits = self.unravel_bit();
+        let mut d_bits = other.unravel_bit();
+
+        loop {
+            r = r << 1;
+
+            r.set_at_index(31, n_bits[i]);
+
+            if r.is_greater_than_or_equal(other) {
+                r = r - d;
+
+                q.set_at_index(31 - i, Bit::One);
+            }
+
+            i -= 1;
+
+            if i == 0 {
+                break;
+            }
+
+        }
+
+        (q, r)
+
+    }
+
+    pub fn is_equal(&self, other: Self) -> bool {
+        let all_zero = Self::new_zeros();
+
+        let subtract = self.subtract_together(other);
+
+        subtract == all_zero
+    }
+
+    pub fn is_greater_than(&self, other: Self) -> bool {
+        let subtract = self.subtract_together(other);
+
+        let sub_bits = subtract.unravel_bit();
+
+        sub_bits[0] == Bit::Zero
+        
+    }
+
+    pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
+        self.is_greater_than(other) && self.is_equal(other)
+    }
+
+    pub fn is_lesser_than(&self, other: Self) -> bool {
+        !self.is_greater_than(other)
+    }
+
+    pub fn is_lesser_than_or_euqal(&self, other: Self) -> bool {
+        !self.is_greater_than_or_equal(other)
+    }
+
+    pub fn subtract_together(&self, other: Self) -> ByteWord {
+        let mut self_bits = self.unravel_bit();
+        let mut other_bits = other.unravel_bit();
+
+        let mut ai = 31;
+        let mut bi = 31;
+
+        let mut borrow_indices: Vec<usize> = vec![];
+
+        let mut res: Vec<Bit> = vec![];
+
+        loop {
+
+            let pair = (self_bits[ai], other_bits[bi]);
+
+            match pair {
+                (Bit::One, Bit::One) => res.push(Bit::Zero),
+                (Bit::One, Bit::Zero) => res.push(Bit::One),
+                (Bit::Zero, Bit::One) => {
+                    let mut found_index = 0usize;
+
+                    for i in (0..31 - ai).rev() {
+                        if self_bits[i] == Bit::One {
+                            found_index = i;
+                            break;
+                        }
+                    }
+
+                    let mut num_ones = 2;
+                    
+                    for i in found_index..ai {
+                        if self_bits[i] == Bit::One {
+                            self_bits[i] = Bit::Zero;
+                        } else if self_bits[i] == Bit::Zero {
+                            if num_ones > 0 {
+                                self_bits[i] = Bit::One;
+                                num_ones -= 1;
+                            }
+                        }
+                    }
+
+                    if num_ones != 0 {
+                        res.push(Bit::One);
+                    }
+                },
+                (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
+            }
+
+
+            ai -= 1;
+            bi -= 1;
+
+            if ai == 0 || bi == 0 {
+                break;;
+            }
+
+        }
+
+        res.reverse();
+
+        res.splice(0..0, vec![Bit::Zero; 32 - res.len()]);
+
+        Self::from_32_bits(res)
+
+    }
+
+
+
+    pub fn add_together(&self, other: Self) -> ByteWord {
         let self_bits = self.unravel_bit();
         let other_bits = other.unravel_bit();
 
@@ -594,9 +792,8 @@ impl ByteWord {
         let mut carry = 0;
 
         let mut res: Vec<Bit> = vec![];
-
         loop {
-            let mut val = self_bits[ai] + self_bits[bi] + carry;
+            let mut val = self_bits[ai] + other_bits[bi] + carry;
             
             carry = match val > 1 {
                 true => {
@@ -613,8 +810,18 @@ impl ByteWord {
 
             ai -= 1;
             bi -= 1;
+
+            if ai == 0 || bi == 0 {
+                break;
+            }
             
         }
+
+        let pad = 32 - res.len();
+
+        let padding = vec![Bit::Zero; pad];
+
+        res.splice(0..0, padding);
 
         Self::from_32_bits(res)
     }
@@ -672,5 +879,261 @@ impl std::ops::Shr<usize> for ByteWord {
 
     fn shr(self, rhs: usize) -> Self::Output {
         self.shift_right(rhs)
+    }
+}
+
+impl std::ops::Add for ByteWord {
+    type Output = ByteWord;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        self.add_together(rhs)
+    }
+}
+
+
+impl std::ops::Sub for ByteWord {
+    type Output = ByteWord;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.subtract_together(rhs)
+    }
+}
+
+impl std::ops::Mul for ByteWord {
+    type Output = ByteWord;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.multiply_together(rhs)
+    }    
+}
+
+impl std::ops::Div for ByteWord {
+    type Output = ByteWord;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        let (q, _) = self.divide_together(rhs);
+
+        q
+    }
+}
+
+impl std::ops::Rem for ByteWord {
+    type Output = ByteWord;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        let (_, r) = self.divide_together(rhs);
+
+        r
+    }
+}
+
+
+
+#[derive(Clone, Copy, Debug)]
+pub struct QuadrupleWord {
+    upper_word: ByteWord,
+    mid_upper_word: ByteWord,
+    mid_lower_word: ByteWord,
+    lower_word: ByteWord
+}
+
+impl QuadrupleWord {
+    pub fn new(
+        upper_word: ByteWord, 
+        mid_upper_word: ByteWord, 
+        mid_lower_word: ByteWord,
+        lower_word: ByteWord,
+    ) -> Self
+    {
+        Self { upper_word, mid_upper_word, mid_lower_word, lower_word }
+    }
+
+    pub fn new_ones() -> Self {
+        let upper_word = ByteWord::new_ones();
+        let mid_upper_word = ByteWord::new_ones();
+        let mid_lower_word = ByteWord::new_ones();
+        let lower_word = ByteWord::new_ones();
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn new_zeros() -> Self {
+        let upper_word = ByteWord::new_zeros();
+        let mid_upper_word = ByteWord::new_zeros();
+        let mid_lower_word = ByteWord::new_zeros();
+        let lower_word = ByteWord::new_zeros();
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn new_zeros_odd() -> Self {
+        let upper_word = ByteWord::new_zeros();
+        let mid_upper_word = ByteWord::new_ones();
+        let mid_lower_word = ByteWord::new_zeros();
+        let lower_word = ByteWord::new_ones();
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn new_zeros_even() -> Self {
+        let upper_word = ByteWord::new_ones();
+        let mid_upper_word = ByteWord::new_zeros();
+        let mid_lower_word = ByteWord::new_ones();
+        let lower_word = ByteWord::new_zeros();
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn from_octaplet_words_add_pairs(v: Vec<ByteWord>) -> Self {
+        let upper_word = v[0] + v[7];
+        let mid_upper_word = v[1] + v[6];
+        let mid_lower_word = v[2] + v[5];
+        let lower_word = v[3] + v[4];
+
+        Self { upper_word, mid_upper_word, mid_lower_word, lower_word }
+    }
+
+    pub fn add_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word + other.upper_word;
+        let mid_upper_word = self.mid_upper_word + other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word + other.mid_lower_word;
+        let lower_word = self.lower_word + other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn and_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word & other.upper_word;
+        let mid_upper_word = self.mid_upper_word & other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word & other.mid_lower_word;
+        let lower_word = self.lower_word & other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn or_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word | other.upper_word;
+        let mid_upper_word = self.mid_upper_word | other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word | other.mid_lower_word;
+        let lower_word = self.lower_word | other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn xor_together(&self, other: Self) -> QuadrupleWord {
+        let upper_word = self.upper_word ^ other.upper_word;
+        let mid_upper_word = self.mid_upper_word ^ other.mid_upper_word;
+        let mid_lower_word = self.mid_lower_word ^ other.mid_lower_word;
+        let lower_word = self.lower_word ^ other.lower_word;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn shift_left(&self, num: usize) -> QuadrupleWord {
+        let upper_word = self.upper_word << num;
+        let mid_upper_word = self.mid_upper_word << num;
+        let mid_lower_word = self.mid_lower_word << num;
+        let lower_word = self.lower_word << num;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn shift_right(&self, num: usize) -> QuadrupleWord {
+        let upper_word = self.upper_word >> num;
+        let mid_upper_word = self.mid_upper_word >> num;
+        let mid_lower_word = self.mid_lower_word >> num;
+        let lower_word = self.lower_word >> num;
+
+        Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
+    }
+
+    pub fn into_hex(&self) -> String {
+        let s1 = self.upper_word.into_hex();
+        let s2 = self.mid_upper_word.into_hex();
+        let s3 = self.mid_lower_word.into_hex();
+        let s4 = self.lower_word.into_hex();
+
+        format!("{}{}{}{}", s1, s2, s3, s4)
+    }
+
+    pub fn into_bits(&self) -> Vec<Bit> {
+        let v1 = self.upper_word.unravel_bit();
+        let v2 = self.mid_upper_word.unravel_bit();
+        let v3 = self.mid_lower_word.unravel_bit();
+        let v4 = self.lower_word.unravel_bit();
+
+        vec![v1, v2, v3, v4].into_iter().flatten().collect::<Vec<Bit>>()
+    }
+
+    pub fn into_num_bits(&self) -> Vec<u8> {
+        let vb = self.into_bits();
+
+        vb.into_iter()
+            .map(|x| x.into_u8())
+            .collect::<Vec<u8>>() 
+    }
+}
+
+
+impl std::ops::Add for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        self.add_together(rhs)
+    }
+}
+
+impl std::ops::BitAnd for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        self.and_together(rhs)
+    }
+}
+
+impl std::ops::BitOr for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.or_together(rhs)
+    }
+}
+
+
+impl std::ops::BitXor for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        self.xor_together(rhs)
+    }
+}
+
+impl std::ops::Shl<usize> for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        self.shift_left(rhs)
+    }
+}
+
+impl std::ops::Shr<usize> for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        self.shift_right(rhs)
+    }
+}
+
+impl std::ops::Index<&'static str> for QuadrupleWord {
+    type Output = ByteWord;
+
+    fn index(&self, index: &'static str) -> &Self::Output {
+        match index {
+            "upper" => &self.upper_word,
+            "mid_upper" => &self.mid_upper_word,
+            "mid_lower" => &self.mid_lower_word,
+            "lower" => &self.lower_word,
+            _ => panic!("Index can only be: upper, mid_upper, mid_lower, lower"),
+        }
     }
 }

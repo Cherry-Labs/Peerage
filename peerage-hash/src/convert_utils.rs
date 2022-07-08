@@ -30,11 +30,29 @@ pub fn convert_256_byte_chunk_to_words(chunks: Vec<u8>) -> Vec<ByteWord> {
 pub fn xor_all_bws_in_a_vec(v: Vec<ByteWord>) -> ByteWord {
     let mut ret = v[0];
 
-    for bw in v {
-        ret = ret ^ bw;
+    for bw in &v[1..] {
+        ret = ret ^ *bw;
     }
 
     ret
 }
 
-pub fn set_at_index_odd_even(bw: &mut ByteWord, index: usize, num: i)
+
+pub fn add_all_bws_together(v: Vec<ByteWord>) -> ByteWord {
+    let mut ret = v[0];
+
+    for bw in &v[1..] {
+        ret = ret + *bw;
+    }
+
+    ret
+}
+
+pub fn set_at_index_odd_even(added_together: &ByteWord, fin_bw: &mut ByteWord, index: usize) {
+    let set = match added_together.assert_is_odd() {
+        true => Bit::One,
+        false => Bit::Zero,
+    };
+
+    fin_bw.set_at_index(index, set)
+}
