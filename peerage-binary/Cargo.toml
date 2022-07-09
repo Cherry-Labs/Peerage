@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 peerage-hash  = { path = "../peerage-hash" }
 peerage-utils  = { path = "../peerage-utils" }
+rand = "0.7.3"

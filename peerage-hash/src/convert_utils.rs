@@ -56,3 +56,63 @@ pub fn set_at_index_odd_even(added_together: &ByteWord, fin_bw: &mut ByteWord, i
 
     fin_bw.set_at_index(index, set)
 }
+
+pub fn add_quadruple_words(v: &Vec<QuadrupleWord>) -> QuadrupleWord {
+    let mut ret = v[0];
+
+    for qw in v[1..].into_iter() {
+        let deref = *qw;
+
+        ret = ret + deref;
+    } 
+
+    ret
+}
+
+pub fn multiply_quadruple_words(v: &Vec<QuadrupleWord>) -> QuadrupleWord {
+    let mut ret = v[0];
+
+    for qw in v[1..].into_iter() {
+        let deref = *qw;
+
+        ret = ret * deref;
+    } 
+
+    ret
+}
+
+pub fn subtract_quadruple_words(v: &Vec<QuadrupleWord>) -> QuadrupleWord {
+    let mut ret = v[0];
+
+    for qw in v[1..].into_iter() {
+        let deref = *qw;
+
+        ret = ret - deref;
+    } 
+
+    ret
+}
+
+pub fn div_quadruple_words(v: &Vec<QuadrupleWord>) -> QuadrupleWord {
+    let mut ret = v[0];
+
+    for qw in v[1..].into_iter() {
+        let deref = *qw;
+
+        ret = ret / deref;
+    } 
+
+    ret
+}
+
+pub fn rem_quadruple_words(v: &Vec<QuadrupleWord>) -> QuadrupleWord {
+    let mut ret = v[0];
+
+    for qw in v[1..].into_iter() {
+        let deref = *qw;
+
+        ret = ret % deref;
+    } 
+
+    ret
+}

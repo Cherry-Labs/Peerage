@@ -115,6 +115,12 @@ impl Bit {
         }
     }
 
+    pub fn vec_from_vec(v: Vec<u8>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| Bit::from_u8(x))
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn and(&self, other: Bit) -> Bit {
         match other {
             Bit::One => {
@@ -625,25 +631,38 @@ impl ByteWord {
         }
     }
 
+    pub fn assert_all_zero_with_one(&self) -> bool {
+        let mut v = vec![Bit::Zero; 31];
+        v.push(Bit::One);
+
+        let bits = self.unravel_bit();
+
+
+        bits == v
+    }
+
     pub fn multiply_together(&self, other: Self) -> ByteWord {
-       let mut self_clone = self.clone();
-       let mut other_clone = other.clone();
+       let b = self.unravel_bit();
 
-       let mut res = Self::new_zeros();
+       let size = 31;
+       let zeros = Self::new_zeros();
 
-       loop {
-            if other_clone.assert_is_odd() {
-                res = res + self_clone;
-            }
+       let mut sums: Vec<Self> = vec![];
 
-            other_clone = other_clone >> 1;
-            self_clone = self_clone << 1;
-
-            if other_clone.assert_is_zero() {
-                 break;
+       for (i, d) in b.into_iter().enumerate() {
+            if d == Bit::Zero {
+                sums.push(zeros.clone());
+            } else {
+                let mut a_clone = self.clone();
+                a_clone = a_clone << i;
+                sums.push(a_clone);
             }
        }
 
+
+       let mut res = Self::new_zeros();
+
+       sums.into_iter().for_each(|x| res = res + x);
 
        res
 
@@ -984,8 +1003,15 @@ impl QuadrupleWord {
         Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
     }
 
+    pub fn from_128_u8s(v: Vec<u8>) -> Self {
+        let bits_vec = Bit::vec_from_vec(v);
+
+        Self::from_128_bits(bits_vec)
+    }
+
     pub fn from_128_bits(v: Vec<Bit>) -> Self {
-        let upper_bits_ref = &v[0..32].to_vec();
+
+        let upper_bits_ref = &v[0..32].to_vec();      
         let mid_upper_bits_ref = &v[32..64].to_vec();
         let mid_lower_bits_ref = &v[64..96].to_vec();
         let lower_bits_ref = &v[96..128].to_vec();
@@ -1171,6 +1197,12 @@ impl QuadrupleWord {
 
 
     }
+
+    pub fn shuffle_manually(&mut self, new_shuffle: Vec<usize>) {
+        for (i, u) in new_shuffle.into_iter().enumerate() {
+            self[i] = self[u]
+        }
+    } 
 }
 
 
@@ -1187,6 +1219,14 @@ impl std::ops::BitAnd for QuadrupleWord {
 
     fn bitand(self, rhs: Self) -> Self::Output {
         self.and_together(rhs)
+    }
+}
+
+impl std::ops::Mul for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.multiply_together(rhs)
     }
 }
 
@@ -1256,6 +1296,18 @@ impl std::ops::Index<&'static str> for QuadrupleWord {
             "mid_upper" => &self.mid_upper_word,
             "mid_lower" => &self.mid_lower_word,
             "lower" => &self.lower_word,
+            _ => panic!("Index can only be: upper, mid_upper, mid_lower, lower"),
+        }
+    }
+}
+
+impl std::ops::IndexMut<&'static str> for QuadrupleWord {
+    fn index_mut(&mut self, index: &'static str) -> &mut Self::Output {
+        match index {
+            "upper" => &mut self.upper_word,
+            "mid_upper" => &mut self.mid_upper_word,
+            "mid_lower" => &mut self.mid_lower_word,
+            "lower" => &mut self.lower_word,
             _ => panic!("Index can only be: upper, mid_upper, mid_lower, lower"),
         }
     }

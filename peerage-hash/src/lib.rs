@@ -3,7 +3,7 @@
 mod rounder;
 mod convert_utils;
 pub mod hasher;
-
+mod hash_bin;
 
 #[macro_export]
 macro_rules! scooch_over {

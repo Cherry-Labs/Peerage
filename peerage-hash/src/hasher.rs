@@ -1,69 +1,84 @@
 use crate::convert_utils::*;
 use peerage_utils::bin_utils::*;
 use crate::rounder::Rounder;
+use crate::hash_bin::HashBin;
 
 #[derive(Clone)]
 pub struct PeerageHash {
-    byte_chunk: Vec<u8>,
-    rounders: Vec<Rounder>,
-    wb_octaplet: Vec<ByteWord>,
-    rounder_outputs: Vec<ByteWord>,
-    output_byte: ByteWord,
+    byte_chunk: [u8; 1024],
+    hash_bin: HashBin,
+    output_octuplet: [QuadrupleWord; 8],
+    final_output: QuadrupleWord,
+    output_bit_enum: Vec<Bit>,
+    output_bit_digit: Vec<u8>,
     output_hex: String
 }
 
 impl PeerageHash {
-    pub fn new(byte_chunk: Vec<u8>) -> Self {
-        let wb_octaplet = convert_256_byte_chunk_to_words(byte_chunk.clone());
+    pub fn new(byte_chunk: [u8; 1024]) -> Self {
+        let hash_bin = HashBin::from_1024bit_array(byte_chunk);
+        let output_octuplet = [QuadrupleWord::new_zeros(); 8];
+        let final_output = QuadrupleWord::new_zeros();
 
-        let rounders = wb_octaplet.clone()
-                        .into_iter()
-                        .map(|x| Rounder::new(x) )
-                        .collect::<Vec<Rounder>>();
-
+        let output_bit_enum = vec![Bit::Zero; 128];
+        let output_bit_digit = vec![0u8; 128];
         let output_hex = String::new();
-        
-        let output_byte = ByteWord::new_zeros();
 
-        let rounder_outputs = vec![ByteWord::new_zeros(); 8];
 
         Self { 
             byte_chunk, 
-            rounders, 
-            wb_octaplet, 
-            rounder_outputs,            
-            output_byte, 
-            output_hex 
+            hash_bin,
+            output_octuplet,
+            final_output,
+            output_bit_enum,
+            output_bit_digit,
+            output_hex
         }
     }
 
-    fn do_all_the_rounds_and_output(&mut self) {
-        self.rounders
-            .iter()
-            .enumerate()
-            .for_each(|(i, x)| {
-                let mut xx = x.clone();
-                self.rounder_outputs[i] = xx.operate_rounds_and_return_output()
-        });
+    fn do_all_the_rounds(&mut self) {
+        for _ in 0..3 {
+            for i in 0usize..8usize {
+                self.output_octuplet[i] = self.hash_bin.do_one_round(i);
+            
+            }
+        }
+
+        
     }
 
-    fn xor_all_outputs_and_set_self_outputs(&mut self) {
-        let all_xored = add_all_bws_together(self.rounder_outputs.clone());
+    fn add_octuplet(&mut self) {
+        self.final_output = self.output_octuplet[0] +
+                            self.output_octuplet[1] +
+                            self.output_octuplet[2] +
+                            self.output_octuplet[3] +
+                            self.output_octuplet[4] +
+                            self.output_octuplet[5] +
+                            self.output_octuplet[6] +
+                            self.output_octuplet[7]
+    }
 
-        self.output_byte = all_xored;
-        self.output_hex = all_xored.into_hex();
+    fn set_outputs(&mut self) {
+        self.output_bit_digit = self.final_output.into_num_bits();
+        self.output_bit_enum = self.final_output.into_bits();
+        self.output_hex = self.final_output.into_hex();
     }
 
     pub fn operate_rounds(&mut self) {
-        self.do_all_the_rounds_and_output();
-        self.xor_all_outputs_and_set_self_outputs();
+        self.do_all_the_rounds();
+        self.add_octuplet();
+        self.set_outputs();
     }
 
-    pub fn get_byte_hash(&self) -> ByteWord {
-        self.output_byte.clone()
-    }
+   pub fn get_bit_u8_output(&self) -> Vec<u8> {
+        self.output_bit_digit.clone()
+   }
 
-    pub fn get_hex_hash(&self) -> String {
+   pub fn get_bit_enum_output(&self) -> Vec<Bit> {
+        self.output_bit_enum.clone()
+   }
+
+    pub fn get_hex_hash_output(&self) -> String {
         self.output_hex.clone()
     }
 
