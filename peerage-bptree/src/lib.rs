@@ -1,10 +1,8 @@
-#![allow(unused)]
-#[macro_use]
-extern crate lazy_static;
 
-pub mod bin_utils;
-pub mod pub_traits;
-mod rng;
+#![allow(unused)]
+
+mod node;
+mod coll;
 
 #[cfg(test)]
 mod tests {

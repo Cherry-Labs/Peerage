@@ -4,5 +4,6 @@ members = [
     "peerage-crypto",
     "peerage-hash",
     "peerage-utils",
-    "peerage-binary"
+    "peerage-binary",
+    "peerage-bptree"
 ]
