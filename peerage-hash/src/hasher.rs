@@ -38,9 +38,12 @@ impl PeerageHash {
 
     fn do_all_the_rounds(&mut self) {
         for _ in 0..3 {
-            for i in 0usize..8usize {
-                self.output_octuplet[i] = self.hash_bin.do_one_round(i);
-            
+            for i in (0usize..8usize).step_by(2) {
+                let res = self.hash_bin.do_one_round(i);
+                let res_x_factor = self.hash_bin.op_with_x_factor(res, i);
+
+                self.output_octuplet[i] = res;
+                self.output_octuplet[i + 1] = res_x_factor;
             }
         }
 

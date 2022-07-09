@@ -77,45 +77,76 @@ impl HashBin {
                             self.x_factor
         );
 
-        if vec![0usize, 1usize].contains(&i) {
+        if i == 0 {
             let a_res = a_rounder.operate_rounds_and_return_output();
+        
+            self.x_factor = self.x_factor + a_res;
+        }
+
+        if i == 1 {
             let b_res = b_rounder.operate_rounds_and_return_output();
         
-            self.x_factor = a_res + b_res;
+            self.x_factor = self.x_factor + b_res;
         }
 
-        if vec![2usize, 3usize].contains(&i) {
+        if i == 2 {
             let c_res = c_rounder.operate_rounds_and_return_output();
+        
+            self.x_factor = self.x_factor % c_res;
+        }
+
+        if i == 3 {
             let d_res = d_rounder.operate_rounds_and_return_output();
         
-            self.x_factor = c_res % d_res;
+            self.x_factor = self.x_factor % d_res;
         }
         
-        if vec![4usize, 5usize].contains(&i) {
+        if i == 4 {
             let e_res = e_rounder.operate_rounds_and_return_output();
+        
+            self.x_factor = self.x_factor * e_res;
+        }
+
+        if i == 5 {
             let f_res = f_rounder.operate_rounds_and_return_output();
         
-            self.x_factor = e_res * f_res;
+            self.x_factor = self.x_factor * f_res;
         }
         
-        if vec![6usize, 7usize].contains(&i) {
+        if i == 6 {
             let g_res = g_rounder.operate_rounds_and_return_output();
-            let h_res = h_rounder.operate_rounds_and_return_output();
-            
-            self.x_factor = g_res / h_res;      
+           
+            self.x_factor = self.x_factor / g_res;      
         }
-        
-        
-        
 
-        add_quadruple_words(&vec![
-            self.a,
-            self.b,
-            self.c,
-            self.d,
-            self.e,
-            self.f,
-            self.g,
-            self.h])  
+        if i == 7 {
+            let h_res = h_rounder.operate_rounds_and_return_output();
+           
+            self.x_factor = self.x_factor / h_res;      
+        }
+                       
+
+        self.a + 
+            self.b / 
+            self.c % 
+            self.d - 
+            self.e *
+            self.f /
+            self.g +
+            self.h
+    }
+
+    pub fn op_with_x_factor(&mut self, oper: QuadrupleWord, i: usize) -> QuadrupleWord {
+        let res = match i {
+            0 => self.x_factor + oper,
+            2 => self.x_factor / oper,
+            4 => self.x_factor % oper,
+            6 => self.x_factor * oper,
+            _ => panic!("Wrong index")
+        };
+
+        self.x_factor = res;
+
+        res
     }
 }
