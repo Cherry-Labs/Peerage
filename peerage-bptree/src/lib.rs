@@ -1,8 +1,17 @@
 
 #![allow(unused)]
 
+#[macro_use]
+extern crate lazy_static;
+
 mod node;
 mod coll;
+mod degee;
+pub mod global_consts;
+
+
+use paste::paste;
+
 
 #[cfg(test)]
 mod tests {

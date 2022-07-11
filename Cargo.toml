@@ -5,5 +5,6 @@ members = [
     "peerage-hash",
     "peerage-utils",
     "peerage-binary",
-    "peerage-bptree"
+    "peerage-bptree",
+    "peerage-macros"
 ]
