@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 peerage-utils = { path = "../peerage-utils" }
-lazy_static = "*"
+peerage-macros = { path = "../peerage-macros" }
+peerage-holder = { path = "../peerage-holder" }
+peerage-ledger = { path = "../peerage-ledger" }
 paste = "*"

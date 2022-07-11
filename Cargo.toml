@@ -6,5 +6,7 @@ members = [
     "peerage-utils",
     "peerage-binary",
     "peerage-bptree",
-    "peerage-macros"
+    "peerage-macros",
+    "peerage-holder",
+    "peerage-ledger"
 ]

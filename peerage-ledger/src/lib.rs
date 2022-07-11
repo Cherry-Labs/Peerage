@@ -1,14 +1,6 @@
 
-#![allow(unused)]
 
-
-
-mod node;
-mod coll;
-mod degee;
-
-use paste::paste;
-
+pub struct Ledger;
 
 #[cfg(test)]
 mod tests {

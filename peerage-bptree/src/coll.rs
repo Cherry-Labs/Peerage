@@ -1,16 +1,16 @@
 
-use peerage_utils::pub_traits::Init;
+use peerage_utils::pub_traits::Tree;
 use peerage_utils::bin_utils::QuadrupleWord;
 use crate::degee::Degree;
 
 
 #[derive(Clone, Copy)]
-pub struct BpTreeCollection<T: Init  + Copy + Clone, const B: usize, const M: usize> {
+pub struct BpTreeCollection<T: Tree  + Copy + Clone, const B: usize, const M: usize> {
    array: [T; B],
    current_buffer: [T; M],
 }
 
-impl<T: Init  + Copy + Clone, const B: usize, const M: usize> BpTreeCollection<T, B, M>  {
+impl<T: Tree  + Copy + Clone, const B: usize, const M: usize> BpTreeCollection<T, B, M>  {
     pub fn new() -> Self {
         let array = [T::init(); B];
         let current_buffer = [T::init(); M];
@@ -47,10 +47,33 @@ impl<T: Init  + Copy + Clone, const B: usize, const M: usize> BpTreeCollection<T
         }
 
     }
+
+    pub fn binary_search(&self, value: T) -> isize {
+       let mut low = 0usize;
+       let mut high = B.clone();
+
+       loop {
+            let mid = low + (high - low) / 2;
+
+            if low <= high {
+                return mid as isize;
+            }
+
+            if self.array[mid].is_equal_to(value){
+                break mid;
+            } else if self.array[mid].is_lesser_than(value) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+       };
+
+       -1
+    }
 }
 
 
-impl<T: Init  + Copy + Clone, const B: usize, const M: usize>  std::ops::Index<usize> for BpTreeCollection<T, B, M> {
+impl<T: Tree  + Copy + Clone, const B: usize, const M: usize>  std::ops::Index<usize> for BpTreeCollection<T, B, M> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -62,13 +85,13 @@ impl<T: Init  + Copy + Clone, const B: usize, const M: usize>  std::ops::Index<u
 }
 
 
-pub struct BPTreeCollIterator<T: Init  + Copy + Clone, const B: usize, const M: usize> {
+pub struct BPTreeCollIterator<T: Tree  + Copy + Clone, const B: usize, const M: usize> {
     coll: BpTreeCollection<T, B, M>,
     curr_index: usize
 }
 
 
-impl<T: Init  + Copy + Clone, const B: usize, const M: usize>  BPTreeCollIterator<T, B, M> {
+impl<T: Tree  + Copy + Clone, const B: usize, const M: usize>  BPTreeCollIterator<T, B, M> {
     pub fn new(coll: BpTreeCollection<T, B, M>) -> Self {
         let curr_index = 0usize;
 
@@ -89,7 +112,7 @@ impl<T: Init  + Copy + Clone, const B: usize, const M: usize>  BPTreeCollIterato
 }
 
 
-impl<T: Init  + Copy + Clone, const B: usize, const M: usize> std::iter::Iterator for BPTreeCollIterator<T, B, M> {
+impl<T: Tree  + Copy + Clone, const B: usize, const M: usize> std::iter::Iterator for BPTreeCollIterator<T, B, M> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -103,7 +126,7 @@ impl<T: Init  + Copy + Clone, const B: usize, const M: usize> std::iter::Iterato
 
 
 
-impl<T: Init  + Copy + Clone, const B: usize, const M: usize> std::iter::IntoIterator for BpTreeCollection<T, B, M> {
+impl<T: Tree  + Copy + Clone, const B: usize, const M: usize> std::iter::IntoIterator for BpTreeCollection<T, B, M> {
     type Item = T;
 
     type IntoIter = BPTreeCollIterator<T, B, M>;
@@ -114,8 +137,8 @@ impl<T: Init  + Copy + Clone, const B: usize, const M: usize> std::iter::IntoIte
 }
 
 
-
-pub enum CollWrapper<T: Init  + Copy + Clone> {
+#[derive(Clone, Copy)]
+pub enum CollWrapper<T: Tree  + Copy + Clone> {
     Two(BpTreeCollection<T, 2, 1>),
     Four(BpTreeCollection<T, 4, 2>),
     Sixteen(BpTreeCollection<T, 16, 8>),
@@ -127,7 +150,7 @@ pub enum CollWrapper<T: Init  + Copy + Clone> {
 }
 
 
-impl<T: Init  + Copy + Clone> CollWrapper<T> {
+impl<T: Tree  + Copy + Clone> CollWrapper<T> {
     pub fn new(degree: Degree) -> Self {
         let item = match degree {
             Degree::Two => {
@@ -414,14 +437,16 @@ impl<T: Init  + Copy + Clone> CollWrapper<T> {
 }
 
 
-pub struct BpCollHolder<T: Init + Clone + Copy> {
+
+#[derive(Clone, Copy)]
+pub struct BpCollHolder<T: Tree + Clone + Copy> {
     coll_wrapper: CollWrapper<T>,
     degree: Degree,
 
 }
 
 
-impl<T: Init + Clone + Copy> BpCollHolder<T> {
+impl<T: Tree + Clone + Copy> BpCollHolder<T> {
     pub fn new(degree: Degree) -> Self {
         let coll_wrapper = CollWrapper::<T>::new(degree.clone());
 
@@ -432,7 +457,39 @@ impl<T: Init + Clone + Copy> BpCollHolder<T> {
         self.degree.into_usize()
     }
 
+    pub fn return_self_as_clone(&self) -> Self {
+        self.clone()
+    }
+
 }
 
 
 
+impl<T: Tree + Copy + Clone> Tree for BpCollHolder<T> { 
+    type LedgerType = peerage_ledger::Ledger;
+    type InputType = Degree;
+
+    fn init() -> Self {
+        Self::new(Degree::Two)
+    }
+    fn new(input: Degree) -> Self {
+        Self::new(input)
+
+    }
+    fn mutate(&mut self, other: Self) {
+
+    }
+    fn get_ledger_id(&self) -> Self::LedgerType {
+        peerage_ledger::Ledger
+    }
+    fn is_equal_to(&self, other: Self) -> bool {
+        true
+    }
+    fn is_greater_than(&self, other: Self) -> bool {
+        true
+    }
+    fn is_lesser_than(&self, other: Self) -> bool {
+        true
+    }
+
+}

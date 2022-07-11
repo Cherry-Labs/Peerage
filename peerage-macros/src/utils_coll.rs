@@ -19,7 +19,7 @@ impl Command {
     }
 
     pub fn get_func_name(&self, num: usize, holder_name: proc_macro2::Ident) -> proc_macro2::TokenStream {
-        let func_name = peerage_bptree::global_consts::NAME_TABLE.get(&num).unwrap();
+        let func_name = crate::global_consts::NAME_TABLE.get(&num).unwrap();
 
         let name_item = match self {
             Command::Selfer => func_name.replace("*", "self"),
@@ -27,7 +27,7 @@ impl Command {
             Command::Muter => func_name.replace("*", "mut"),
         };
 
-        let ident_name = format_ident!("{}", name_item);
+        let ident_name = format_ident!("{}()", name_item);
 
         quote! { 
             {
