@@ -1,3 +1,7 @@
+
+pub mod collection;
+
+
 #[cfg(test)]
 mod tests {
     #[test]

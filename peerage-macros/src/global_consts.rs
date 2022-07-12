@@ -25,7 +25,7 @@ lazy_static! {
         hm.insert(256, "return_*_two_fifty_six");
         hm.insert(512, "return_*_five_twelve");
         hm.insert(1024, "return_*_ten_twenty_four");
-        hm.insert(2046, "return_*_two_fourty_eight");
+        hm.insert(2048, "return_*_two_fourty_eight");
         hm.insert(4096, "return_*_forty_nighty_six");
 
         hm

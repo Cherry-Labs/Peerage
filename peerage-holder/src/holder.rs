@@ -1,17 +1,16 @@
 use std::borrow::{Borrow, BorrowMut};
-use peerage_utils::pub_traits::Tree;
 
 
 
 #[derive(Clone, Copy)]
-pub enum Holder<'a, T: Clone + Copy + Tree> {
+pub enum Holder<'a, T: Clone + Copy> {
     Refer([&'a T; 1]),
     Selfer([T; 1]),
     Nil,
 }
 
 
-impl<'a, T: Clone + Copy + Tree> Holder<'a, T> {
+impl<'a, T: Clone + Copy> Holder<'a, T> {
     pub fn new_refer(refer: &'a T) -> Self {
         let array = [refer];
 

@@ -3,7 +3,7 @@
 extern crate lazy_static;
 
 pub mod bin_utils;
-pub mod pub_traits;
+pub mod traits;
 mod rng;
 
 #[cfg(test)]

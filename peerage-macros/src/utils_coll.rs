@@ -1,5 +1,8 @@
+use std::str::FromStr;
+
 use proc_macro2;
-use quote::{quote, format_ident};
+use quote::{quote, quote_spanned, format_ident};
+use syn::spanned::Spanned;
 
 
 enum Command {
@@ -14,29 +17,29 @@ impl Command {
             "self" => Self::Selfer,
             "ref" => Self::Refer,
             "mut" => Self::Muter,
-            _ => panic!("Command can either be self, mut, or ref"),
+            _ => panic!("Command can either be self, mut, or ref not {}", str),
         }
     }
 
     pub fn get_func_name(&self, num: usize, holder_name: proc_macro2::Ident) -> proc_macro2::TokenStream {
         let func_name = crate::global_consts::NAME_TABLE.get(&num).unwrap();
 
-        let name_item = match self {
+        let ret_item = match self {
             Command::Selfer => func_name.replace("*", "self"),
             Command::Refer => func_name.replace("*", "ref"),
             Command::Muter => func_name.replace("*", "mut"),
         };
 
-        let ident_name = format_ident!("{}()", name_item);
+        let name_item = ret_item.replace("\"", "");
 
-        quote! { 
-            {
-                #holder_name.#ident_name
+        let ident_name = format!("{}()", name_item);
 
-            };
+        let ident_joined = format!("{}.coll_wrapper.{}", holder_name, ident_name);
+
+        let ts = proc_macro2::TokenStream::from_str(&ident_joined).unwrap();
 
 
-        }
+        quote!( #ts )
     }
 }
 
@@ -52,9 +55,11 @@ pub struct BlockQuadruplet {
 
 impl BlockQuadruplet  {
     pub fn new_and_parse(s: String) -> Self {
-        let holder_name = Self::get_holder_name(s.clone());
-        let command = Self::get_command_ts(s.clone());
-        let size = Self::get_holder_size(s.clone());
+        let snq = s.replace("\"", "");
+
+        let holder_name = Self::get_holder_name(snq.clone());
+        let command = Self::get_command_ts(snq.clone());
+        let size = Self::get_holder_size(snq.clone());
         let block_content = command.get_func_name(size, holder_name.clone());
 
 
@@ -67,12 +72,16 @@ impl BlockQuadruplet  {
         let mut do_insert = false;
 
         for c in input_str.chars() {
+            if c == '/' && do_insert {
+                break;
+            }
+            
             if do_insert {
                 name_chars.push(c);
-            }
+            }            
 
-            if c == ' ' && do_insert {
-                break;
+            if c == '"' || c == ' ' {
+                continue;
             }
 
             if c == '%' {
@@ -91,12 +100,16 @@ impl BlockQuadruplet  {
         let mut do_insert = false;
 
         for c in input_str.chars() {
+            if c == '/' && do_insert {
+                break;
+            }
+
             if do_insert {
                 name_chars.push(c);
             }
 
-            if c == ' ' && do_insert {
-                break;
+            if c == '"' || c == ' ' {
+                continue;
             }
 
             if c == '*' {
@@ -116,12 +129,16 @@ impl BlockQuadruplet  {
         let mut do_insert = false;
 
         for c in input_str.chars() {
+            if c == '/' && do_insert {
+                break;
+            }
+            
             if do_insert {
                 name_chars.push(c);
             }
 
-            if c == ' ' && do_insert {
-                break;
+            if c == '"' || c == ' ' {
+                continue;
             }
 
             if c == '$' {
@@ -131,7 +148,7 @@ impl BlockQuadruplet  {
 
         let str_fin = String::from_iter(name_chars);
 
-        let num = str_fin.parse::<usize>().unwrap();
+        let num = str_fin.trim().parse::<usize>().expect(&format!("Not {}", str_fin));
 
         if !vec![2usize, 4, 16, 256, 512, 1024, 2048, 4096].contains(&num) {
             panic!("Num should be 2, 4, 16, 256, 512, 1024, 2048, 4096")
