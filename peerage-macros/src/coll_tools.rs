@@ -4,7 +4,28 @@ use proc_macro2::{self, TokenStream};
 use quote::quote;
 
 pub fn parse_and_create_ts(s: String) -> proc_macro2::TokenStream {
-    let s_rem_q = s.replace("\"", "");
+    let s_rem_q = {
+        let mut chars = s.chars();
+
+        let first  = chars.clone().next().unwrap();
+        let last = chars.clone().last().unwrap();
+
+        let mut f = 0usize;
+        let mut l = s.len() - 1;
+
+        if first == '"' || first == '\'' {
+            f = 1;
+        }
+
+        if last == '"' || last == '\'' {
+            l = s.len() - 2;
+        }
+
+        let new_string = &s[f..l];
+
+        new_string
+
+    };
 
     let ts = match s_rem_q.contains(";") {
         true => {
