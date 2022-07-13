@@ -5,11 +5,9 @@
 extern crate lazy_static;
 
 mod node;
-mod coll;
 mod degee;
-mod stat;
 mod value_holder;
-mod key_value_holder;
+mod impler_dummy;
 
 use paste::paste;
 

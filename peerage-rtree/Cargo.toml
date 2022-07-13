@@ -10,5 +10,6 @@ peerage-utils = { path = "../peerage-utils" }
 peerage-macros = { path = "../peerage-macros" }
 peerage-holder = { path = "../peerage-holder" }
 peerage-ledger = { path = "../peerage-ledger" }
+peerage-coll = { path = "../peerage-coll" }
 paste = "*"
 lazy_static = "*"
