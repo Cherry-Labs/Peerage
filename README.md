@@ -17,11 +17,17 @@ The custom hash that I am going to use all across the software. It's kinda slow 
 
 ### Peerage-Coll
 
+I need my RapidTree data to live on the stack(it allows me so much suff especially use of Copy). So I made peerage-coll.
+
 A dynamic list, like any dynamic list, I am using Rust arrays to hold the dat and it can be turned into an iterator as well (nothing spectial, I just created an iterator wrapper and implemented IntoIter. I will implement from iter too but there's already a function for that). The dynamic list (which I call "collection") has a macro (`coll!`) too, just like vec.
+
+The maximum length it can hold is `1024 * 16` but I don't need more than that, I doubt it will have more than 100 items.
 
 ### Peerage-RTree
 
 I have created this datatype for holding the room data and the Merkle DAG required called 'Rapid Tree'. Keep in mind that I am currenctly working  on it so it's not completed yet.
+
+Basically, it's B-Tree mixed wih some B+Tree mixed with some BTreeMap.
 
 ### Peerage-Macros
 
