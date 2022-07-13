@@ -46,6 +46,7 @@ impl<T: Copy + Clone + Node> PeerageCollection<T> {
 
     }
 
+    
     pub fn new_init_size(size: usize) -> Self {
         let v = vec![T::new(); size];
 
