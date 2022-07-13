@@ -74,7 +74,7 @@ pub fn parse_and_create_ts(s: String) -> proc_macro2::TokenStream {
 
             }
 
-            let new_obj = format!("let coll = peerage_coll::collection::PeerageCollection::<{tty}>();");
+            let new_obj = format!("let mut coll = peerage_coll::collection::PeerageCollection::<{tty}>();");
 
             let new_obj_ts = proc_macro2::TokenStream::from_str(&new_obj).expect(&format!("Type is {tty}"));
 
