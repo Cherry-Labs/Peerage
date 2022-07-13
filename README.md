@@ -36,7 +36,7 @@ This is a holder enum, a bit like Option, a bit like Box. I need to rework it a 
 The rest of the projects are empty, don't bother. But slowly, they will be filled.
 
 
-### I wall help! What should I do?
+### I wanna help! What should I do?
 
 You can help me by "buying me a coffee" (but I'm not going to buy coffee with it lol gonna buy tea).
 
