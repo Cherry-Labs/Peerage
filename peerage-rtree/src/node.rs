@@ -11,7 +11,7 @@ use peerage_macros::block_out_return_holder;
 
 #[derive(Clone, Copy)]
 pub struct RTreeNode<'a, K: Key, T: Node> {
-    degree: Degree,
+    degree: usize,
     size: usize,
     node_item: T,
     kvs: Option<NodeColl<'a, K, T>>,
@@ -20,3 +20,8 @@ pub struct RTreeNode<'a, K: Key, T: Node> {
 }
 
 
+impl<'a, K: Key, T: Node> RTreeNode<'a, K, T> {
+    pub fn new()
+
+
+}

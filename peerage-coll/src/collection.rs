@@ -30,6 +30,28 @@ impl<T: Copy + Clone + Node> PeerageCollection<T> {
         }
     }
 
+   
+    pub fn from_vector(v: Vec<T>) -> Self {
+        if v.len() > 17408 {
+            panic!("Length larger than maximum");
+        }
+        
+        let mut new = Self::new();
+
+        for m in v {
+            new.push(m);
+        }
+
+        new
+
+    }
+
+    pub fn new_init_size(size: usize) -> Self {
+        let v = vec![T::new(); size];
+
+        Self::from_vector(v)
+    }
+
     pub fn new_and_replace(
         &mut self, buffer: Vec<T>, size: usize) {
         

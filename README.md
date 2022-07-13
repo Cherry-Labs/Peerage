@@ -1,67 +1,55 @@
 # Peerage
 
-Peerage (pronounced peer-aazh) is an experimental P2P network written in Rust with minimal use of libraries. 
+Peerage (pronounced peer-aazh not peer-age!) is a P2P communication and file sharing tool  with monetization abilities. The app is made of "rooms" and these rooms are customizable through HTML, CSS and JavaScript. But the room resides on your PC, not a server, and anyone who connect to your room accepts some of the load. Peers discover each othr through a ledger and muliicast DNS.  Speakinh of ledgers you can make your room VIP and have people who pay the token registered in the ledger to acces it. The token is not a cryptocurrency, it's not mined, it's just, like, a cadaver for the fiat currency. You can do "other" things with this token too. The ledger is shared by all members, only one aspect of ledger is active (aka uncompressed) active at time. The other aspects are compressed.
 
-## The Nature of Experiment
+It's highly WIP. Any financial support during the development of this application is appreciated. Also you can do pull requests. 
 
-The experience itself is comprised of rooms. Each member of the room shares files for other peers in the room to download and the other members share these files as well. There's a room owner. The settings for the room resides on the owner's PC. The rooms are listed for people to choose from.
+## What I have made so for
 
-The files are saved among different PCs as Merkle trees.
+### Peerage-Utils
 
-## The Merkle Tree and the Peerage Hash
-
-The Merkle tree nodes are hashed with a custom hash called Peerage Hash. PH is a semi-cryptographic hash function that hashes each 256 chunk of the file data (and pads if necessary).
+This project contains all the utilities. Right now it hosts traits and this MASSIVE binary tool I have written. 
 
 
-The hash is a 32-bit little-endian number. Each 256 byte chunk has 32 rounds which I'll explain what a round does in a minute. At the end of each round of it's odd the bit of that round number will be 1 else 0. Then we put aside this 32-bit number for something that I will tell you later.
+### Peerage-Hash
 
-But what is the round? As I said Peerage Hash is semi-cryptographic and its main aim is to serve as am experiment. PH in no way should be used in production (duh!) and we only use PH in Peerage as Merkle tree hash because the nature of this project is to be experimental.
+The custom hash that I am going to use all across the software. It's kinda slow curently but I will work on it to make it faster.
 
-Anyways. As we said we have a 256 byte chunk of our file, and a 32-bit number S that we need to flip the bits based on the result of each round. 
+### Peerage-Coll
 
-To do each round first first we need to split each chunk into 32-bit words. Now we have 8 chunks, A, B, C, D, E, F, G, H.
+A dynamic list, like any dynamic list, I am using Rust arrays to hold the dat and it can be turned into an iterator as well (nothing spectial, I just created an iterator wrapper and implemented IntoIter. I will implement from iter too but there's already a function for that). The dynamic list (which I call "collection") has a macro (`coll!`) too, just like vec.
 
-The round has 8 steps.
+### Peerage-RTree
 
-Step 1:
-A = B ^ C
+I have created this datatype for holding the room data and the Merkle DAG required called 'Rapid Tree'. Keep in mind that I am currenctly working  on it so it's not completed yet.
 
-Step 2:
-B = A >> F
+### Peerage-Macros
 
-Step 3:
-C = (E >> 16) | (E << (32 - 16))
+The necessary proc macros.
 
-Step 4:
-D = (B | C) & D
+### Peerage-Holder
 
-Step 5:
-C = (G >> 12) | (G << (32 - 12)) + (B >> 18) | (B << (32 - 18))
-
-Step 6:
-F = (A ^ B) | (H & G) & (A | F)
-
-Step 7:
-G = (A >> 12) | (B << 8)
-
-Step 8
-H = (A | B) ^ C
-
-So now we add these numbers togther. Just a straightforward addition, nothing fancy. If at the end the number was was odd, then we set the bit as 1. Else 0.
-
-Then we repeat this 32 times, with the same chunk, but this time, we scooch over the variables by one. So A becomes B, B becomes C...
-
-(A, B, C, D, E, F, G, H) = (B, C, D, E, F, G, H, A)
-
-At the end of the 32 bits, we have made 4 cycles of the variables.
-
-After all the bits in S are set, we save it, and we skip over to the next chunk. At the end we are left with howmuchever 32-bit S values. We XOR them from number 1 to number n and there, we have our hash value!
+This is a holder enum, a bit like Option, a bit like Box. I need to rework it a bit. It can be used to hold several types into one type.
 
 
 
+The rest of the projects are empty, don't bother. But slowly, they will be filled.
 
-## Parts of the Application
 
-### Binary Utils
+### I wall help! What should I do?
 
-Binary utils are used across the application for binary needs. It contains bit, byte, and word.
+You can help me by "buying me a coffee" (but I'm not going to buy coffee with it lol gonna buy tea).
+
+![](coffee.png)
+
+Send me any amount you can to this ERC20 Ether address. It's a Nano S Ledger address, I bought it the moment I started working in crypto. PLEASE buy a hardware wallet! You can use them through MetaMask!
+
+
+`0x503A3B99c0c086fD81186a0d5ac815eBd15e5983`
+
+## Final Words
+
+This is a dream I have and as you can see I am going forward, changing things, finalizing things, it would be great if my needs are taken care of, I don't need much money --- I can live off with 300 USD a month. Yes I am e-begging but I don't care. I know Peerage is going ot be revolutionary, something great, something I can be proud of.
+
+
+My Discord: Chubak#7400

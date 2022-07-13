@@ -5,7 +5,6 @@
 extern crate lazy_static;
 
 mod node;
-mod degee;
 mod value_holder;
 mod impler_dummy;
 
