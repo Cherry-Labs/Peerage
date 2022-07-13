@@ -48,10 +48,12 @@ You can help me by "buying me a coffee" (but I'm not going to buy coffee with it
 
 ![](coffee.png)
 
-Send me any amount you can to this ERC20 Ether address. It's a Nano S Ledger address, I bought it the moment I started working in crypto. PLEASE buy a hardware wallet! You can use them through MetaMask!
+Send me any amount you can to this ERC20 Ether address. 
 
 
 `0x503A3B99c0c086fD81186a0d5ac815eBd15e5983`
+
+It's protected by Nano S Ledger hardware wallet, I bought it the moment I started working in crypto. PLEASE buy a hardware wallet! You can use them through MetaMask!
 
 ## Final Words
 
