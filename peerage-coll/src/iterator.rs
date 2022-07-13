@@ -1,12 +1,16 @@
+use peerage_utils::traits::Node;
+
+use crate::collection::PeerageCollection;
+
 
 #[derive(Clone, Copy)]
-pub struct PeerageCollectionIterator<T: Copy + Clone + Node, const M: usize> {
-    coll: PeerageCollection<T, M>,
+pub struct PeerageCollectionIterator<T: Copy + Clone + Node> {
+    coll: PeerageCollection<T>,
     curr_index: usize,
 }
 
-impl<T: Copy + Clone + Node, const M: usize> PeerageCollectionIterator<T, M> {
-    pub fn new(coll: PeerageCollection<T, M>) -> Self {
+impl<T: Copy + Clone + Node> PeerageCollectionIterator<T> {
+    pub fn new(coll: PeerageCollection<T>) -> Self {
         let curr_index = 0usize;
 
         Self { coll, curr_index }
@@ -24,8 +28,8 @@ impl<T: Copy + Clone + Node, const M: usize> PeerageCollectionIterator<T, M> {
     }
 }
 
-impl<T: Copy + Clone + Node, const M: usize> std::iter::Iterator
-    for PeerageCollectionIterator<T, M>
+impl<T: Copy + Clone + Node> std::iter::Iterator
+    for PeerageCollectionIterator<T>
 {
     type Item = T;
 
@@ -37,14 +41,14 @@ impl<T: Copy + Clone + Node, const M: usize> std::iter::Iterator
     }
 }
 
-impl<T: Copy + Clone + Node, const M: usize> std::iter::IntoIterator
-    for PeerageCollection<T, M>
+impl<T: Copy + Clone + Node> std::iter::IntoIterator
+    for PeerageCollection<T>
 {
     type Item = T;
 
-    type IntoIter = PeerageCollectionIterator<T, M>;
+    type IntoIter = PeerageCollectionIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        todo!()
+        PeerageCollectionIterator::new(self)
     }
 }

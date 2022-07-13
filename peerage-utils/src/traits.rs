@@ -9,7 +9,11 @@ pub trait Node {
     fn is_equal_to(&self, other: Self::InputType) -> bool;
     fn is_greater_to(&self, other: Self::InputType) -> bool;
     fn is_lesser_to(&self, other: Self::InputType) -> bool;
-
+    fn add_to(&self, other: Self) -> Self;
+    fn mult_to(&self, other: Self) -> Self;
+    fn div_to(&self, other: Self) -> Self;
+    fn rem_to(&self, other: Self) -> Self;
+    fn sub_to(&self, other: Self) -> Self;
 }
 
 pub trait IndexerCompaerTo {
@@ -29,3 +33,13 @@ pub trait IndexerInto {
 
 
 pub trait Indexer: IndexerCompaerTo + IndexerInto {}
+
+
+
+pub trait CArray: Sync + Send {
+    type ContainedType;
+
+    fn get_at_index(&self, index: usize) -> Self::ContainedType;
+    fn replace_at_index(&self, index: usize, value: Self::ContainedType);
+
+}

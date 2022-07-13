@@ -1,316 +1,176 @@
-use std::{marker::PhantomData, borrow::BorrowMut, clone};
-use safe_transmute::{SingleManyGuard, transmute_many_mut};
+use crate::array_holder::ArrayHolder;
 use peerage_utils::traits::Node;
+use std::ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem};
+
 
 #[derive(Clone, Copy)]
-pub struct PeerageCollection<T: Copy + Clone + Node, const M: usize> {
-    array: [T; M],
+pub struct PeerageCollection<T: Copy + Clone + Node> {
+    array: ArrayHolder<T>,
     current_buffer: [T; 1024],
+    filler_buffer: usize,
+    indexer: isize,
+    curr_size: usize,
 
 }
 
-impl<T: Copy + Clone + Node, const M: usize> PeerageCollection<T, M> {
+impl<T: Copy + Clone + Node> PeerageCollection<T> {
     pub fn new() -> Self {
-        let array = [T::new(); M];        
+        let array = ArrayHolder::Init([T::new(); 0]);        
         let current_buffer = [T::new(); 1024];
-       
+        let filler_buffer = 0usize;
+        let indexer = -1isize;
+        let curr_size = 0usize;
 
         Self {
             array,
-            current_buffer,           
+            current_buffer, 
+            filler_buffer,
+            indexer,
+            curr_size          
         }
     }
 
-    pub fn new_and_replace<C: Clone + Copy + Node, 
-    const N: usize, const D: usize>(
-        &mut self, to_replace: [T; D], buffer: Vec<T>) {
-        let mut new = PeerageCollection::<C, N>::new();
+    pub fn new_and_replace(
+        &mut self, buffer: Vec<T>, size: usize) {
+        
+        let mut new_array = vec![T::new(); size];
+        
+        let self_array = self.array.unwrap();
 
-        for i in 0..to_replace.len() {
-            let at = to_replace[i];
-            let conv = T::into_self::<T, C>(at, PhantomData);
-
-            new.set_at(i, conv);
+        for i in 0..self.curr_size {
+           new_array[i] = self_array[i]
         }
 
-        let l = to_replace.len();
+        let l = self.curr_size;
 
         for (i, t) in buffer.into_iter().enumerate() {
-            let conv = T::into_self::<T, C>(t, PhantomData);
-
-            new.set_at(l + i, conv);
+            new_array[l + i] = t;
         }
        
+        let new_slice = new_array.as_slice();
 
-        
+        self.array.rewrap(new_slice);
     }
 
        
 
     pub fn set_at(&mut self, index: usize, value: T) {
-        self.array[index] = value;
-    }
-
-    pub fn get_at(&self, index: usize) -> &T {
-        &self.array[index]
-    }
-
-    pub fn load_into_buffer(&mut self, start: usize, end: usize) {
-        if (end - start) - 8 > 0 {
-            panic!("Range higher than 8")
-        };
-        if end > (1024 - 8) {
-            panic!("End larger than 1024 - 8")
-        };
-
-        let range = &self.array[start..end];
-
-        for i in 0..8 {
-            self.current_buffer[i] = range[i].clone();
-        }
-    }
-
-    
-}
-
-impl<T: Copy + Clone + Node, const M: usize> std::ops::Index<usize>
-    for PeerageCollection<T, M>
-{
-    type Output = T;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        match index > 1023 {
-            true => panic!("Size of BPTreeCollection is 1024. Index ends at 1023."),
-            false => self.get_at(index),
-        }
-    }
-}
-
-
-pub struct PeerageCollectionWrapper<T: Copy + Clone + Node> {
-    collection: PeerageCollection<T, 0>,
-    filler_buffer: usize,
-    indexer: isize,
-}
-
-impl<T: Copy + Clone + Node> PeerageCollectionWrapper<T> {
-    pub fn new() -> Self {
-        let collection = PeerageCollection::<T, 0>::new();
-
-        let filler_buffer = 1usize;
-        let indexer = -1isize;
-
-        Self { collection, filler_buffer, indexer }
-    }
-
-    pub fn get_at(&self, index: usize) -> &T {
-        self.collection.get_at(index)
-    }
-
-    pub fn set_at(&mut self, index: usize, object: T) {
-        self.collection.set_at(index, object)
-    } 
-
-    pub fn new_updated_self(&mut self, buffer: Vec<T>) {
-        match self.indexer {
-            0 => {
-                const M: usize = 1024;
-                
-               let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-               
-               let coll_transmute_copy: PeerageCollection<T, M> = unsafe { std::mem::transmute_copy(&new_self) };
-               
-               
+        match index > self.curr_size {
+            true => {
+                match index < self.filler_buffer {
+                    true => self.current_buffer[self.filler_buffer - index] = value,
+                    false => panic!("Large index! Index is {} whilst length is: {}", index, self.curr_size + 1024),
+                }
             },
-            1 => {
-                const M: usize = 2048;
+            false => self.array[index] = value,
+        }
+    }
 
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               };
-             },
-            2 => {
-                const M: usize = 3072;
-
-            
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               };
-             },
-            3 => {
-                const M: usize = 4096;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               };
-             },
-            4 => {
-                let new_self = PeerageCollection::<T, 5120>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, 5120>>() 
-               };
-             },
-            5 => {
-                const M: usize = 6144;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               };            
-
-             },
-            6 => {
-                const M: usize = 7168;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-
-             },
-            7 => {
-                let new_self = PeerageCollection::<T, 8192>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, 8192>>() 
-               };
-             },
-            8 => {
-                const M: usize = 8192;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-            9 => {
-                const M: usize = 10240;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-            10 => {
-                const M: usize = 11264;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-            11=> {
-                const M: usize = 12288;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-            12 => {
-                const M: usize = 133128;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-             11 => {
-                const M: usize = 14336;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-
-             },
-            13 => {
-                const M: usize = 15360;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-            14 => {
-                const M: usize = 16384;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
-            15 => {
-                const M: usize = 17408;
-    
-        
-                let new_self = PeerageCollection::<T, M>::new_and_replace(self.array, buffer);
-                
-                self = unsafe {
-                    std::mem::transmute::<Self, PeerageCollection<T, M>>() 
-               }; 
-             },
+    pub fn get_at(&self, index: usize) -> T {
+        match index > self.curr_size {
+            true => {
+                match index < self.filler_buffer  {
+                    true => self.current_buffer[self.filler_buffer - index],
+                    false => panic!("Large index!"),
+                }
+            },
+            false => self.array[index],
         }
     }
 
     pub fn push(&mut self, item: T) {
-        println!("{}", self.filler_buffer % 1024 );
-    
         if self.filler_buffer % 1024 != 0 {
             let ind = self.filler_buffer % 1024;
 
-            self.collection.current_buffer[ind] = item;
+            self.current_buffer[ind] = item;
             
             self.filler_buffer += 1;
-        } else {
-            self.indexer = self.filler_buffer as isize / 1024;
+            self.indexer = self.filler_buffer as isize % 1024;
 
-            if self.indexer == 16 {
-                self.indexer = 0isize;
-            }
-            self.filler_buffer += 1;
-           
-            let buffer_vec = self.collection.current_buffer.to_vec();
-
-            let new_self = Self::new_updated_self(self, self.array, buffer_vec);
-
-            std::mem::replace(self, new_self);
-
-            self.collection.current_buffer = [T::new(); 1024];
-
+        } else {           
+            self.filler_buffer += 1;           
+            let buffer = self.current_buffer.to_vec();
+            self.new_and_replace(buffer, self.filler_buffer);
+            self.current_buffer = [T::new(); 1024];
             self.push(item);
-
-
-
         }
     }
+    
+}
 
+impl<T: Clone + Copy + Node> Index<usize> for PeerageCollection<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.array[index]
+    }
+}
+
+
+impl<T: Clone + Copy + Node> IndexMut<usize> for PeerageCollection<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.array[index]
+
+    }
+}
+
+impl<T: Clone + Copy + Node> Add for PeerageCollection<T> {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut self_clone_mut = self.clone();
+        
+        self_clone_mut.array = self.array + rhs.array;
+
+        self_clone_mut
+    }
+}
+
+impl<T: Clone + Copy + Node> Mul for PeerageCollection<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let mut self_clone_mut = self.clone();
+        
+        self_clone_mut.array = self.array * rhs.array;
+
+        self_clone_mut
+    }
+}
+
+impl<T: Clone + Copy + Node> Sub for PeerageCollection<T> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let mut self_clone_mut = self.clone();
+        
+        self_clone_mut.array = self.array - rhs.array;
+
+        self_clone_mut
+    }
+}
+
+
+impl<T: Clone + Copy + Node> Div for PeerageCollection<T> {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        let mut self_clone_mut = self.clone();
+        
+        self_clone_mut.array = self.array / rhs.array;
+
+        self_clone_mut
+    }
+}
+
+impl<T: Clone + Copy + Node> Rem for PeerageCollection<T> {
+    type Output = Self;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        let mut self_clone_mut = self.clone();
+        
+        self_clone_mut.array = self.array % rhs.array;
+
+        self_clone_mut
+    }
 }

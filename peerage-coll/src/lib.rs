@@ -1,6 +1,8 @@
+#![allow(unused)]
 
 pub mod collection;
-
+mod array_holder;
+mod iterator;
 
 #[cfg(test)]
 mod tests {

@@ -22,6 +22,7 @@ pub fn make_array_list(n: String, t: String, len: usize) -> proc_macro2::TokenSt
 
     quote! {
         #(#name_tty_vec)*
+        length: usize,
     }
 
 }   
