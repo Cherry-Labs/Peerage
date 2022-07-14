@@ -17,15 +17,28 @@ impl<T: Copy + Clone + Node> PeerageCollectionIterator<T> {
     }
 
     pub fn increase_index(&mut self) {
-        match self.curr_index > 1023 {
+        match self.curr_index > self.coll.len() {
             true => self.curr_index = 0,
             false => self.curr_index += 1,
         }
     }
 
-    pub fn get_at_index(&self) -> T {
+    pub fn decrease_index(&mut self) {
+        match self.curr_index == 0 {
+            true => self.curr_index = self.coll.len(),
+            false => self.curr_index -= 1,
+        }
+    }
+
+    pub fn get_at_index(&self) -> Option<T> {
         self.coll.get_at(self.curr_index).clone()
     }
+
+    pub fn step_back(&mut self) -> Option<T> {
+        self.decrease_index();
+        self.coll.get_at(self.curr_index).clone()
+    }
+
 }
 
 impl<T: Copy + Clone + Node> std::iter::Iterator
@@ -37,7 +50,7 @@ impl<T: Copy + Clone + Node> std::iter::Iterator
         let item = self.get_at_index();
         self.increase_index();
 
-        Some(item)
+        item
     }
 }
 

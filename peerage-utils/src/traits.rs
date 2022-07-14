@@ -18,4 +18,4 @@ pub trait Node: Copy + Clone {
 pub trait Key: Copy + Clone + Node<InputType = Self> {}
 
 
-pub trait Value {}
+pub trait Ledger: Copy + Clone {}

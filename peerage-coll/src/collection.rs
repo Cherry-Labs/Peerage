@@ -2,6 +2,12 @@ use crate::array_holder::ArrayHolder;
 use peerage_utils::traits::Node;
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem};
 
+pub enum SetResult {
+    Success,
+    Failure,
+}
+
+type SetResultType = std::result::Result<SetResult, SetResult>;
 
 #[derive(Clone, Copy)]
 pub struct PeerageCollection<T: Copy + Clone + Node> {
@@ -80,27 +86,35 @@ impl<T: Copy + Clone + Node> PeerageCollection<T> {
 
        
 
-    pub fn set_at(&mut self, index: usize, value: T) {
-        match index > self.curr_size {
+    pub fn set_at(&mut self, index: usize, value: T) -> SetResultType {
+        let result = match index > self.curr_size {
             true => {
                 match index < self.filler_buffer {
-                    true => self.current_buffer[self.filler_buffer - index] = value,
-                    false => panic!("Large index! Index is {} whilst length is: {}", index, self.curr_size + 1024),
+                    true => {
+                        self.current_buffer[self.filler_buffer - index] = value;
+                        Ok(SetResult::Success)   
+                    },
+                    false => Err(SetResult::Failure),
                 }
             },
-            false => self.array[index] = value,
-        }
+            false => {
+                self.array[index] = value;
+                Ok(SetResult::Success)
+            },
+        };
+
+        result        
     }
 
-    pub fn get_at(&self, index: usize) -> T {
+    pub fn get_at(&self, index: usize) -> Option<T> {
         match index > self.curr_size {
             true => {
                 match index < self.filler_buffer  {
-                    true => self.current_buffer[self.filler_buffer - index],
-                    false => panic!("Large index!"),
+                    true => Some(self.current_buffer[self.filler_buffer - index]),
+                    false => None,
                 }
             },
-            false => self.array[index],
+            false => Some(self.array[index]),
         }
     }
 

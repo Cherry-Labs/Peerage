@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use peerage_holder::holder::Holder;
-use peerage_utils::traits::{Node, Key, Value};
+use peerage_utils::traits::{Node, Key};
 use peerage_coll::collection::PeerageCollection;
 use crate::node::RTreeNode;
 
@@ -31,15 +31,24 @@ impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, V> {
         self.value.mutate(t);
     }
 
+    pub fn get_key(&self) -> K {
+        self.key.clone()
+    }
+
+    pub fn get_value(&self) -> V {
+        self.value.unwrap_no_ref().clone().unwrap()
+    }
+
 }
 
 type KeyNodeItem<'a, 
             K, 
-            T
+            T,
+            L,
             > = KeyValueItem<
                 'a,
                 K,
-                &'a RTreeNode<'a, K, T>
+                &'a RTreeNode<'a, K, T, L>
             >;
 
 
@@ -47,7 +56,8 @@ type KeyNodeItem<'a,
 pub type NodeColl<'a, 
                     K, 
                     T,
+                    L,
                 > = PeerageCollection<
-                    KeyNodeItem<'a, K, T>                
+                    KeyNodeItem<'a, K, T, L>                
             >;
 

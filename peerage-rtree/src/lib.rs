@@ -8,6 +8,7 @@ pub mod node;
 mod value_holder;
 mod impler_dummy;
 mod node_type;
+mod tree_traverser;
 
 use paste::paste;
 

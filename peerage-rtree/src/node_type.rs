@@ -3,6 +3,7 @@ use peerage_utils::traits::Key;
 
 #[derive(Clone, Copy)]
 pub enum NodeType {
+    Empty,
     LedgerNode(usize),
     StorageNode(usize),
     EncryptedNode(usize),
@@ -22,3 +23,20 @@ impl NodeType {
         Self::EncryptedNode(u)
     }
 }
+
+
+pub enum SetResult {
+    Success,
+    Failure,
+}
+
+impl SetResult {
+    pub fn into_bool(&self) -> bool {
+        match self {
+            SetResult::Success => true,
+            SetResult::Failure => false,
+        }
+    }
+}
+
+pub type KeySetRes = std::result::Result<SetResult, SetResult>;
