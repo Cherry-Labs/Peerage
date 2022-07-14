@@ -15,7 +15,7 @@ pub trait Node: Copy + Clone {
     fn sub_to(&self, other: Self) -> Self;
 }
 
-pub trait Key: Copy + Clone + Node {}
+pub trait Key: Copy + Clone + Node<InputType = Self> {}
 
 
 pub trait Value {}

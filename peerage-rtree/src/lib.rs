@@ -4,9 +4,10 @@
 #[macro_use]
 extern crate lazy_static;
 
-mod node;
+pub mod node;
 mod value_holder;
 mod impler_dummy;
+mod node_type;
 
 use paste::paste;
 
