@@ -77,6 +77,33 @@ impl<'a, T: Clone + Copy> Holder<'a, T> {
         }
     }
 
+    pub fn mutate(&mut self, t: T) {
+        let item = match self {
+            Holder::Refer(i) => {
+                let mut i_clone = i.clone();              
+            
+                let mut i_transmuted: [T; 1] = unsafe {
+                    std::mem::transmute_copy(&i_clone)
+                };
+
+                let first_mut = i_transmuted.get_mut(0).unwrap();
+
+
+                *first_mut = t;
+            },
+            Holder::Selfer(i) =>  {
+                let mut i_clone = i.clone();              
+
+                let first_mut = i_clone.get_mut(0).unwrap();
+                
+                *first_mut = t
+            },
+            Holder::Nil => panic!("Can't be nil"),
+        };
+
+        item
+    }
+
     pub fn replace(&mut self, with: Self) {
         let w_clone = with.clone();
         let mut s_clone = self.clone();

@@ -87,6 +87,9 @@ impl<'a, K: Key, T: Node> RTreeNode<'a, K, T> {
         None
     }
 
-    
+    pub fn replace(&mut self, key: K, rep: Self) {
+        let key = self.get_key(key).unwrap();
+        
+    }
 
 }

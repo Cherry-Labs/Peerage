@@ -23,9 +23,14 @@ impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, V> {
         self.key.is_equal_to(k)
     }
 
-    pub fn unwrap_value(&self) -> V {
-        self.value.unwrap_no_ref().unwrap()
+    pub fn unwrap_value(&self) -> &V {
+        self.value.unwrap().unwrap()
     }
+
+    pub fn mutate_value(&mut self, t: V){
+        self.value.mutate(t);
+    }
+
 }
 
 type KeyNodeItem<'a, 

@@ -55,6 +55,8 @@ Send me any amount you can to this ERC20 Ether address.
 
 It's protected by Nano S Ledger hardware wallet, I bought it the moment I started working in crypto. PLEASE buy a hardware wallet! You can use them through MetaMask!
 
+Note: After you donate to me tell me in Discord (if you want) sO I can add you to patron lis. 
+
 ## Final Words
 
 This is a dream I have and as you can see I am going forward, changing things, finalizing things, it would be great if my needs are taken care of, I don't need much money --- I can live off with 300 USD a month. Yes I am e-begging but I don't care. I know Peerage is going ot be revolutionary, something great, something I can be proud of.
