@@ -62,4 +62,8 @@ Note: After you donate to me tell me in Discord (if you want) sO I can add you t
 This is a dream I have and as you can see I am going forward, changing things, finalizing things, it would be great if my needs are taken care of, I don't need much money --- I can live off with 300 USD a month. Yes I am e-begging but I don't care. I know Peerage is going ot be revolutionary, something great, something I can be proud of.
 
 
+## I hate/love/admire this project, where can I find you?
+
+Find me on Discord where you can give me criticism, insult me, or send me a heart emoji (a RED one!).
+
 My Discord: Chubak#7400
