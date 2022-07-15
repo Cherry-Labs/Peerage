@@ -15,7 +15,6 @@ pub struct RTreeNode<'a, K: Key, T: Node, L: Ledger> {
     node_parent: Option<&'a Self>,
     ledger_data: Option<L>,
     kvs: Option<NodeColl<'a, K, T, L>>,
-
 }
 
 
@@ -37,6 +36,15 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
             node_parent: None,
             ledger_data: None,
             kvs: None,
+        }
+    }
+
+    pub fn is_storage(&self) -> bool {
+        match self.node_type {
+            NodeType::Empty => false,
+            NodeType::LedgerNode(_) => false,
+            NodeType::StorageNode(_) => true,
+            NodeType::EncryptedNode(_) => false,
         }
     }
 

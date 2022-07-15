@@ -44,6 +44,8 @@ The rest of the projects are empty, don't bother. But slowly, they will be fille
 
 ### I wanna help! What should I do?
 
+Since all I've been doing instead of my job is this, my boss must be rather cross with me --- insomuch that he has not paid me for a while. So any amount is appreciated.
+
 You can help me by "buying me a coffee" (but I'm not going to buy coffee with it lol gonna buy tea).
 
 ![](coffee.png)
