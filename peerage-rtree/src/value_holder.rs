@@ -31,7 +31,7 @@ impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, V> {
         self.value.mutate(t);
     }
 
-    pub fn get_key(&self) -> K {
+    pub fn get_sub_key(&self) -> K {
         self.key.clone()
     }
 

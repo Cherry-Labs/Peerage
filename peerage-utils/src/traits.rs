@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-pub trait Node: Copy + Clone {
+pub trait Node {
     type InputType;
 
     fn new() -> Self;
@@ -15,7 +15,13 @@ pub trait Node: Copy + Clone {
     fn sub_to(&self, other: Self) -> Self;
 }
 
-pub trait Key: Copy + Clone + Node<InputType = Self> {}
+
+pub trait NodeGlobal: Copy + Clone + Node<InputType = Self> {}
+
+
+pub trait Key: Copy + Clone + Node<InputType = Self> {
+    fn init_empty() -> Self;
+}
 
 
 pub trait Ledger: Copy + Clone {}

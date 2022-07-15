@@ -47,7 +47,7 @@ impl<'a, K: Key, V: Copy + Clone> Node for KeyValueItem<'a, K, V> {
 }
 
 
-impl<'a, K: Key, T: Node, L: Ledger> Node for RTreeNode<'a, K, T, L> {
+impl<'a, K: Key, T: NodeGlobal, L: Ledger> Node for RTreeNode<'a, K, T, L> {
     type InputType = i32;
 
     fn new() -> Self {

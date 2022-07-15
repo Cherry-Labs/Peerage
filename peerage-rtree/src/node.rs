@@ -9,8 +9,9 @@ use crate::node_type::{NodeType, KeySetRes, SetResult};
 
 
 #[derive(Clone, Copy)]
-pub struct RTreeNode<'a, K: Key, T: Node, L: Ledger> {
+pub struct RTreeNode<'a, K: Key, T: NodeGlobal, L: Ledger> {
     node_type: NodeType,
+    node_key: K,
     node_item: Option<T>,
     node_parent: Option<&'a Self>,
     ledger_data: Option<L>,
@@ -18,11 +19,12 @@ pub struct RTreeNode<'a, K: Key, T: Node, L: Ledger> {
 }
 
 
-impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
-    pub fn from_node_type(node_type: NodeType) -> Self {
+impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
+    pub fn from_node_type(node_type: NodeType, node_key: K) -> Self {
         Self { 
             node_type, 
             node_item: None, 
+            node_key,
             kvs: None, 
             ledger_data: None,
             node_parent: None,
@@ -33,6 +35,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         Self { 
             node_type: crate::node_type::NodeType::Empty,  
             node_item: None,
+            node_key: K::init_empty(),
             node_parent: None,
             ledger_data: None,
             kvs: None,
@@ -76,6 +79,10 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         }
     }
 
+    pub fn get_self_key(&self) -> K {
+        self.node_key.clone()
+    }
+
     pub fn set_parent(&mut self, parent: &'a Self) {
         self.node_parent = Some(parent)
     }
@@ -117,8 +124,8 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         self.kvs = Some(kvs)
     }
 
-    pub fn get_key(&self, key: K) -> Option<&Self> {
-        if self.kvs.is_none() { panic!("no key-values!" )}
+    pub fn get_sub_key(&self, key: K) -> Option<&Self> {
+        if self.kvs.is_none() { return None; }
         
         let kvs = self.kvs.unwrap();
         
@@ -137,7 +144,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
     }
 
     pub fn replace(&mut self, key: K, rep: &Self) -> KeySetRes {
-        if self.kvs.is_none() { panic!("no key-values!" )}
+        if self.kvs.is_none() { return Err(SetResult::Failure) }
         
         let kvs = self.kvs.unwrap();
         
@@ -158,7 +165,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         Err(SetResult::Failure)
     }
 
-    pub fn get_keys(&self) -> Option<PeerageCollection<K>> {
+    pub fn get_sub_keys(&self) -> Option<PeerageCollection<K>> {
         if self.kvs.is_none() { return None; }
 
 
@@ -171,7 +178,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         for _ in 0..iter_kvs.clone().count() {
             let kv = iter_kvs.next().unwrap();
 
-            let key = kv.get_key();
+            let key = kv.get_sub_key();
 
             keys.push(key)
         }
@@ -227,26 +234,38 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         }
     }
 
+    pub fn get_node_item(&self) -> Option<T> {
+        if self.node_item.is_none() {
+            return None;
+        }
+
+        let item_unwrapped = self.node_item.unwrap();
+
+        Some(item_unwrapped)
+    }
+
+    
+
 }
 
-impl<'a, K: Key, T: Node, L: Ledger> std::ops::Index<K> for RTreeNode<'a, K, T, L> {
+impl<'a, K: Key, T: NodeGlobal, L: Ledger> std::ops::Index<K> for RTreeNode<'a, K, T, L> {
     type Output = Self;
 
     fn index(&self, index: K) -> &Self::Output {
-       self.get_key(index).unwrap()
+       self.get_sub_key(index).unwrap()
     }
 }
 
 
 
 
-pub struct RTree<'a, K: Key, T: Node, L: Ledger> {
+pub struct RTree<'a, K: Key, T: NodeGlobal, L: Ledger> {
     root: RTreeNode<'a, K, T, L>,
     curr_node: Option<&'a RTreeNode<'a, K, T, L>>,
     curr_key: Option<K>,
 }
 
-impl<'a, K: Key, T: Node, L: Ledger> RTree<'a, K, T, L> {
+impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTree<'a, K, T, L> {
     pub fn new_empty() -> Self {
         Self {
             root: RTreeNode::<'a, K, T, L>::new_empty(),
@@ -256,7 +275,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTree<'a, K, T, L> {
     }
 
     pub fn from_root_node(root: RTreeNode<'a, K, T, L>) -> Self {
-        Self { root, curr_node: None, curr_key: None }f
+        Self { root, curr_node: None, curr_key: None }
     }
 
     
