@@ -8,35 +8,28 @@ use crate::node::RTreeNode;
 
 #[derive(Clone, Copy)]
 pub struct KeyValueItem<'a, K: Key, V: Copy + Clone> {
-    key: K,
-    value: Holder<'a, V>
+    pub key: K,
+    pub value: V,
+    phantom: PhantomData<&'a K>
 }
 
-impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, V> {
-    pub fn new(key: K, value: &'a V) -> Self {
-        let value_holder = Holder::<'a, V>::new_refer(value);
-        
-        Self { key, value: value_holder }
+impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, &'a V> {
+    pub fn new(key: K, value: &'a V) -> Self {                
+        Self { key, value, phantom: PhantomData }
     } 
+
 
     pub fn compare_key(&self, k: K) -> bool {
         self.key.is_equal_to(k)
     }
 
-    pub fn unwrap_value(&self) -> &V {
-        self.value.unwrap().unwrap()
-    }
-
-    pub fn mutate_value(&mut self, t: V){
-        self.value.mutate(t);
+   
+    pub fn mutate_value(&mut self, value: &'a V){
+        self.value = value
     }
 
     pub fn get_sub_key(&self) -> K {
         self.key.clone()
-    }
-
-    pub fn get_value(&self) -> V {
-        self.value.unwrap_no_ref().clone().unwrap()
     }
 
 }

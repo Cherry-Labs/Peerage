@@ -2,9 +2,9 @@
 use std::marker::PhantomData;
 use peerage_coll::collection::PeerageCollection;
 use peerage_utils::traits::*;
-use crate::value_holder::{NodeColl, KeyValueItem};
+use crate::{value_holder::{NodeColl, KeyValueItem}, node_type::KeyInsertRes};
 use peerage_macros::{block_out_return_holder, index_forward};
-use crate::node_type::{NodeType, KeySetRes, SetResult};
+use crate::node_type::{NodeType, KeySetRes, SetResult, InsertResult};
 
 
 
@@ -137,13 +137,13 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
             let curr_kv = iter_kvs.next().unwrap();
 
             if curr_kv.compare_key(key) {
-                return Some(curr_kv.unwrap_value());
+                return Some(curr_kv.value);
             }
         }
         None
     }
 
-    pub fn replace(&mut self, key: K, rep: &Self) -> KeySetRes {
+    pub fn replace(&mut self, key: K, rep: &'a Self) -> KeySetRes {
         if self.kvs.is_none() { return Err(SetResult::Failure) }
         
         let kvs = self.kvs.unwrap();
@@ -190,6 +190,32 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
     
     }
 
+    pub fn insert_at_kv(&mut self, 
+        key: K,
+        value: &'a RTreeNode<'a, K, T, L>) -> KeyInsertRes {
+        let self_kvs = self.kvs;
+
+        let mut kvs_unwrapped= if self_kvs.is_none() { 
+            let kvs_unwrapped = PeerageCollection::<KeyValueItem<'a, K, &'a Self>>::new();
+        
+            kvs_unwrapped
+        } else {
+            let mut kvs_unwrapped = self_kvs.unwrap();
+        
+            kvs_unwrapped
+        }; 
+
+        
+        let new_kv = KeyValueItem::new(key, value);
+
+        kvs_unwrapped.push(new_kv);
+
+        self.kvs = Some(kvs_unwrapped);
+
+        Ok(InsertResult::Success)
+    }
+    
+
 
     pub fn get_values(&self) -> Option<PeerageCollection<Self>> {
         if self.kvs.is_none() { return None; }
@@ -203,7 +229,7 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
         for _ in 0..iter_kvs.clone().count() {
             let kv = iter_kvs.next().unwrap();
 
-            let value = kv.get_value();
+            let value = kv.value;
 
             values.push(value.clone())
         }
@@ -258,25 +284,13 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> std::ops::Index<K> for RTreeNode<'a, 
 
 
 
-
+#[derive(Clone, Copy)]
 pub struct RTree<'a, K: Key, T: NodeGlobal, L: Ledger> {
-    root: RTreeNode<'a, K, T, L>,
-    curr_node: Option<&'a RTreeNode<'a, K, T, L>>,
-    curr_key: Option<K>,
+    ledger_root: RTreeNode<'a, K, T, L>,
+    storage_root: Option<RTreeNode<'a, K, T, L>>,
 }
 
 impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTree<'a, K, T, L> {
-    pub fn new_empty() -> Self {
-        Self {
-            root: RTreeNode::<'a, K, T, L>::new_empty(),
-            curr_node: None,
-            curr_key: None,
-        }
-    }
-
-    pub fn from_root_node(root: RTreeNode<'a, K, T, L>) -> Self {
-        Self { root, curr_node: None, curr_key: None }
-    }
-
+   
     
 }

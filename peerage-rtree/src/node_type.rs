@@ -56,3 +56,36 @@ impl SetResult {
 }
 
 pub type KeySetRes = std::result::Result<SetResult, SetResult>;
+
+
+pub enum InsertResult {
+    Success,
+    Failure,
+}
+
+impl InsertResult {
+    pub fn is_success(&self) -> bool {
+        match self {
+            InsertResult::Success => true,
+            InsertResult::Failure => false,
+        }
+    }
+
+    pub fn is_failure(&self) -> bool {
+        match self {
+            InsertResult::Success => false,
+            InsertResult::Failure => true,
+        }
+    }
+}
+
+impl InsertResult {
+    pub fn into_bool(&self) -> bool {
+        match self {
+            InsertResult::Success => true,
+            InsertResult::Failure => false,
+        }
+    }
+}
+
+pub type KeyInsertRes = std::result::Result<InsertResult, InsertResult>;

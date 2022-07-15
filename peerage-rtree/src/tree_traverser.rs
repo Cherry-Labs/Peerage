@@ -2,7 +2,7 @@ use std::borrow::BorrowMut;
 
 use peerage_coll::collection::PeerageCollection;
 use peerage_utils::traits::{Node, Key, Ledger, NodeGlobal};
-use crate::node_type::{KeySetRes, SetResult};
+use crate::node_type::{KeySetRes, SetResult, InsertResult};
 
 use crate::node::RTreeNode;
 
@@ -24,7 +24,7 @@ impl ReturnTraverse {
     }
 }
 
-pub fn traverse_updown_iter<'a, 
+fn traverse_updown_iter<'a, 
         K: Key, 
         T: NodeGlobal, 
         L: Ledger
@@ -150,6 +150,28 @@ pub fn replace_item_traversal<'a,
 
 
     gotten_key_mut.set_item(item);
+
+    Ok(SetResult::Success)
+}   
+
+
+pub fn insert_item_traversal<'a, 
+        K: Key, 
+        T: NodeGlobal, 
+        L: Ledger>(
+            node: &'a RTreeNode<'a, K, T, L>, 
+            key: K,
+            value: &'a RTreeNode<'a, K, T, L>,
+        ) -> KeySetRes {
+    let gotten_node = binary_search_key(node, key);
+
+    if gotten_node.is_none() {
+        return Err(SetResult::Failure);
+    }
+
+    let mut gotten_node_unwrap = gotten_node.unwrap().1;
+
+    gotten_node_unwrap.insert_at_kv(key, value);
 
     Ok(SetResult::Success)
 }   
