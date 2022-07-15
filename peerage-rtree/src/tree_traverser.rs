@@ -1,8 +1,8 @@
-use std::borrow::BorrowMut;
+use std::borrow::{BorrowMut, Borrow};
 
 use peerage_coll::collection::PeerageCollection;
 use peerage_utils::traits::{Node, Key, Ledger, NodeGlobal};
-use crate::node_type::{KeySetRes, SetResult, InsertResult};
+use crate::node_type::{KeySetRes, SetResult, InsertResult, KeyInsertRes};
 
 use crate::node::RTreeNode;
 
@@ -157,18 +157,18 @@ pub fn insert_item_traversal<'a,
             node: &'a RTreeNode<'a, K, T, L>, 
             key: K,
             value: &'a RTreeNode<'a, K, T, L>,
-        ) -> KeySetRes {
+        ) -> KeyInsertRes {
     let gotten_node = binary_search_key(node, key);
 
     if gotten_node.is_none() {
-        return Err(SetResult::Failure);
+        return Err(InsertResult::Failure);
     }
 
     let mut gotten_node_unwrap = gotten_node.unwrap().1;
 
     gotten_node_unwrap.insert_at_kv(key, value);
 
-    Ok(SetResult::Success)
+    Ok(InsertResult::Success)
 }   
 
 
@@ -217,3 +217,146 @@ pub fn binary_search_traversal<'a, K: Key, T: NodeGlobal, L: Ledger>(
 
     None
 }
+
+
+fn find_at_level_iter<'a,
+                K: Key,
+                T: NodeGlobal,
+                L: Ledger>(
+                    node: Option<RTreeNode<'a, K, T, L>>,
+                    index: usize,
+                ) -> Option<RTreeNode<'a, K, T, L>>
+        {
+            if node.is_none() {
+                return None;
+            }
+
+            let curr_node = node.unwrap();
+
+            let curr_values = curr_node.get_values();
+
+            if curr_values.is_none() {
+                return None;
+            }
+
+            let cv_unwrapped = curr_values.unwrap();
+
+            let mut v_iter = cv_unwrapped.into_iter();
+            
+            let v = v_iter.nth_item_ref_and_consume(index);
+
+            if v.is_nil() {
+                return None;
+            }
+
+            let v_ref = v.unwrap_no_ref();
+
+            v_ref
+        }
+        
+
+
+pub fn find_at_level<'a,
+                K: Key,
+                T: NodeGlobal,
+                L: Ledger>(
+                    node: &'a RTreeNode<'a, K, T, L>,
+                    indice_levels: Vec<usize>,
+                ) -> Option<RTreeNode<'a, K, T, L>>
+        {
+            let node_values = node.get_values();
+
+            if node_values.is_none() {
+                return None;
+            }
+
+            let nv_unwrapped = node_values.unwrap();
+
+            let nv_unw_iter = nv_unwrapped.into_iter();
+
+            let mut counter = 0usize;
+            let levels_size = indice_levels.len();
+
+            let mut curr_node = Some(node.clone());
+
+            for i in 0..levels_size {
+                let curr_index = indice_levels[i];
+
+                curr_node =  find_at_level_iter(curr_node, curr_index)
+            }
+
+            curr_node
+        }
+
+
+
+pub fn insert_at_level<'a,
+        K: Key,
+        T: NodeGlobal,
+        L: Ledger>(
+            node: &'a RTreeNode<'a, K, T, L>,
+            indice_levels: Vec<usize>,
+            key: K,
+            value: &'a RTreeNode<'a, K, T, L>
+        ) -> KeyInsertRes
+
+    {
+        let node_opt = find_at_level(node, indice_levels);
+
+        if node_opt.is_none() {
+            return Err(InsertResult::Failure);
+        }
+
+        let mut no_unwrapped = node_opt.unwrap();
+    
+        no_unwrapped.insert_at_kv(key, value);
+
+        Ok(InsertResult::Success)
+    }
+
+    pub fn replace_at_level<
+            'a, 
+            K: Key, 
+            T: NodeGlobal, 
+            L: Ledger
+        >
+        (
+            node: &'a mut RTreeNode<'a, K, T, L>,
+            rep: &'a RTreeNode<'a, K, T, L>,
+            indice_levels: Vec<usize>,
+        ) -> KeySetRes
+        {
+            let curr_keys = node.get_values();
+        
+            if curr_keys.is_none() {
+                return Err(SetResult::Failure);
+            }
+
+            let mut curr_node = node;
+            let mut curr_keys_unwrapped = curr_keys.unwrap();
+
+            let len = indice_levels.len() - 2;
+
+            let mut i = 0;
+
+            loop {
+                *curr_node = curr_keys_unwrapped[i];
+                
+                let curr_node_values = curr_node.get_values();
+
+                if curr_node_values.is_none() {
+                    continue;
+                }
+
+                curr_keys_unwrapped = curr_node_values.unwrap();
+            
+                i += 1;
+
+                if len == i {
+                    break;
+                }
+                
+            }
+
+            Ok(SetResult::Success)
+        }

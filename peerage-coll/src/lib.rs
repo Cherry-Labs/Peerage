@@ -3,6 +3,7 @@
 pub mod collection;
 mod array_holder;
 mod iterator;
+mod res;
 
 #[cfg(test)]
 mod tests {

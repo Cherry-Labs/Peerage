@@ -205,59 +205,37 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
             kvs_unwrapped
         }; 
 
-        let degree = self.get_degree();
+        let new_kv = KeyValueItem::new(key, value);
 
-        match degree <= kvs_unwrapped.len() {
-            true => {
-                let rem = kvs_unwrapped.len() % degree;
-
-                if rem  < degree {
-                    let first_kv = kvs_unwrapped[kvs_unwrapped.len() - degree];
-                    let first_value = first_kv.value;
-
-                    let mut first_value_mut = first_value.clone();
-
-                    first_value_mut.insert_at_kv(key, value);
-                } else {
-                    let mut kvs_clone = kvs_unwrapped.clone();
-                    let mut kv_clone = kvs_clone[rem];
-                    for i in 0..rem {
-                        kv_clone = kvs_clone[rem - i];
-                        let last_kv_value = kv_clone.value;
-                        let last_kv_node = last_kv_value.kvs;
-                        
-                        if last_kv_node.is_none() {
-                            continue;
-                        }
-                        
-                        let last_kv_unwrap = last_kv_node.unwrap();
-
-                        kvs_clone = last_kv_unwrap                    
-                    }
-                    
-                    let last_kv_value = kv_clone.value;
-
-                    let mut last_kv_clone = last_kv_value.clone();
-
-                    last_kv_clone.insert_at_kv(key, value);
-                }            
-
-            },
-            false => {
-                let new_kv = KeyValueItem::new(key, value);
-
-                kvs_unwrapped.push(new_kv);
+        kvs_unwrapped.push(new_kv);
         
-                self.kvs = Some(kvs_unwrapped);
-            },
-        }
-        
+        self.kvs = Some(kvs_unwrapped);
+
         
 
         Ok(InsertResult::Success)
     }
     
+    pub fn set_at_kv_index(&mut self, key: K, value: &'a Self, index: usize) -> KeySetRes {
+        let self_kvs = self.kvs;
 
+        if self_kvs.is_none() 
+            || self.kv_len() == 0
+            || self.kv_len() > index {
+            return Err(SetResult::Failure);
+        }
+
+        let mut  self_kvs_unwrapped = self_kvs.unwrap();
+
+        let new_kv = KeyValueItem::new(key, value);
+        
+        self_kvs_unwrapped[index] = new_kv;
+
+        self.kvs = Some(self_kvs_unwrapped);
+
+        Ok(SetResult::Success)
+    }
+    
 
     pub fn get_values(&self) -> Option<PeerageCollection<Self>> {
         if self.kvs.is_none() { return None; }
@@ -312,6 +290,7 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
         Some(item_unwrapped)
     }
 
+    
 
 }
 

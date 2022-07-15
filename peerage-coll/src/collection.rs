@@ -1,13 +1,7 @@
 use crate::array_holder::ArrayHolder;
 use peerage_utils::traits::Node;
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem};
-
-pub enum SetResult {
-    Success,
-    Failure,
-}
-
-type SetResultType = std::result::Result<SetResult, SetResult>;
+use crate::res::*;
 
 #[derive(Clone, Copy)]
 pub struct PeerageCollection<T: Copy + Clone + Node> {
