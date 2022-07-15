@@ -48,6 +48,34 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         }
     }
 
+    pub fn is_ledger(&self) -> bool {
+        match self.node_type {
+            NodeType::Empty => false,
+            NodeType::LedgerNode(_) => true,
+            NodeType::StorageNode(_) => false,
+            NodeType::EncryptedNode(_) => false,
+        }
+    }
+
+    pub fn is_encrypted(&self) -> bool {
+        match self.node_type {
+            NodeType::Empty => false,
+            NodeType::LedgerNode(_) => false,
+            NodeType::StorageNode(_) => false,
+            NodeType::EncryptedNode(_) => true,
+        }
+    }
+
+
+    pub fn is_empty(&self) -> bool {
+        match self.node_type {
+            NodeType::Empty => true,
+            NodeType::LedgerNode(_) => false,
+            NodeType::StorageNode(_) => false,
+            NodeType::EncryptedNode(_) => false,
+        }
+    }
+
     pub fn set_parent(&mut self, parent: &'a Self) {
         self.node_parent = Some(parent)
     }
@@ -188,6 +216,15 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         let kv_unwrapped = self.kvs.unwrap();
 
         kv_unwrapped.len()
+    }
+
+    pub fn get_degree(&self) -> usize {
+        match self.node_type {
+            NodeType::Empty => 0,
+            NodeType::LedgerNode(u) => u,
+            NodeType::StorageNode(u) => u,
+            NodeType::EncryptedNode(u) => u,
+        }
     }
 
 }

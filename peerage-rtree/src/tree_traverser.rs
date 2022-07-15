@@ -10,6 +10,16 @@ pub enum ReturnTraverse {
     StorageReached
 }
 
+impl ReturnTraverse {
+    pub fn is_storage_reached(&self) -> bool {
+        match self {
+            ReturnTraverse::Init => false,
+            ReturnTraverse::None => false,
+            ReturnTraverse::Some => false,
+            ReturnTraverse::StorageReached => true,
+        }
+    }
+}
 
 pub fn traverse_updown_iter<'a, 
         K: Key, 
@@ -17,7 +27,7 @@ pub fn traverse_updown_iter<'a,
         L: Ledger
         >(
         node: &'a RTreeNode<'a, K, T, L>, 
-        v: &'a mut Vec<RTreeNode<'a, K, T, L>>
+        v: &'a mut Vec<RTreeNode<'a, K, T, L>>,
         res: &'a mut ReturnTraverse
     )   
     {
@@ -56,10 +66,20 @@ pub fn traverse_updown_iter<'a,
     *res = ReturnTraverse::Some
 }
 
-pub fn traverse_in_order<'a, K: Key, T: Node, L: Ledger>(node: RTreeNode<'a, K, T, L>) {
+pub fn traverse_in_order<'a, K: Key, T: Node, L: Ledger>(node: &'a RTreeNode<'a, K, T, L>) -> PeerageCollection<RTreeNode<'a, K, T, L>> {
     let mut v: Vec<RTreeNode<'a, K, T, L>> = vec![];
 
-    let res = 
+    let mut res = ReturnTraverse::Init;
+
+    loop {
+        traverse_updown_iter(node, &mut v, &mut res);
+
+        if res.is_storage_reached() {
+            break;
+        }
+    }
+
+    PeerageCollection::from_vector(v)
 
 
 }
