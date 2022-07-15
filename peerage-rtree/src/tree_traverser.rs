@@ -87,50 +87,71 @@ pub fn traverse_in_order<'a, K: Key, T: NodeGlobal, L: Ledger>(node: &'a RTreeNo
 
 }
 
-pub fn get_sub_key_traversal<'a, K: Key, T: NodeGlobal, L: Ledger>(node: &'a RTreeNode<'a, K, T, L>, key: K) -> Option<RTreeNode<'a, K, T, L>> {
-    if node.get_self_key().is_equal_to(key) {
-        let node_owned = node.to_owned();
-
-        return Some(node_owned)
-    }
+pub fn binary_search_key<'a, 
+    K: Key, 
+    T: NodeGlobal, 
+    L: Ledger>(
+        node: &'a RTreeNode<'a, K, T, L>, 
+        key: K) -> Option<(usize, RTreeNode<'a, K, T, L>)> {
+    let node_traversed = traverse_in_order(node);
     
-    let nodes_traversed = traverse_in_order(node);
+    if node_traversed.len() == 0 {
+        return None;
+    }
 
-    let mut node_traversed_iter = nodes_traversed.into_iter();
+    let mut low = 0usize;
+    let mut high = node_traversed.len();
 
-    for _ in 0..node_traversed_iter.clone().count() {
-        let curr_node = node_traversed_iter.next();
-        
-        if curr_node.is_none() {
-            continue;
+    loop {
+        if low == high {
+            break;
         }
 
-        let curr_node_unwrapped = curr_node.unwrap();
+        let mid = (low + high) / 2;
 
-        if curr_node_unwrapped.get_self_key().is_equal_to(key) {
-            return Some(curr_node_unwrapped);
-        }    
+        let curr_node = node_traversed[mid];
+
+        let curr_node_key = curr_node.get_self_key();
+
+        if curr_node_key.is_equal_to(key) {
+            let key = curr_node.get_self_key();
+
+            return Some((mid, curr_node))
+        } else if key.is_greater_to(curr_node_key) {
+            low = mid + 1;
+        } else {
+            high = mid + 1;
+        }
     }
+
 
     None
 }
 
 
-pub fn replace_traversal<'a, K: Key, T: NodeGlobal, L: Ledger>(node: &'a RTreeNode<'a, K, T, L>, key: K, rep: &'a RTreeNode<'a, K, T, L>) -> KeySetRes {
-    let gotten_key = get_sub_key_traversal(node, key);
 
-    if gotten_key.is_none() {
+pub fn replace_item_traversal<'a, 
+        K: Key, 
+        T: NodeGlobal, 
+        L: Ledger>(
+            node: &'a RTreeNode<'a, K, T, L>, 
+            key: K, rep: &'a RTreeNode<'a, K, T, L>,
+            item: T
+        ) -> KeySetRes {
+    let gotten_node = binary_search_key(node, key);
+
+    if gotten_node.is_none() {
         return Err(SetResult::Failure);
     }
 
-    let mut gotten_key_unwrap = gotten_key.unwrap();
+    let mut gotten_node_unwrap = gotten_node.unwrap().1;
 
-    let gotten_key_mut = gotten_key_unwrap.borrow_mut();
+    let gotten_key_mut = gotten_node_unwrap.borrow_mut();
 
 
-    let res = gotten_key_mut.replace(key, rep);
+    gotten_key_mut.set_item(item);
 
-    res
+    Ok(SetResult::Success)
 }   
 
 
