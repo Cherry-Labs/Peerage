@@ -41,9 +41,7 @@ The maximum length it can hold is `1024 * 16` but I don't need more than that, I
 
 ### Peerage-RTree
 
-I have created this datatype for holding the room data and the Merkle DAG required called 'Rapid Tree'. Keep in mind that I am currenctly working  on it so it's not completed yet.
-
-Basically, it's B-Tree mixed wih some B+Tree mixed with some BTreeMap.
+This is Rapid Tree my custom data type for holding room data. It's extremely expansive, and I'm currently developig it. Once I'm done I will write about it in its own folder.
 
 ### Peerage-Macros
 
