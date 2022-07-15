@@ -4,6 +4,19 @@ Peerage (pronounced peer-aazh not peer-age!) is a P2P communication and file sha
 
 As far as the network is concerned, I, being a hip young go-getter (I'm 29 but I have to get dentures :( take care of your teeth kids!) will use QUIC as the main transport. I will use come up with common discovery and multicast methods too. All these will be of my own implementation, although I might copy off libp2p like the loser that I am. But I won't use libp2p. I still have to plan the network side of thing, but it will siurely be planned by late this month.
 
+So, every room has a ledger head, an storage middle, and a cryptographic end. Each of these sections are what make of a 'Rapid Tree' which I have explained below.
+
+![](levels.png)
+
+That is because we will have rooms that are just ledgers, but we will have rooms with storage, say an HTML page or something like that, or a music file, that that the ledger controls. For example, the ledger can control who has bought an item. 
+
+
+Cryptographic data are for data that need to be hidden. This includes secret financial data or similar things. 
+
+One thing ledger could control is the financial data, as in, if the rom is VIP, who hs paid for it with what crpto, etc.
+
+The development on RapdiTree is onoing.
+
 It's highly WIP. Any financial support during the development of this application is appreciated. Also you can do pull requests. 
 
 
