@@ -10,16 +10,14 @@ pub enum ReturnTraverse {
     Init,
     None, 
     Some,
-    StorageReached
 }
 
 impl ReturnTraverse {
-    pub fn is_storage_reached(&self) -> bool {
+    pub fn is_none(&self) -> bool {
         match self {
             ReturnTraverse::Init => false,
-            ReturnTraverse::None => false,
+            ReturnTraverse::None => true,
             ReturnTraverse::Some => false,
-            ReturnTraverse::StorageReached => true,
         }
     }
 }
@@ -35,10 +33,7 @@ fn traverse_updown_iter<'a,
     )   
     {
 
-    if node.is_storage() {
-        *res =  ReturnTraverse::StorageReached;
-    }
-
+    
     if node.kv_len() == 0 {
         *res =  ReturnTraverse::None;
     }
@@ -77,7 +72,7 @@ pub fn traverse_in_order<'a, K: Key, T: NodeGlobal, L: Ledger>(node: &'a RTreeNo
     loop {
         traverse_updown_iter(node, &mut v, &mut res);
 
-        if res.is_storage_reached() {
+        if res.is_none() {
             break;
         }
     }

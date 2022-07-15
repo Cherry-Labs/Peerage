@@ -4,7 +4,8 @@
 #[macro_use]
 extern crate lazy_static;
 
-pub mod node;
+pub mod rtree;
+mod node;
 mod value_holder;
 mod impler_dummy;
 mod node_type;
