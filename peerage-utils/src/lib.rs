@@ -1,10 +1,11 @@
-#![allow(unused)]
+#![allow(unused, improper_ctypes_definitions)]
 #[macro_use]
 extern crate lazy_static;
 
 pub mod bin_utils;
 pub mod traits;
 mod rng;
+mod tty;
 
 #[cfg(test)]
 mod tests {

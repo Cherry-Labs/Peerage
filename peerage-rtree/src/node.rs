@@ -79,6 +79,10 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
         }
     }
 
+    pub fn rep_kv_mem(&mut self, rep: Option<NodeColl<'a, K, T, L>>) {
+        std::mem::replace(&mut self.kvs, rep);
+    }
+
     pub fn get_self_key(&self) -> K {
         self.node_key.clone()
     }
@@ -215,7 +219,8 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
 
         Ok(InsertResult::Success)
     }
-    
+
+   
     pub fn set_at_kv_index(&mut self, key: K, value: &'a Self, index: usize) -> KeySetRes {
         let self_kvs = self.kvs;
 
@@ -236,6 +241,9 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTreeNode<'a, K, T, L> {
         Ok(SetResult::Success)
     }
     
+    pub fn get_kvs(&self) -> Option<NodeColl<'a, K, T, L>> {
+        self.kvs.clone()
+    }
 
     pub fn get_values(&self) -> Option<PeerageCollection<Self>> {
         if self.kvs.is_none() { return None; }
@@ -301,6 +309,8 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> std::ops::Index<K> for RTreeNode<'a, 
        self.get_sub_key(index).unwrap()
     }
 }
+
+
 
 
 

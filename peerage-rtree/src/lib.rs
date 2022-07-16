@@ -5,10 +5,10 @@
 extern crate lazy_static;
 
 pub mod rtree;
-mod node;
-mod value_holder;
+pub mod node;
+pub mod value_holder;
 mod impler_dummy;
-mod node_type;
+pub mod node_type;
 mod tree_traverser;
 
 use paste::paste;

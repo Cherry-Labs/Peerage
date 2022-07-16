@@ -9,5 +9,7 @@ members = [
     "peerage-macros",
     "peerage-holder",
     "peerage-ledger",
-    "peerage-coll"
+    "peerage-coll",
+    "peerage-keys",
+    "peerage-node"
 ]

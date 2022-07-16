@@ -1,10 +1,12 @@
 use std::borrow::{BorrowMut, Borrow};
+use std::ops::Index;
 
 use peerage_coll::collection::PeerageCollection;
 use peerage_utils::traits::{Node, Key, Ledger, NodeGlobal};
 use crate::node_type::{KeySetRes, SetResult, InsertResult, KeyInsertRes};
 
 use crate::node::RTreeNode;
+use crate::value_holder::{NodeColl, KeyValueItem};
 
 pub enum ReturnTraverse {
     Init,
@@ -295,8 +297,8 @@ pub fn insert_at_level<'a,
         T: NodeGlobal,
         L: Ledger>(
             node: &'a RTreeNode<'a, K, T, L>,
-            indice_levels: Vec<usize>,
             key: K,
+            indice_levels: Vec<usize>,
             value: &'a RTreeNode<'a, K, T, L>
         ) -> KeyInsertRes
 
@@ -322,7 +324,9 @@ pub fn insert_at_level<'a,
         >
         (
             node: &'a mut RTreeNode<'a, K, T, L>,
-            rep: &'a RTreeNode<'a, K, T, L>,
+            key: K,
+            value: &'a RTreeNode<'a, K, T, L>,
+            index: usize,
             indice_levels: Vec<usize>,
         ) -> KeySetRes
         {
@@ -332,7 +336,7 @@ pub fn insert_at_level<'a,
                 return Err(SetResult::Failure);
             }
 
-            let mut curr_node = node;
+            let mut curr_node = node.clone();
             let mut curr_keys_unwrapped = curr_keys.unwrap();
 
             let len = indice_levels.len() - 2;
@@ -340,7 +344,7 @@ pub fn insert_at_level<'a,
             let mut i = 0;
 
             loop {
-                *curr_node = curr_keys_unwrapped[i];
+                curr_node = curr_keys_unwrapped[i];
                 
                 let curr_node_values = curr_node.get_values();
 
@@ -357,6 +361,28 @@ pub fn insert_at_level<'a,
                 }
                 
             }
+
+            
+            let last_kv = curr_node.get_kvs();
+
+            if last_kv.is_none() {
+                return Err(SetResult::Failure);
+            }
+
+            
+            let mut last_kv_unwrapped = last_kv.unwrap();
+
+            let new_kv = KeyValueItem::new(key, value);
+
+            if index > last_kv_unwrapped.len() {
+                return Err(SetResult::Failure);
+            }
+
+            last_kv_unwrapped[index] = new_kv;
+
+            let kv_deref = last_kv_unwrapped.clone();
+
+            node.rep_kv_mem(Some(kv_deref));
 
             Ok(SetResult::Success)
         }
