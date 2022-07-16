@@ -34,8 +34,12 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTree<'a, K, T, L> {
         self.crypto_root = Some(crypto_root);
     }
 
-    pub fn insert_at_ledger_root(&self, key: K, value: &'a RTreeNode<'a, K, T, L>) -> KeyInsertRes {
+    pub fn insert_node_at_ledger_root(&self, key: K, value: &'a RTreeNode<'a, K, T, L>) -> KeyInsertRes {
         insert_item_traversal(&self.ledger_root, key, value)
+    }
+
+    pub fn replace_item_at_ledger_root(&self, key: K, item: T) -> KeySetRes {
+        replace_item_traversal(&self.ledger_root, key, item: T)
     }
 
 }

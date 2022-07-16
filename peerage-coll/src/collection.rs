@@ -112,6 +112,32 @@ impl<T: Copy + Clone + Node> PeerageCollection<T> {
         }
     }
 
+
+    pub fn get_at_mut<'a>(&'a mut self, index: usize, rep: &'a mut T) {
+        match index > self.curr_size {
+            true => {
+                match index < self.filler_buffer  {
+                    true => {
+                        let mut item = self.current_buffer[self.filler_buffer - index];
+                        
+                        *rep  = item;
+                    },
+                    false => {
+                        let mut item = T::new();
+
+                        *rep = item;
+                    },
+                }
+            },
+            false => {
+                let mut item = self.array[index];
+
+                *rep = item;
+            },
+        }
+    }
+
+
     pub fn push(&mut self, item: T) {
         if self.filler_buffer % 1024 != 0 {
             let ind = self.filler_buffer % 1024;

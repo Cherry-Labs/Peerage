@@ -29,7 +29,7 @@ fn traverse_updown_iter<'a,
         T: NodeGlobal, 
         L: Ledger
         >(
-        node: &RTreeNode<'a, K, T, L>, 
+        node: &'a RTreeNode<'a, K, T, L>, 
         v: &mut Vec<RTreeNode<'a, K, T, L>>,
         res: &mut ReturnTraverse
     )   
@@ -84,6 +84,8 @@ pub fn traverse_in_order<'a, K: Key, T: NodeGlobal, L: Ledger>(node: &'a RTreeNo
 
 }
 
+
+
 pub fn binary_search_key<'a, 
     K: Key, 
     T: NodeGlobal, 
@@ -125,6 +127,48 @@ pub fn binary_search_key<'a,
     None
 }
 
+pub fn binary_search_key_mut_ref<'a, 
+    K: Key, 
+    T: NodeGlobal, 
+    L: Ledger>(
+        node: &'a RTreeNode<'a, K, T, L>, 
+        key: K,
+        rep: &'a mut (K, &'a mut RTreeNode<'a, K, T, L>)) {
+    let node_traversed = traverse_in_order(node);
+    
+    if node_traversed.len() == 0 {
+        return ;        
+    }
+
+    let mut low = 0usize;
+    let mut high = node_traversed.len();
+
+    let mut node = rep.1.borrow_mut();
+
+    loop {
+        if low == high {
+            break;
+        }
+
+        let mid = (low + high) / 2;
+
+        node_traversed.get_at_mut(mid, node);
+
+        let curr_node_key = node.get_self_key();
+
+        if curr_node_key.is_equal_to(key) {
+            let key = node.get_self_key();
+
+            *rep = (key, node) 
+        } else if key.is_greater_to(curr_node_key) {
+            low = mid + 1;
+        } else {
+            high = mid + 1;
+        }
+    }
+
+
+}
 
 
 pub fn replace_item_traversal<'a, 
@@ -132,21 +176,24 @@ pub fn replace_item_traversal<'a,
         T: NodeGlobal, 
         L: Ledger>(
             node: &'a RTreeNode<'a, K, T, L>, 
-            key: K, rep: &'a RTreeNode<'a, K, T, L>,
-            item: T
+            key: K, 
+            rep_with: RTreeNode<'a, K, T, L>,
         ) -> KeySetRes {
-    let gotten_node = binary_search_key(node, key);
 
-    if gotten_node.is_none() {
+    let init_node = RTreeNode::<'a, K, T, L>::new_empty();
+    let init_key = K::init_empty();
+
+    let rep = &mut (init_key, &mut init_node);
+
+    binary_search_key_mut_ref(node, key, rep);
+
+    let gotten_key_mut = rep.1;
+
+    if gotten_key_mut.to_owned().kv_len() == 0 {
         return Err(SetResult::Failure);
     }
 
-    let mut gotten_node_unwrap = gotten_node.unwrap().1;
-
-    let gotten_key_mut = gotten_node_unwrap.borrow_mut();
-
-
-    gotten_key_mut.set_item(item);
+    *gotten_key_mut = rep_with;
 
     Ok(SetResult::Success)
 }   
