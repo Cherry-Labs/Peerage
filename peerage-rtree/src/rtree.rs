@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
 use peerage_utils::traits::{Key, Ledger, NodeGlobal};
@@ -38,8 +39,8 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTree<'a, K, T, L> {
         insert_item_traversal(&self.ledger_root, key, value)
     }
 
-    pub fn replace_item_at_ledger_root(&self, key: K, item: T) -> KeySetRes {
-        replace_item_traversal(&self.ledger_root, key, item: T)
+    pub fn replace_item_at_ledger_root(&'a mut self, key: K, rep_with: RTreeNode<'a, K, T, L>) -> KeySetRes {
+        replace_item_traversal(&mut self.ledger_root, key, rep_with)
     }
 
 }

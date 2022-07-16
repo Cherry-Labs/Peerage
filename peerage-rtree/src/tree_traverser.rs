@@ -86,6 +86,76 @@ pub fn traverse_in_order<'a, K: Key, T: NodeGlobal, L: Ledger>(node: &'a RTreeNo
 
 
 
+fn traverse_updown_iter_mut_ref<'a, 
+        K: Key, 
+        T: NodeGlobal, 
+        L: Ledger
+        >(
+        node: &'a mut RTreeNode<'a, K, T, L>, 
+        v: &mut Vec<&mut RTreeNode<'a, K, T, L>>,
+        res: &mut ReturnTraverse
+    )   
+    {
+
+    
+    if node.kv_len() == 0 {
+        *res =  ReturnTraverse::None;
+    }
+
+    let node_values = node.get_values();
+
+    if node_values.is_none() {
+        *res = ReturnTraverse::None;
+    }
+
+    let node_vales_unwrapped = node_values.unwrap();
+
+
+    for i in 0..node_vales_unwrapped.len() {
+        let mut rep = RTreeNode::<'a, K, T, L>::new_empty().borrow_mut();
+        
+        node_vales_unwrapped.get_at_mut(i, rep);
+
+        if rep.is_empty() { continue; }
+
+        v.push(rep);
+
+        traverse_updown_iter(rep, v, res);
+
+    }
+
+    *res = ReturnTraverse::Some
+}
+
+pub fn traverse_in_order_mut_iter<
+            'a, 
+            K: Key, 
+            T: NodeGlobal, 
+            L: Ledger
+            >(
+                node: &'a mut RTreeNode<'a, K, T, L>,
+                rep: &mut Vec<&'a mut RTreeNode<'a, K, T, L>>
+                ) {
+    let mut v: Vec<&mut RTreeNode<'a, K, T, L>> = vec![node];
+
+    let mut res = ReturnTraverse::Init;
+
+    loop {
+        traverse_updown_iter(node, &mut v, &mut res);
+
+        if res.is_none() {
+            break;
+        }
+    }
+
+    *rep = PeerageCollection::from_vector(v)
+
+
+}
+
+
+
+
 pub fn binary_search_key<'a, 
     K: Key, 
     T: NodeGlobal, 
@@ -134,7 +204,8 @@ pub fn binary_search_key_mut_ref<'a,
         node: &'a RTreeNode<'a, K, T, L>, 
         key: K,
         rep: &'a mut (K, &'a mut RTreeNode<'a, K, T, L>)) {
-    let node_traversed = traverse_in_order(node);
+    
+    let node_traversed_z = PeerageCollection::<&'a mut RTreeNode<'a, K, T, L>>::new();
     
     if node_traversed.len() == 0 {
         return ;        
