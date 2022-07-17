@@ -1,13 +1,21 @@
-use peerage_utils::traits::Key;
+use crate::node::RTreeNode;
+use peerage_keys::main_keys::Key;
+use peerage_ledger::ledger::Ledger;
+use peerage_node::node_item::Node;
 
-
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub enum NodeType {
     Empty,
     LedgerNode(usize),
     StorageNode(usize),
     EncryptedNode(usize),
 
+}
+
+impl Default for NodeType {
+    fn default() -> Self {
+        Self::Empty
+    }
 }
 
 impl NodeType {

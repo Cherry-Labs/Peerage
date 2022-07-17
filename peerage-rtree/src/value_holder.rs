@@ -1,12 +1,15 @@
 use std::marker::PhantomData;
 
 use peerage_holder::holder::Holder;
-use peerage_utils::traits::{Node, Key};
+use peerage_utils::traits::{Key, Ledger, Node};
 use peerage_coll::collection::PeerageCollection;
-use crate::node::RTreeNode;
+use crate::{node::RTreeNode, node_type::NodeType};
+use peerage_keys::main_keys::Key as KeyStruct;
+use peerage_ledger::ledger::Ledger as LedgerStruct;
+use peerage_node::node_item::Node as NodeStruct;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct KeyValueItem<'a, K: Key, V: Copy + Clone> {
     pub key: K,
     pub value: V,
@@ -20,7 +23,7 @@ impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, &'a V> {
 
 
     pub fn compare_key(&self, k: K) -> bool {
-        self.key.is_equal_to(k)
+        self.key == k
     }
 
    
@@ -31,26 +34,50 @@ impl<'a, K: Key, V: Copy + Clone> KeyValueItem<'a, K, &'a V> {
     pub fn get_sub_key(&self) -> K {
         self.key.clone()
     }
+}
+
+pub type StructNode<'a> = RTreeNode<'a, KeyStruct, NodeStruct, LedgerStruct>;
+
+
+type KeyNodeItem<'a> = KeyValueItem<'a, KeyStruct, &'a StructNode<'a>>;
+
+pub type SubItems<'a> = PeerageCollection<KeyNodeItem<'a>>;
+pub type Leaf<'a> = PeerageCollection<KeyNodeItem<'a>>;
+pub type Branch<'a> = PeerageCollection<Leaf<'a>>;
+
+
+#[derive(Clone, Copy, Default)]
+pub struct NodeColl<'a> {
+    sub_items: Leaf<'a>,
+    previous_leaf: Option<&'a Leaf<'a>>,
+    next_leaf: Option<&'a Leaf<'a>>,
+    parent_branch: Option<Branch<'a>>,
+    child_branch: Option<Branch<'a>>,
+    len: usize,
 
 }
 
-type KeyNodeItem<'a, 
-            K, 
-            T,
-            L,
-            > = KeyValueItem<
-                'a,
-                K,
-                &'a RTreeNode<'a, K, T, L>
-            >;
+impl<'a> NodeColl<'a> {
+    pub fn new_empty() -> Self {
+        let sub_items = PeerageCollection::<KeyNodeItem<'a>>::default();
+        let len = 0usize;
+        let previous_leaf =  None;
+        let next_leaf = None;
+        let parent_branch = None;
+        let child_branch = None;
 
+        Self { 
+            sub_items, 
+            previous_leaf, 
+            next_leaf,
+            parent_branch,
+            child_branch, 
+            len, 
 
+        }
 
-pub type NodeColl<'a, 
-                    K, 
-                    T,
-                    L,
-                > = PeerageCollection<
-                    KeyNodeItem<'a, K, T, L>                
-            >;
+    }
 
+  
+     
+}

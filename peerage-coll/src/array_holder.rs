@@ -1,9 +1,11 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, default};
 use peerage_utils::traits::Node;
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem};
+use peerage_macros::make_vec;
 
 #[derive(Clone, Copy)]
-pub enum ArrayHolder<T: Copy + Clone + Node> {
+pub enum ArrayHolder<T:Clone + Copy + Default> {
+    Empty,
     Init([T; 0]),
     I0([T; 1024]),
     I1([T; 2048]),
@@ -23,8 +25,14 @@ pub enum ArrayHolder<T: Copy + Clone + Node> {
     I15([T; 17408]),
 }
 
+impl<T:Clone + Copy + Default> Default for ArrayHolder<T> {
+    fn default() -> Self {
+        Self::Empty
+    }
+} 
 
-impl<T: Copy + Clone + Node> ArrayHolder<T> {
+
+impl<T:Clone + Copy + Default> ArrayHolder<T> {
     pub fn new(t: &[T]) -> Self {
         match t.len() {
             0 => {
@@ -154,6 +162,7 @@ impl<T: Copy + Clone + Node> ArrayHolder<T> {
             ArrayHolder::I14(i14) => i14.as_slice(),
             ArrayHolder::I15(i15) => i15.as_slice(),
             ArrayHolder::Init(init) => init.as_slice(),
+            ArrayHolder::Empty => panic!("Is empty"),
         }
     }
 
@@ -244,6 +253,7 @@ impl<T: Copy + Clone + Node> ArrayHolder<T> {
                 
                 i_slice 
             },
+            ArrayHolder::Empty => panic!("Is empty"),
         }
     }
 
@@ -381,95 +391,11 @@ impl<T: Copy + Clone + Node> ArrayHolder<T> {
 
         &mut unwrapped[index]
     }
-
-    pub fn add_together(&self, other: Self) -> Self {
-        let self_unwrap = self.unwrap();
-        let other_unwrap = other.unwrap();
-
-        assert_eq!(self_unwrap.len(), other_unwrap.len());
-
-        let mut v = vec![T::new(); self_unwrap.len()];
-
-        for i in 0..self_unwrap.len() {
-            v[i] = self_unwrap[i].add_to(other_unwrap[i]);
-        }
-
-        let t = v.as_slice();
-
-        Self::new(t)
-    }
-
-    pub fn multiply_together(&self, other: Self) -> Self {
-        let self_unwrap = self.unwrap();
-        let other_unwrap = other.unwrap();
-
-        assert_eq!(self_unwrap.len(), other_unwrap.len());
-
-        let mut v = vec![T::new(); self_unwrap.len()];
-
-        for i in 0..self_unwrap.len() {
-            v[i] = self_unwrap[i].mult_to(other_unwrap[i]);
-        }
-
-        let t = v.as_slice();
-
-        Self::new(t)
-    }
-
-    pub fn subtract_together(&self, other: Self) -> Self {
-        let self_unwrap = self.unwrap();
-        let other_unwrap = other.unwrap();
-
-        assert_eq!(self_unwrap.len(), other_unwrap.len());
-
-        let mut v = vec![T::new(); self_unwrap.len()];
-
-        for i in 0..self_unwrap.len() {
-            v[i] = self_unwrap[i].sub_to(other_unwrap[i]);
-        }
-
-        let t = v.as_slice();
-
-        Self::new(t)
-    }
-
-    pub fn div_together(&self, other: Self) -> Self {
-        let self_unwrap = self.unwrap();
-        let other_unwrap = other.unwrap();
-
-        assert_eq!(self_unwrap.len(), other_unwrap.len());
-
-        let mut v = vec![T::new(); self_unwrap.len()];
-
-        for i in 0..self_unwrap.len() {
-            v[i] = self_unwrap[i].div_to(other_unwrap[i]);
-        }
-
-        let t = v.as_slice();
-
-        Self::new(t)
-    }
-
-    pub fn rem_together(&self, other: Self) -> Self {
-        let self_unwrap = self.unwrap();
-        let other_unwrap = other.unwrap();
-
-        assert_eq!(self_unwrap.len(), other_unwrap.len());
-
-        let mut v = vec![T::new(); self_unwrap.len()];
-
-        for i in 0..self_unwrap.len() {
-            v[i] = self_unwrap[i].rem_to(other_unwrap[i]);
-        }
-
-        let t = v.as_slice();
-
-        Self::new(t)
-    }
 }
 
 
-impl<T: Clone + Copy + Node> Index<usize> for ArrayHolder<T> {
+
+impl<T: Clone + Copy + Default> std::ops::Index<usize> for ArrayHolder<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -478,49 +404,8 @@ impl<T: Clone + Copy + Node> Index<usize> for ArrayHolder<T> {
 }
 
 
-impl<T: Clone + Copy + Node> IndexMut<usize> for ArrayHolder<T> {
+impl<T: Clone + Copy + Default> std::ops::IndexMut<usize> for ArrayHolder<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-       self.get_at_mut(index)
-    }
-}
-
-impl<T: Clone + Copy + Node> Add for ArrayHolder<T> {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        self.add_together(rhs)
-    }
-}
-
-impl<T: Clone + Copy + Node> Mul for ArrayHolder<T> {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        self.multiply_together(rhs)
-    }
-}
-
-impl<T: Clone + Copy + Node> Sub for ArrayHolder<T> {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        self.subtract_together(rhs)
-    }
-}
-
-
-impl<T: Clone + Copy + Node> Div for ArrayHolder<T> {
-    type Output = Self;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        self.div_together(rhs)
-    }
-}
-
-impl<T: Clone + Copy + Node> Rem for ArrayHolder<T> {
-    type Output = Self;
-
-    fn rem(self, rhs: Self) -> Self::Output {
-        self.rem_together(rhs)
+        self.get_at_mut(index)
     }
 }

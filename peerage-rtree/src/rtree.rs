@@ -1,20 +1,19 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use peerage_utils::traits::{Key, Ledger, NodeGlobal};
+use peerage_utils::traits::{Key, Ledger, Node};
 
 use crate::node::RTreeNode;
 use crate::node_type::{KeySetRes, KeyInsertRes};
-use crate::tree_traverser::*;
 
 #[derive(Clone, Copy)]
-pub struct RTree<'a, K: Key, T: NodeGlobal, L: Ledger> {
+pub struct RTree<'a, K: Key, T: Node, L: Ledger> {
     ledger_root: RTreeNode<'a, K, T, L>,
     storage_root: Option<RTreeNode<'a, K, T, L>>,
     crypto_root: Option<RTreeNode<'a, K, T, L>>,
 }
 
-impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTree<'a, K, T, L> {
+impl<'a, K: Key, T: Node, L: Ledger> RTree<'a, K, T, L> {
     pub fn new_empty() -> Self {
         Self {
             ledger_root: RTreeNode::new_empty(),
@@ -35,12 +34,6 @@ impl<'a, K: Key, T: NodeGlobal, L: Ledger> RTree<'a, K, T, L> {
         self.crypto_root = Some(crypto_root);
     }
 
-    pub fn insert_node_at_ledger_root(&self, key: K, value: &'a RTreeNode<'a, K, T, L>) -> KeyInsertRes {
-        insert_item_traversal(&self.ledger_root, key, value)
-    }
-
-    pub fn replace_item_at_ledger_root(&'a mut self, key: K, rep_with: RTreeNode<'a, K, T, L>) -> KeySetRes {
-        replace_item_traversal(&mut self.ledger_root, key, rep_with)
-    }
+   
 
 }

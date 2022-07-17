@@ -1,6 +1,6 @@
 
 
-pub struct Ledger;
+pub mod ledger;
 
 #[cfg(test)]
 mod tests {
