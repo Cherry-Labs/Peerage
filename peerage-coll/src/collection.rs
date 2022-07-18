@@ -281,6 +281,32 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
 
             },
         }
+
+        pub fn all_occupied(&self) -> bool {
+            let def = T::default();
+
+            for i in 0..self.len() {
+                if self[i] == def {
+                    return false;
+                }
+            
+            }
+
+            true
+        }
     }
     
 }
+
+
+impl<T: Clone + 
+        Copy + 
+        Default + 
+        Default
+    > std::ops::Index<usize> for PeerageCollection<T> {
+        type Output = T;
+
+        fn index(&self, index: usize) -> &Self::Output {
+            self.get_at(index)
+        }
+    }

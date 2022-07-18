@@ -3,7 +3,7 @@ use peerage_utils::bin_utils::*;
 use crate::rounder::Rounder;
 use crate::hash_bin::HashBin;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct PeerageHash {
     byte_chunk: [u8; 1024],
     hash_bin: HashBin,
