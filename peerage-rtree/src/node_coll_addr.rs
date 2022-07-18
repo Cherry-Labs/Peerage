@@ -42,4 +42,27 @@ impl NodeCollAddr {
     pub fn new_branch(u: usize) -> Self {
         Self::Branch(u)
     }
+
+    pub fn unwrap(&self) -> usize {
+        match self {
+            NodeCollAddr::Empty => 0,
+            NodeCollAddr::Branch(u) => *u,
+            NodeCollAddr::Leaf(u) => *usize,
+        }
+    }
+
+    pub fn mutate(&mut self, u: usize) {
+        match self {
+            NodeCollAddr::Empty => *self = Self::Empty,
+            NodeCollAddr::Branch(_) => *self = Self::Branch(u),
+            NodeCollAddr::Leaf(_) => *self = Self::Leaf(u),
+        }
+    }
+}
+
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Hash)]
+pub struct PairAddress {
+    branch: NodeCollAddr,
+    leaf: NodeCollAddr,
 }

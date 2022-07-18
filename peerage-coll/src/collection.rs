@@ -1,5 +1,5 @@
 use crate::array_holder::ArrayHolder;
-use std::ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem};
+use std::{ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem}, iter};
 use crate::res::*;
 use peerage_macros::make_arr;
 
@@ -153,6 +153,133 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
             self.default_and_replace(buffer, self.filler_buffer);
             self.current_buffer = ArrayHolder::I0([T::default(); 1024]);
             self.push(item);
+        }
+    }
+
+    pub fn insert_all_into(&self, other: &mut Self) {
+        let iter_self = self.into_iter();
+
+        for i in 0..iter_self.clone().count() {
+            let item = iter_self.next();
+
+            if item.is_none() {
+                continue;
+            }
+
+            other.set_at(i, item);
+        }
+    }
+
+    pub fn take_size_to_next_level(&mut self) {
+        match self.array {
+            ArrayHolder::Empty => {
+                self_old = self.clone();
+                *self.array = ArrayHolder::I0([T::default(); 1024]);
+                self.insert_all_into(self_old);
+
+            },            
+            ArrayHolder::Init(_) => {
+                self_old = self.clone();
+                *self.array = ArrayHolder::I0([T::default(); 1024]);
+                self.insert_all_into(self_old);
+
+            },            
+            ArrayHolder::I0(_) => {
+                self_old = self.clone();
+                *self.array = ArrayHolder::I1([T::default(); 2048]);
+                self.insert_all_into(self_old);
+
+            },            
+            ArrayHolder::I1(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I2([T::default(); 3072]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I2(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I3([T::default(); 4096]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I3(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I4([T::default(); 5120]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I4(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I5([T::default(); 6144]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I5(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I6([T::default(); 7188]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I6(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I7([T::default(); 8192]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I7(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I8([T::default(); 10240]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I8(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I9([T::default(); 11264]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I9(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I10([T::default(); 12288]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I10(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I11([T::default(); 133128]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I11(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I12([T::default(); 14336]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I12(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I14([T::default(); 15360]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I13(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I14([T::default(); 16384]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I14(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I15([T::default(); 17408]);
+                self.insert_all_into(self_old);
+
+            },
+            ArrayHolder::I15(_) => {
+                self_old = self.clone();
+                self.array = ArrayHolder::I15([T::default(); 17408]);
+                self.insert_all_into(self_old);
+
+            },
         }
     }
     

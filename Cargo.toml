@@ -11,5 +11,6 @@ members = [
     "peerage-ledger",
     "peerage-coll",
     "peerage-keys",
-    "peerage-node"
+    "peerage-node",
+    "peerage-hashmap"
 ]
