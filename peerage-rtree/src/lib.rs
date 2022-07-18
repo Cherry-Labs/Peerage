@@ -8,6 +8,8 @@ pub mod rtree;
 pub mod node;
 pub mod value_holder;
 pub mod node_type;
+mod square_traversal;
+mod node_coll_addr;
 
 use paste::paste;
 

@@ -164,3 +164,4 @@ impl<'a> Default for &'a RTreeNode<'a, KeyStruct, NodeStruct, LedgerStruct> {
         &new_empty
     }
 }
+
