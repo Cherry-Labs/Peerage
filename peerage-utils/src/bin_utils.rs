@@ -425,18 +425,10 @@ impl Byte {
         }
     }
 
-    pub fn into_hex(&self) -> String {
+    pub fn get_bits(&self) -> Vec<Bit> {
         let bits = self.unravel();
 
-        let fh = &bits[0..4].to_vec();
-        let sh = &bits[4..8].to_vec();
-
-        let hmap_clone = HEX_MAP.clone();
-
-        let first_hex = hmap_clone.get(fh).unwrap();
-        let second_hex = hmap_clone.get(sh).unwrap();
-
-        format!("{}{}", first_hex, second_hex)
+        bits
     }
     
 }
@@ -851,14 +843,14 @@ impl ByteWord {
         Self::from_32_bits(res)
     }
 
-    pub fn into_hex(&self) -> String {
+    pub fn get_bits(&self) -> Vec<Bit> {
         let bytes = self.unravel_byte();
 
-        let mut ret = String::new();
+        let mut ret = Vec::<Bit>::new();
 
         for b in bytes {
-            let hex_str = b.into_hex();
-            ret = format!("{}{}", ret, hex_str);
+            let bits = b.get_bits();
+            ret.extend(bits.into_iter());
         }
 
         ret
@@ -1168,13 +1160,13 @@ impl QuadrupleWord {
         Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
     }
 
-    pub fn into_hex(&self) -> String {
-        let s1 = self.upper_word.into_hex();
-        let s2 = self.mid_upper_word.into_hex();
-        let s3 = self.mid_lower_word.into_hex();
-        let s4 = self.lower_word.into_hex();
+    pub fn get_bits(&self) -> Vec<Bit> {
+        let s1 = self.upper_word.get_bits();
+        let s2 = self.mid_upper_word.get_bits();
+        let s3 = self.mid_lower_word.get_bits();
+        let s4 = self.lower_word.get_bits();
 
-        format!("{}{}{}{}", s1, s2, s3, s4)
+        vec![s1, s2, s3, s4].into_iter().flatten().collect::<Vec<Bit>>()
     }
 
     pub fn into_bits(&self) -> Vec<Bit> {

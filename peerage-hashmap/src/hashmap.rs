@@ -16,9 +16,26 @@ impl<'a, K: Key, V: Clone + Copy + Default> PeerageMap<'a, K, V> {
 
         let entry = self.table.get_at(index);
 
-        match entry {
-            Some(_) => todo!(),
-            None => todo!(),
+        if entry.is_none() {
+            return ;
+        }
+
+        match entry.unwrap() {
+            Some(mut item) => {
+                item.mutate_value(value);
+
+                self.table[index] = Some(item);
+            
+            },
+            None => {
+                let new_item = Item::new(key, value);
+
+                self.table[index] = Some(new_item);
+
+                self.len += 1;
+            },
         }
     }
+
+    pub fn add_
 }

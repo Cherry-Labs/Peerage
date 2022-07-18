@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 
 pub mod hashmap;
 mod item;

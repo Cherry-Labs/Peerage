@@ -7,7 +7,7 @@ pub struct Item<'a, K: Key, V: Clone + Copy + Default> {
     next: Option<&'a Item<'a, K, V>>
 }
 
-impl<'a, K: Key, V: Clone + Copy + Default> Item<K, V> {
+impl<'a, K: Key, V: Clone + Copy + Default> Item<'a, K, V> {
     pub fn new(key: K, value: V) -> Self {
         Self { key, value, next: None }
     }
@@ -22,5 +22,14 @@ impl<'a, K: Key, V: Clone + Copy + Default> Item<K, V> {
 
     pub fn mutate_next(&mut self, next: &'a Item<K, V> ) {
         self.next =  Some(next)
-    }   
+    }
+
+    pub fn mutate_value(&mut self, value: V) {
+        self.value = value;
+    }
+    
 }
+
+pub type OptItem<'a, K, V> = Option<Item<'a, K, V>>; 
+
+

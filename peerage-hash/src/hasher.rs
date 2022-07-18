@@ -15,7 +15,7 @@ pub struct PeerageHash {
     final_output: QuadrupleWord,
     output_bit_enum: PeerageCollection<Bit>,
     output_bit_digit: PeerageCollection<u8>,
-    output_hex: HexB64Pair,
+    output_hex: HexBase64Pair,
 }
 
 impl PeerageHash {
@@ -26,7 +26,7 @@ impl PeerageHash {
 
         let output_bit_enum = PeerageCollection::from_vector(vec![Bit::Zero; 128]);
         let output_bit_digit = PeerageCollection::from_vector(vec![0u8; 128]);
-        let output_hex = "";
+        let output_hex = HexBase64Pair::new_empty();
 
 
         Self { 
@@ -68,9 +68,9 @@ impl PeerageHash {
     fn set_outputs(&mut self) {
         self.output_bit_digit = PeerageCollection::from_vector(self.final_output.into_num_bits());
         self.output_bit_enum = PeerageCollection::from_vector(self.final_output.into_bits());
-        let hex_string = self.final_output.into_hex().to_owned()[..];
+        let v = self.final_output.get_bits();
         
-        self.output_hex = HexBase64Pair::from_string(hex_string);
+        self.output_hex = HexBase64Pair::from_bit_vec(v);
     }
 
     pub fn operate_rounds(&mut self) {
@@ -87,7 +87,7 @@ impl PeerageHash {
         self.output_bit_enum.clone()
    }
 
-    pub fn get_hex_hash_output(&self) -> &'static str {
+    pub fn get_hex_hash_output(&self) -> HexBase64Pair {
         self.output_hex
     }
 

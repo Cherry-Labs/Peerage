@@ -45,6 +45,23 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
 
     }
 
+    pub fn new_i0_from_item(item: T) -> Self {
+        let array = ArrayHolder::I0([item; 1024]);
+        let current_buffer = ArrayHolder::I0([T::default(); 1024]);
+        let filler_buffer = 0usize;
+        let indexer = -1isize;
+        let curr_size = 0usize;
+
+        Self { 
+                array,
+                current_buffer, 
+                filler_buffer,
+                indexer, 
+                curr_size
+            }
+
+    }
+
     pub fn len(&self) -> usize {
         self.filler_buffer.clone()
     }
@@ -171,113 +188,113 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
         }
     }
 
-    pub fn take_size_to_next_level(&mut self) {
+    pub fn take_size_to_next_level(&mut self, t: T) {
         match self.array {
             ArrayHolder::Empty => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I0([T::default(); 1024]);
+                self.array = ArrayHolder::I0([t; 1024]);
                 self.insert_all_into(self_old);
 
             },            
             ArrayHolder::Init(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I0([T::default(); 1024]);
+                self.array = ArrayHolder::I0([t; 1024]);
                 self.insert_all_into(self_old);
 
             },            
             ArrayHolder::I0(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I1([T::default(); 2048]);
+                self.array = ArrayHolder::I1([t; 2048]);
                 self.insert_all_into(self_old);
 
             },            
             ArrayHolder::I1(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I2([T::default(); 3072]);
+                self.array = ArrayHolder::I2([t; 3072]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I2(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I3([T::default(); 4096]);
+                self.array = ArrayHolder::I3([t; 4096]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I3(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I4([T::default(); 5120]);
+                self.array = ArrayHolder::I4([t; 5120]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I4(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I5([T::default(); 6144]);
+                self.array = ArrayHolder::I5([t; 6144]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I5(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I6([T::default(); 7168]);
+                self.array = ArrayHolder::I6([t; 7168]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I6(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I7([T::default(); 8192]);
+                self.array = ArrayHolder::I7([t; 8192]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I7(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I8([T::default(); 10240]);
+                self.array = ArrayHolder::I8([t; 10240]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I8(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I9([T::default(); 11264]);
+                self.array = ArrayHolder::I9([t; 11264]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I9(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I10([T::default(); 12288]);
+                self.array = ArrayHolder::I10([t; 12288]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I10(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I11([T::default(); 133128]);
+                self.array = ArrayHolder::I11([t; 133128]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I11(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I12([T::default(); 14336]);
+                self.array = ArrayHolder::I12([t; 14336]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I12(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I13([T::default(); 15360]);
+                self.array = ArrayHolder::I13([t; 15360]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I13(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I14([T::default(); 16384]);
+                self.array = ArrayHolder::I14([t; 16384]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I14(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I15([T::default(); 17408]);
+                self.array = ArrayHolder::I15([t; 17408]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I15(_) => {
                 let mut self_old = self.clone();
-                self.array = ArrayHolder::I15([T::default(); 17408]);
+                self.array = ArrayHolder::I15([t; 17408]);
                 self.insert_all_into(self_old);
 
             },
@@ -285,9 +302,7 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
      
     }
 
-    pub fn all_occupied(&self) -> bool {
-        let def = T::default();
-
+    pub fn all_occupied(&self, def: T) -> bool {
         for i in 0..self.len() {
             match self[i] {
                 def => return false,

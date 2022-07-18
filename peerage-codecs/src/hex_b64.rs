@@ -1,10 +1,20 @@
 
 
 #[derive(Clone, Copy, Default)]
-pub fn HexBase64Pair;
+pub struct HexBase64Pair;
+use peerage_utils::bin_utils::Bit;
 
 impl HexBase64Pair {
-    pub fn from_string(s: String) -> Self {
+    pub fn from_string(_: String) -> Self {
         todo!()
     }
+
+    pub fn from_bit_vec(_: Vec<Bit>) -> Self {
+        todo!()
+    }
+
+    pub fn new_empty() -> Self {
+        Self
+    }
+
 }
