@@ -3,17 +3,22 @@ use crate::item::Item;
 use peerage_utils::traits::Key;
 
 #[derive(Clone, Copy)]
-pub struct PeerageMap<K: Key, V: Clone + Copy + Default> {
+pub struct PeerageMap<'a, K: Key, V: Clone + Copy + Default> {
     len: usize,
     loader: f32, 
-    table: PeerageCollection<Item<K, V>>,
+    table: PeerageCollection<Option<Item<'a, K, V>>>,
 }
 
 
-impl<K: Key, V: Clone + Copy + Default> PeerageMap<K, V> {
-    pub fn put(key: K, value: V) {
+impl<'a, K: Key, V: Clone + Copy + Default> PeerageMap<'a, K, V> {
+    pub fn put(&mut self, key: K, value: V) {
         let index = key.get_key_index(self.len);
 
-        let entry = self.tabl
+        let entry = self.table.get_at(index);
+
+        match entry {
+            Some(_) => todo!(),
+            None => todo!(),
+        }
     }
 }

@@ -1,7 +1,11 @@
+use std::borrow::Borrow;
+
 use crate::convert_utils::*;
 use peerage_utils::bin_utils::*;
 use crate::rounder::Rounder;
 use crate::hash_bin::HashBin;
+use peerage_coll::collection::PeerageCollection;
+use peerage_codecs::hex_b64::HexBase64Pair;
 
 #[derive(Clone, Copy)]
 pub struct PeerageHash {
@@ -9,9 +13,9 @@ pub struct PeerageHash {
     hash_bin: HashBin,
     output_octuplet: [QuadrupleWord; 8],
     final_output: QuadrupleWord,
-    output_bit_enum: Vec<Bit>,
-    output_bit_digit: Vec<u8>,
-    output_hex: String
+    output_bit_enum: PeerageCollection<Bit>,
+    output_bit_digit: PeerageCollection<u8>,
+    output_hex: HexB64Pair,
 }
 
 impl PeerageHash {
@@ -20,9 +24,9 @@ impl PeerageHash {
         let output_octuplet = [QuadrupleWord::new_zeros(); 8];
         let final_output = QuadrupleWord::new_zeros();
 
-        let output_bit_enum = vec![Bit::Zero; 128];
-        let output_bit_digit = vec![0u8; 128];
-        let output_hex = String::new();
+        let output_bit_enum = PeerageCollection::from_vector(vec![Bit::Zero; 128]);
+        let output_bit_digit = PeerageCollection::from_vector(vec![0u8; 128]);
+        let output_hex = "";
 
 
         Self { 
@@ -62,9 +66,11 @@ impl PeerageHash {
     }
 
     fn set_outputs(&mut self) {
-        self.output_bit_digit = self.final_output.into_num_bits();
-        self.output_bit_enum = self.final_output.into_bits();
-        self.output_hex = self.final_output.into_hex();
+        self.output_bit_digit = PeerageCollection::from_vector(self.final_output.into_num_bits());
+        self.output_bit_enum = PeerageCollection::from_vector(self.final_output.into_bits());
+        let hex_string = self.final_output.into_hex().to_owned()[..];
+        
+        self.output_hex = HexBase64Pair::from_string(hex_string);
     }
 
     pub fn operate_rounds(&mut self) {
@@ -73,16 +79,23 @@ impl PeerageHash {
         self.set_outputs();
     }
 
-   pub fn get_bit_u8_output(&self) -> Vec<u8> {
+   pub fn get_bit_u8_output(&self) -> PeerageCollection<u8> {
         self.output_bit_digit.clone()
    }
 
-   pub fn get_bit_enum_output(&self) -> Vec<Bit> {
+   pub fn get_bit_enum_output(&self) -> PeerageCollection<Bit> {
         self.output_bit_enum.clone()
    }
 
-    pub fn get_hex_hash_output(&self) -> String {
-        self.output_hex.clone()
+    pub fn get_hex_hash_output(&self) -> &'static str {
+        self.output_hex
     }
 
+}
+
+
+impl Default for PeerageHash {
+    fn default() -> Self {
+        Self::new([0u8; 1024])
+    }
 }

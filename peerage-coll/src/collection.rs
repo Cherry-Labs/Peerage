@@ -304,8 +304,7 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
 
 impl<T: Clone + 
         Copy + 
-        Default + 
-        Default
+        Default 
     > std::ops::Index<usize> for PeerageCollection<T> {
         type Output = T;
 
@@ -316,3 +315,16 @@ impl<T: Clone +
             }
         }
     }
+
+
+impl<T: Clone +
+            Copy +
+            Default
+        > std::ops::IndexMut<usize> for PeerageCollection<T> {
+            fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+                match index > self.array.unwrap().len() {
+                    true => &mut self.current_buffer[index % 1024],
+                    false => &mut self.array[index],
+                }
+            }
+        }

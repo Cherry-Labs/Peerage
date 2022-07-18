@@ -4,7 +4,7 @@ use peerage_utils::traits::Key;
 pub struct Item<'a, K: Key, V: Clone + Copy + Default> {
     key: K,
     value: V,
-    next: Option<&'a Item<K, V>>
+    next: Option<&'a Item<'a, K, V>>
 }
 
 impl<'a, K: Key, V: Clone + Copy + Default> Item<K, V> {

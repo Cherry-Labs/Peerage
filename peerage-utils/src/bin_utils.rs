@@ -99,6 +99,12 @@ pub enum Bit {
     Zero,
 }
 
+impl Default for Bit {
+    fn default() -> Self {
+        Self::Zero
+    }
+}
+
 impl Bit {
     pub fn from_u8(u: u8) -> Self {
         match u {
