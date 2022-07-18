@@ -1,7 +1,6 @@
 use std::{borrow::Borrow, default};
 use peerage_utils::traits::Node;
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem};
-use peerage_macros::make_vec;
 
 #[derive(Clone, Copy)]
 pub enum ArrayHolder<T:Clone + Copy + Default> {

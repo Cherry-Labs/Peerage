@@ -1,7 +1,6 @@
 use crate::array_holder::ArrayHolder;
 use std::{ops::{Index, IndexMut, Add, Sub, Mul, Div, Rem}, iter};
 use crate::res::*;
-use peerage_macros::make_arr;
 
 #[derive(Clone, Copy, Default)]
 pub struct PeerageCollection<T: Clone + Copy + Default + Default> {
@@ -156,144 +155,148 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
         }
     }
 
-    pub fn insert_all_into(&self, other: &mut Self) {
-        let iter_self = self.into_iter();
+    pub fn insert_all_into(&mut self, other: Self) {
+        let mut iter_other = other.into_iter();
 
-        for i in 0..iter_self.clone().count() {
-            let item = iter_self.next();
+        for i in 0..iter_other.clone().count() {
+            let item = iter_other.next();
 
             if item.is_none() {
-                continue;
+                self.set_at(i, T::default());
             }
 
-            other.set_at(i, item);
+            let item_unwrapped = item.unwrap();
+
+            self.set_at(i, item_unwrapped);
         }
     }
 
     pub fn take_size_to_next_level(&mut self) {
         match self.array {
             ArrayHolder::Empty => {
-                self_old = self.clone();
-                *self.array = ArrayHolder::I0([T::default(); 1024]);
+                let mut self_old = self.clone();
+                self.array = ArrayHolder::I0([T::default(); 1024]);
                 self.insert_all_into(self_old);
 
             },            
             ArrayHolder::Init(_) => {
-                self_old = self.clone();
-                *self.array = ArrayHolder::I0([T::default(); 1024]);
+                let mut self_old = self.clone();
+                self.array = ArrayHolder::I0([T::default(); 1024]);
                 self.insert_all_into(self_old);
 
             },            
             ArrayHolder::I0(_) => {
-                self_old = self.clone();
-                *self.array = ArrayHolder::I1([T::default(); 2048]);
+                let mut self_old = self.clone();
+                self.array = ArrayHolder::I1([T::default(); 2048]);
                 self.insert_all_into(self_old);
 
             },            
             ArrayHolder::I1(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I2([T::default(); 3072]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I2(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I3([T::default(); 4096]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I3(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I4([T::default(); 5120]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I4(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I5([T::default(); 6144]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I5(_) => {
-                self_old = self.clone();
-                self.array = ArrayHolder::I6([T::default(); 7188]);
+                let mut self_old = self.clone();
+                self.array = ArrayHolder::I6([T::default(); 7168]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I6(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I7([T::default(); 8192]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I7(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I8([T::default(); 10240]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I8(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I9([T::default(); 11264]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I9(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I10([T::default(); 12288]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I10(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I11([T::default(); 133128]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I11(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I12([T::default(); 14336]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I12(_) => {
-                self_old = self.clone();
-                self.array = ArrayHolder::I14([T::default(); 15360]);
+                let mut self_old = self.clone();
+                self.array = ArrayHolder::I13([T::default(); 15360]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I13(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I14([T::default(); 16384]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I14(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I15([T::default(); 17408]);
                 self.insert_all_into(self_old);
 
             },
             ArrayHolder::I15(_) => {
-                self_old = self.clone();
+                let mut self_old = self.clone();
                 self.array = ArrayHolder::I15([T::default(); 17408]);
                 self.insert_all_into(self_old);
 
             },
         }
+     
+    }
 
-        pub fn all_occupied(&self) -> bool {
-            let def = T::default();
+    pub fn all_occupied(&self) -> bool {
+        let def = T::default();
 
-            for i in 0..self.len() {
-                if self[i] == def {
-                    return false;
-                }
-            
+        for i in 0..self.len() {
+            match self[i] {
+                def => return false,
+                _ => continue,
             }
-
-            true
+        
         }
+
+        true
     }
     
 }
@@ -307,6 +310,9 @@ impl<T: Clone +
         type Output = T;
 
         fn index(&self, index: usize) -> &Self::Output {
-            self.get_at(index)
+            match index > self.array.unwrap().len() {
+                true => &self.current_buffer[index % 1024],
+                false => &self.array[index],
+            }
         }
     }

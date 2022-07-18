@@ -6,7 +6,7 @@ pub trait Node: Copy + Clone + Default + Eq + PartialEq {}
 
 
 pub trait Key:  Copy + Clone + Default + Eq + PartialEq {
-    pub fn geT_key_index(&self) -> usize;
+    fn get_key_index(&self, size: usize) -> usize;
 }
 
 

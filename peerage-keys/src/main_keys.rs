@@ -14,4 +14,8 @@ impl Default for Key {
 }
 
 
-impl KeyTrait for Key {}
+impl KeyTrait for Key {
+    fn get_key_index(&self, size: usize) -> usize {
+        todo!()
+    }
+}
