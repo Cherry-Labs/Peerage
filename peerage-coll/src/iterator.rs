@@ -46,7 +46,7 @@ impl<T: Clone + Copy + Default> PeerageCollectionIterator<T> {
         self.coll.get_at(n)
     }
 
-    pub fn nth_item_ref_and_consume<'a>(self, n: usize) -> Holder<'a, T> {
+    pub fn nth_item_ref_and_consume<'a>(self, n: usize) -> Holder<T> {
         let t = self.coll.get_at(n);
         if t.is_none() {
             return Holder::Nil;
@@ -54,7 +54,7 @@ impl<T: Clone + Copy + Default> PeerageCollectionIterator<T> {
 
         let t_unwrapped = t.unwrap();
 
-        Holder::<'a, T>::new_selfer(t_unwrapped)
+        Holder::refer_from_item(t_unwrapped)
     }
 
 }

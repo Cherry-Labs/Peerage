@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 peerage-utils = { path = "../peerage-utils" }
 peerage-coll = { path = "../peerage-coll" }
+peerage-holder = { path = "../peerage-holder" }

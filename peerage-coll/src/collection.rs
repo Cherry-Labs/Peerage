@@ -172,130 +172,141 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
         }
     }
 
-    pub fn insert_all_into(&mut self, other: Self) {
-        let mut iter_other = other.into_iter();
-
-        for i in 0..iter_other.clone().count() {
-            let item = iter_other.next();
-
-            if item.is_none() {
-                self.set_at(i, T::default());
+    pub fn insert_all_into(
+        &mut self, 
+        old: Self,
+        old_indices: Vec<isize>, 
+        new_indices: Vec<isize>,
+    ) {
+        for (oldi, newi) in old_indices
+                                            .into_iter()
+                                           .zip(new_indices.into_iter())
+            
+        {
+            if oldi == -1 || newi == -1 {
+                continue;
             }
 
-            let item_unwrapped = item.unwrap();
+            let old_item = old[oldi as usize];
 
-            self.set_at(i, item_unwrapped);
+            self[newi as usize] = old_item;
+
         }
     }
 
-    pub fn take_size_to_next_level(&mut self, t: T) {
+    pub fn take_size_to_next_level(
+        &mut self, 
+        t: T, 
+        old_indices: Vec<isize>, 
+        new_indices: Vec<isize>,
+    ) {
         match self.array {
             ArrayHolder::Empty => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I0([t; 1024]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },            
             ArrayHolder::Init(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I0([t; 1024]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },            
             ArrayHolder::I0(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I1([t; 2048]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },            
             ArrayHolder::I1(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I2([t; 3072]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I2(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I3([t; 4096]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I3(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I4([t; 5120]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I4(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I5([t; 6144]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I5(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I6([t; 7168]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I6(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I7([t; 8192]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I7(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I8([t; 10240]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I8(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I9([t; 11264]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I9(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I10([t; 12288]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I10(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I11([t; 133128]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I11(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I12([t; 14336]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I12(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I13([t; 15360]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I13(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I14([t; 16384]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I14(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I15([t; 17408]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
             ArrayHolder::I15(_) => {
                 let mut self_old = self.clone();
                 self.array = ArrayHolder::I15([t; 17408]);
-                self.insert_all_into(self_old);
+                self.insert_all_into(self_old, old_indices, new_indices);
 
             },
         }
