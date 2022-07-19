@@ -124,3 +124,9 @@ impl<'a, K: Key, V: Clone + Copy + Default> std::ops::Index<K> for PeerageMap<'a
         &self.curr_ret[0]
     }
 }
+
+impl<'a, K: Key, V: Clone + Copy + Default> std::ops::IndexMut<K> for PeerageMap<'a, K, V> {
+    fn index_mut(&mut self, index: K) -> &mut Self::Output {
+        &mut self.curr_ret[0]
+    }
+}
