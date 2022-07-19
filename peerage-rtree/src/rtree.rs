@@ -2,18 +2,17 @@ use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
 use peerage_utils::traits::{Key, Ledger, Node};
-use crate::value_holder::StructNode;
 use crate::node::RTreeNode;
-use crate::node_type::{KeySetRes, KeyInsertRes};
 
 #[derive(Clone, Copy)]
-pub struct RTree<'a> {
-    ledger_root: StructNode<'a>,
-    storage_root: Option<StructNode<'a>>,
-    crypto_root: Option<StructNode<'a>>,
+pub struct RTree<'a, K: Key, T: Node, L: Ledger> {
+    ledger_root: RTreeNode<'a, K, T, L>,
+    storage_root: Option<RTreeNode<'a, K, T, L>>,
+    crypto_root: Option<RTreeNode<'a, K, T, L>>,
+     cv 
 }
 
-impl<'a> RTree<'a> {
+impl<'a, K: Key, T: Node, L: Ledger> RTree<'a, K, T, L> {
     pub fn new_empty() -> Self {
         Self {
             ledger_root: RTreeNode::new_empty(),
@@ -34,6 +33,6 @@ impl<'a> RTree<'a> {
         self.crypto_root = Some(crypto_root);
     }
 
-   
+    pub fn insert_at_
 
 }

@@ -3,23 +3,20 @@ use std::{marker::PhantomData, borrow::Borrow};
 use peerage_coll::collection::PeerageCollection;
 use peerage_holder::holder::Holder;
 use peerage_utils::traits::*;
-use crate::{value_holder::{NodeColl, KeyValueItem}, node_type::KeyInsertRes};
-use peerage_macros::{block_out_return_holder, index_forward};
-use crate::node_type::{NodeType, KeySetRes, SetResult, InsertResult};
-use peerage_keys::main_keys::Key as KeyStruct;
-use peerage_ledger::ledger::Ledger as LedgerStruct;
-use peerage_node::node_item::Node as NodeStruct;
-
+use crate::node_type::{NodeType, Leaf};
+use peerage_hashmap::hashmap::PeerageMap;
 
 #[derive(Clone, Default, Copy)]
 pub struct RTreeNode<'a, K: Key, T: Node, L: Ledger> {
     node_type: NodeType,
     node_key: K,
     node_item: Option<T>,
-    node_parent: Option<&'a Self>,
+    node_parent: Option<Holder<Self>>,
     ledger_data: Option<L>,
-    kvs: Option<NodeColl<'a>>,
+    kvs: Option<PeerageMap<'a, K, Holder<Self>>>,
 }
+
+
 
 
 impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
@@ -82,15 +79,12 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         }
     }
 
-    pub fn rep_kv_mem(&mut self, rep: Option<NodeColl<'a>>) {
-        std::mem::replace(&mut self.kvs, rep);
-    }
 
     pub fn get_self_key(&self) -> K {
         self.node_key.clone()
     }
 
-    pub fn set_parent(&mut self, parent: &'a Self) {
+    pub fn set_parent(&mut self, parent: Holder<Self>) {
         self.node_parent = Some(parent)
     }
 
@@ -98,7 +92,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
         self.node_item = Some(item)
     }
 
-    pub fn set_kvs(&mut self, kvs: NodeColl<'a>) {
+    pub fn set_kvs(&mut self, kvs: PeerageMap<'a, K, Holder<Self>>) {
         match self.node_type {
             NodeType::LedgerNode(u) => {
                 self.kvs = Some(kvs);
@@ -121,7 +115,7 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
 
    
     
-    pub fn get_kvs(&self) -> Option<NodeColl<'a>> {
+    pub fn get_kvs(&self) -> Option<PeerageMap<'a, K, Holder<Self>>> {
         self.kvs.clone()
     }
 
@@ -146,22 +140,3 @@ impl<'a, K: Key, T: Node, L: Ledger> RTreeNode<'a, K, T, L> {
 
     
 }
-
-impl<'a> Default for &'a RTreeNode<'a, KeyStruct, NodeStruct, LedgerStruct> {
-    fn default() -> &'a RTreeNode<'a, KeyStruct, NodeStruct, LedgerStruct> {
-        static new_empty: RTreeNode::<'static, 
-                KeyStruct, 
-                NodeStruct, 
-                LedgerStruct> = RTreeNode {
-                    node_type: NodeType::Empty,
-                    node_key: KeyStruct::Init,
-                    node_item: None,
-                    node_parent: None,
-                    ledger_data: None,
-                    kvs: None,
-                };
-
-        &new_empty
-    }
-}
-

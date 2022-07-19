@@ -255,7 +255,13 @@ pub enum Endian {
     Big,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+impl Default for Endian {
+    fn default() -> Self {
+        Self::Little
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Byte {
     msb: Bit,
     msb1: Bit,
@@ -458,7 +464,7 @@ impl std::ops::BitXor for Byte {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct ByteWord {
     upper_byte: Byte,
     up_mid_byte: Byte,
@@ -946,7 +952,7 @@ impl std::ops::Rem for ByteWord {
 
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct QuadrupleWord {
     upper_word: ByteWord,
     mid_upper_word: ByteWord,
@@ -1005,6 +1011,25 @@ impl QuadrupleWord {
         let bits_vec = Bit::vec_from_vec(v);
 
         Self::from_128_bits(bits_vec)
+    }
+
+    pub fn from_usize(u: usize) -> Self {
+        let usize_128_str = format!("{u:0128b}");
+
+        let bits = usize_128_str
+                                .chars()
+                                .map(|x| {
+                                    let x_str = format!("{x}");
+
+                                    let x_u8 = x_str.parse::<u8>().unwrap();
+
+                                    let bit: Bit = x_u8.into();
+
+                                    bit
+                                }).collect::<Vec<Bit>>();
+    
+        Self::from_128_bits(bits)
+
     }
 
     pub fn from_128_bits(v: Vec<Bit>) -> Self {
@@ -1201,6 +1226,22 @@ impl QuadrupleWord {
             self[i] = self[u]
         }
     } 
+
+    pub fn into_u128(&self) -> u128 {
+        let self_unwrapped = self.into_bits();
+
+        let mut bits_str = String::new();
+
+        self_unwrapped
+            .into_iter()
+            .for_each(|x| {
+                bits_str = format!("{}{}", bits_str, x.into_u8())
+            });
+        
+        let num = u128::from_str_radix(&bits_str, 2).unwrap();
+
+        num
+    }
 }
 
 
