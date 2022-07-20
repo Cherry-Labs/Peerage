@@ -1032,6 +1032,25 @@ impl QuadrupleWord {
 
     }
 
+    pub fn from_u128(u: u128) -> Self {
+        let u_bits = format!("{u:0128b}");
+        
+        let bits = u_bits
+                                .chars()
+                                .map(|x| {
+                                    let x_str = format!("{x}");
+
+                                    let x_u8 = x_str.parse::<u8>().unwrap();
+
+                                    let bit: Bit = x_u8.into();
+
+                                    bit
+                                }).collect::<Vec<Bit>>();
+    
+        Self::from_128_bits(bits)
+
+    }
+
     pub fn from_128_bits(v: Vec<Bit>) -> Self {
 
         let upper_bits_ref = &v[0..32].to_vec();      

@@ -1,0 +1,10 @@
+[package]
+name = "peerage-protocol"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+peerage-coll = { path = "../peerage-coll" }
+peerage-utils = { path = "../peerage-utils" }

@@ -14,5 +14,7 @@ members = [
     "peerage-node",
     "peerage-hashmap",
     "peerage-codecs",
-    "peerage-rand"
+    "peerage-rand",
+    "peerage-protocol",
+    "peerage-assymenc"
 ]

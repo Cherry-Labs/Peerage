@@ -1,0 +1,13 @@
+[package]
+name = "peerage-assymenc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+peerage-utils = { path = "../peerage-utils" }
+peerage-rand = { path = "../peerage-rand" }
+lazy_static = "*"
+num-traits = "0.2.15"
+rand = "0.8.0"
