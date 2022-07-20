@@ -72,6 +72,21 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
         Self::from_vector(v)
     }
 
+    pub fn contains(&self, t: T) -> bool {
+        let mut self_iter = self.into_iter();
+
+        for _ in 0..self_iter.clone().count() {
+            let item = self_iter.next().unwrap();
+
+            match item {
+                t => return true,
+                _ => continue
+            }
+        }
+
+        false
+    }
+
     pub fn default_and_replace(
         &mut self, buffer: Vec<T>, size: usize) {
         

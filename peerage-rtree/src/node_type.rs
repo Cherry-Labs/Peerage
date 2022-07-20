@@ -3,6 +3,7 @@ use peerage_keys::main_keys::Key;
 use peerage_ledger::ledger::Ledger;
 use peerage_node::node_item::Node;
 use peerage_hashmap::hashmap::PeerageMap;
+use crate::shelf::ShelfKey;
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum NodeType {
@@ -101,4 +102,4 @@ pub type KeyInsertRes = std::result::Result<InsertResult, InsertResult>;
 
 
 
-pub type Leaf<'a, K, V> = PeerageMap<'a, K, V>;
+pub type RNodeType<'a> = RTreeNode<'a, ShelfKey, Node, Ledger>;

@@ -99,3 +99,11 @@ impl Default for PeerageHash {
         Self::new([0u8; 1024])
     }
 }
+
+impl Eq for PeerageHash { }
+
+impl PartialEq for PeerageHash {
+    fn eq(&self, other: &Self) -> bool {
+        self.final_output == other.final_output
+    }
+}

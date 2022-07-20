@@ -15,6 +15,7 @@ peerage-keys = { path = "../peerage-keys" }
 peerage-node = { path = "../peerage-node" }
 peerage-hashmap = { path = "../peerage-hashmap" }
 peerage-hash = { path = "../peerage-hash" }
+peerage-rand = { path = "../peerage-rand" }
 
 paste = "*"
 lazy_static = "*"

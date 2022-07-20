@@ -2,6 +2,7 @@ use peerage_coll::collection::PeerageCollection;
 use peerage_utils::bin_utils::QuadrupleWord;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[derive(Clone, Copy, Default)]
 pub struct MerseneTwisterRand {
     mt: PeerageCollection<QuadrupleWord>,
     index: usize,

@@ -952,7 +952,7 @@ impl std::ops::Rem for ByteWord {
 
 
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct QuadrupleWord {
     upper_word: ByteWord,
     mid_upper_word: ByteWord,

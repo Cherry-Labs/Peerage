@@ -3,7 +3,7 @@ use std::{marker::PhantomData, borrow::Borrow};
 use peerage_coll::collection::PeerageCollection;
 use peerage_holder::holder::Holder;
 use peerage_utils::traits::*;
-use crate::node_type::{NodeType, Leaf};
+use crate::node_type::NodeType;
 use peerage_hashmap::hashmap::PeerageMap;
 
 #[derive(Clone, Default, Copy)]
