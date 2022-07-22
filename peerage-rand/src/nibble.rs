@@ -109,4 +109,8 @@ impl RandomNibble {
         self.index = 0;
     }
 
+    pub fn rng_inner() -> Nibble {
+        Self::new().rng()
+    }
+
 }

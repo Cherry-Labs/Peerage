@@ -109,4 +109,8 @@ impl RandomByteWord {
         self.index = 0;
     }
 
+    pub fn rng_inner() -> ByteWord {
+        Self::new().rng()
+    }
+
 }

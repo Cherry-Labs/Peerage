@@ -109,4 +109,8 @@ impl RandomQuadrupleWord {
         self.index = 0;
     }
 
+    pub fn rng_inner() -> QuadrupleWord {
+        Self::new().rng()
+    }
+
 }
