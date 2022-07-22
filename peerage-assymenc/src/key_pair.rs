@@ -1,5 +1,5 @@
 use peerage_utils::bin_utils::QuadrupleWord;
-use peerage_rand::mersenne_twister::MerseneTwisterRand;
+use peerage_rand::quadrupleword::RandomQuadrupleWord;
 use peerage_hash::hasher::PeerageHash;
 use crate::prime_number_db::get_prime_num;
 use crate::math::{lcm, are_coprime, mod_inverse};

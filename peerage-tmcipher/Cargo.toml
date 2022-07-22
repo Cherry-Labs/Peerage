@@ -9,3 +9,4 @@ edition = "2021"
 lazy_static = "*"
 peerage-utils = { path = "../peerage-utils" }
 peerage-rand = { path = "../peerage-rand" }
+peerage-codecs = { path = "../peerage-codecs" }

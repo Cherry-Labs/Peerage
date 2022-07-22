@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use peerage_hashmap::hashmap::PeerageMap;
 use peerage_holder::holder::Holder;
-use peerage_rand::mersenne_twister::MerseneTwisterRand;
+use peerage_rand::quadrupleword::RandomQuadrupleWord;
 use peerage_coll::collection::PeerageCollection;
 use peerage_utils::bin_utils::QuadrupleWord;
 use peerage_utils::traits::Key;
@@ -52,7 +52,7 @@ impl Eq for ShelfKey {}
 #[derive(Clone, Copy, Default)]
 pub struct ShelfKeyGen {
     generated_keys: PeerageCollection<ShelfKey>,
-    rand_gen: MerseneTwisterRand,
+    rand_gen: RandomQuadrupleWord,
     last_key: ShelfKey,
     rand_nums: PeerageCollection<QuadrupleWord>,
 }
@@ -60,7 +60,7 @@ pub struct ShelfKeyGen {
 impl ShelfKeyGen {
     pub fn new() -> Self {
         let generated_keys = PeerageCollection::<ShelfKey>::default();
-        let rand_gen = MerseneTwisterRand::new();
+        let rand_gen = RandomQuadrupleWord::new();
         let last_key = ShelfKey::default();
         let rand_nums = PeerageCollection::<QuadrupleWord>::default();
 

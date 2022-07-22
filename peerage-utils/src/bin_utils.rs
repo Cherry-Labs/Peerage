@@ -342,7 +342,7 @@ impl Into<u8> for Bit {
 pub struct Nibble {
     bit_one: Bit,
     bit_two: Bit,
-    bit_tree: Bit,
+    bit_three: Bit,
     bit_four: Bit,
 }
 
@@ -351,8 +351,17 @@ impl Nibble {
         Self { 
             bit_one: v[0], 
             bit_two: v[1], 
-            bit_tree: v[2], 
+            bit_three: v[2], 
             bit_four: v[3] 
+        }
+    }
+
+    pub fn new_zeros() -> Self {
+        Self { 
+            bit_one: Bit::Zero, 
+            bit_two: Bit::Zero, 
+            bit_three: Bit::Zero, 
+            bit_four: Bit::Zero 
         }
     }
 
@@ -360,7 +369,7 @@ impl Nibble {
         Self { 
             bit_one: b.0, 
             bit_two: b.1, 
-            bit_tree: b.2, 
+            bit_three: b.2, 
             bit_four: b.3
         }
     }
@@ -380,7 +389,7 @@ impl Nibble {
     }
 
     pub fn unwrap_to_vec(&self) -> Vec<Bit> {
-        vec![self.bit_one, self.bit_two, self.bit_tree, self.bit_four]
+        vec![self.bit_one, self.bit_two, self.bit_three, self.bit_four]
     }
 
     pub fn to_decimal(&self) -> u8 {
@@ -399,51 +408,245 @@ impl Nibble {
         dec
     }
 
-    pub fn add_together(&self, other: Self) -> Self {
-        Self { 
-            bit_one: self.bit_one + other.bit_one, 
-            bit_two: self.bit_two + other.bit_two, 
-            bit_tree: self.bit_tree + other.bit_tree, 
-            bit_four: self.bit_four + other.bit_four
-        }
+    pub fn shift_left(&self, num: usize) -> Nibble {
+        let bits = self.unwrap_to_vec();
+        
+        let bits_truncated = &bits[num..].to_vec();
+
+        let rem = vec![Bit::Zero; num];
+
+        let mut trunc_clone = bits_truncated.clone();
+        
+        trunc_clone.extend(rem);
+
+        Self::from_vec(trunc_clone)
     }
 
-    pub fn sub_together(&self, other: Self) -> Self {
-        Self { 
-            bit_one: self.bit_one - other.bit_one, 
-            bit_two: self.bit_two - other.bit_two, 
-            bit_tree: self.bit_tree - other.bit_tree, 
-            bit_four: self.bit_four - other.bit_four
-        }
+    pub fn shift_right(&self, num: usize) -> Nibble {
+        let bits = self.unwrap_to_vec();
+
+        let prepend_bits = vec![Bit::Zero; 4 - num];
+
+        let mut bits_clone = bits.clone();
+        
+        bits_clone.splice(0..0, prepend_bits.into_iter());
+
+        let bits_splice = &bits_clone[0..4].to_vec();
+
+        let bits_cloned = bits_splice.clone();
+
+        Self::from_vec(bits_cloned)
     }
 
-    pub fn mul_together(&self, other: Self) -> Self {
-        Self { 
-            bit_one: self.bit_one * other.bit_one, 
-            bit_two: self.bit_two * other.bit_two, 
-            bit_tree: self.bit_tree * other.bit_tree, 
-            bit_four: self.bit_four * other.bit_four
+    pub fn subtract_together(&self, other: Self) -> Nibble {
+        let mut self_bits = self.unwrap_to_vec();
+        let mut other_bits = other.unwrap_to_vec();
+
+        let mut ai = 3;
+        let mut bi = 3;
+
+        let mut borrow_indices: Vec<usize> = vec![];
+
+        let mut res: Vec<Bit> = vec![];
+
+        loop {
+
+            let pair = (self_bits[ai], other_bits[bi]);
+
+            match pair {
+                (Bit::One, Bit::One) => res.push(Bit::Zero),
+                (Bit::One, Bit::Zero) => res.push(Bit::One),
+                (Bit::Zero, Bit::One) => {
+                    let mut found_index = 0usize;
+
+                    for i in (0..3 - ai).rev() {
+                        if self_bits[i] == Bit::One {
+                            found_index = i;
+                            break;
+                        }
+                    }
+
+                    let mut num_ones = 2;
+                    
+                    for i in found_index..ai {
+                        if self_bits[i] == Bit::One {
+                            self_bits[i] = Bit::Zero;
+                        } else if self_bits[i] == Bit::Zero {
+                            if num_ones > 0 {
+                                self_bits[i] = Bit::One;
+                                num_ones -= 1;
+                            }
+                        }
+                    }
+
+                    if num_ones != 0 {
+                        res.push(Bit::One);
+                    }
+                },
+                (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
+            }
+
+
+            ai -= 1;
+            bi -= 1;
+
+            if ai == 0 || bi == 0 {
+                break;;
+            }
+
         }
+
+        res.reverse();
+
+        res.splice(0..0, vec![Bit::Zero; 32 - res.len()]);
+
+        Self::from_vec(res)
+
     }
 
-    pub fn div_together(&self, other: Self) -> Self {
-        Self { 
-            bit_one: self.bit_one / other.bit_one, 
-            bit_two: self.bit_two / other.bit_two, 
-            bit_tree: self.bit_tree / other.bit_tree, 
-            bit_four: self.bit_four / other.bit_four
-        }
+    pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
+        let self_dec = self.to_decimal();
+        let other_dec = other.to_decimal();
+
+        self_dec >= other_dec
     }
 
-    pub fn rem_together(&self, other: Self) -> Self {
-        Self { 
-            bit_one: self.bit_one % other.bit_one, 
-            bit_two: self.bit_two % other.bit_two, 
-            bit_tree: self.bit_tree % other.bit_tree, 
-            bit_four: self.bit_four % other.bit_four
+    pub fn divide_together(&self, other: Self) -> (Nibble, Nibble) {
+        let mut q = Nibble::new_zeros();
+        let mut r = Nibble::new_zeros();
+
+        let mut i = 3;
+
+        let mut n = self.clone();
+        let mut d = other.clone();
+
+        let mut n_bits = self.unwrap_to_vec();
+        let mut d_bits = other.unwrap_to_vec();
+
+        loop {
+            r = r << 1;
+
+            r[3] =  n_bits[i];
+
+            if r.is_greater_than_or_equal(other) {
+                r = r - d;
+
+                q[4 - i] =  Bit::One;
+            }
+
+            i -= 1;
+
+            if i == 0 {
+                break;
+            }
+
+        }
+
+        (q, r)
+
+    }
+
+    pub fn multiply_together(&self, other: Self) -> Nibble {
+        let b = self.unwrap_to_vec();
+ 
+        let size = 4;
+        let zeros = Self::new_zeros();
+ 
+        let mut sums: Vec<Self> = vec![];
+ 
+        for (i, d) in b.into_iter().enumerate() {
+             if d == Bit::Zero {
+                 sums.push(zeros.clone());
+             } else {
+                 let mut a_clone = self.clone();
+                 a_clone = a_clone << i;
+                 sums.push(a_clone);
+             }
+        }
+ 
+ 
+        let mut res = Self::new_zeros();
+ 
+        sums.into_iter().for_each(|x| res = res + x);
+ 
+        res
+ 
+     }
+
+
+     pub fn add_together(&self, other: Self) -> Nibble {
+        let self_bits = self.unwrap_to_vec();
+        let other_bits = other.unwrap_to_vec();
+
+        let mut ai = 3;
+        let mut bi = 3;
+
+        let mut carry = 0;
+
+        let mut res: Vec<Bit> = vec![];
+        loop {
+
+            let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
+            
+            carry = match val > 1 {
+                true => {
+                    val %= 2;
+
+                    1
+                },
+                false => 0,
+            };
+
+            let vb: Bit = val.into();
+
+            res.push(vb);
+
+            ai -= 1;
+            bi -= 1;
+
+            if ai == 0 || bi == 0 {
+                break;
+            }
+            
+        }
+
+        let pad = 32 - res.len();
+
+        let padding = vec![Bit::Zero; pad];
+
+        res.splice(0..0, padding);
+
+        Self::from_vec(res)
+    }
+}
+
+impl std::ops::Index<usize> for Nibble {
+    type Output = Bit;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.bit_one,
+            1 => &self.bit_two,
+            2 => &self.bit_three,
+            3 => &self.bit_four,
+            _ => panic!("Index must not be larger than 3")
         }
     }
 }
+
+
+impl std::ops::IndexMut<usize> for Nibble {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.bit_one,
+            1 => &mut self.bit_two,
+            2 => &mut self.bit_three,
+            3 => &mut self.bit_four,
+            _ => panic!("Index must not be larger than 3")
+        }
+    }
+}
+
 
 
 impl std::ops::Add for Nibble {
@@ -458,7 +661,7 @@ impl std::ops::Sub for Nibble {
     type Output = Nibble;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        self.sub_together(rhs)
+        self.subtract_together(rhs)
     }
 }
 
@@ -466,7 +669,7 @@ impl std::ops::Mul for Nibble {
     type Output = Nibble;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        self.mul_together(rhs)
+        self.multiply_together(rhs)
     }
 }
 
@@ -474,7 +677,9 @@ impl std::ops::Div for Nibble {
     type Output = Nibble;
 
     fn div(self, rhs: Self) -> Self::Output {
-        self.div_together(rhs)
+        let (q, _) = self.divide_together(rhs);
+
+        q
     }
 }
 
@@ -482,10 +687,27 @@ impl std::ops::Rem for Nibble {
     type Output = Nibble;
 
     fn rem(self, rhs: Self) -> Self::Output {
-        self.rem_together(rhs)
+        let (_, r) = self.divide_together(rhs);
+
+        r
     }
 }
 
+impl std::ops::Shl<usize> for Nibble {
+    type Output = Nibble;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        self.shift_left(rhs)
+    }
+}
+
+impl std::ops::Shr<usize> for Nibble {
+    type Output = Nibble;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        self.shift_right(rhs)
+    }
+}
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Endian {
@@ -566,6 +788,20 @@ impl Byte {
             lsb1: v[6], 
             lsb: v[7],
             endian: Endian::Big
+        }
+    }
+
+    pub fn new_zeros() -> Self {
+        Self { 
+            msb: Bit::Zero, 
+            msb1: Bit::Zero, 
+            msb2: Bit::Zero, 
+            msb3: Bit::Zero, 
+            lsb3: Bit::Zero, 
+            lsb2: Bit::Zero, 
+            lsb1: Bit::Zero, 
+            lsb: Bit::Zero, 
+            endian: Endian::Little
         }
     }
 
@@ -668,14 +904,289 @@ impl Byte {
             Endian::Big => Self::from_bit_vec_be(fin_bits),
         }
     }
+    
+    pub fn into_u8(&self) -> u8 {
+        let mut unwrapped = self.unravel();
+
+        unwrapped.reverse();
+
+        let mut ret = 0u8;
+
+        for (i, u) in unwrapped.into_iter().enumerate() {
+            let u_u8 = u.into_u8();
+
+            ret += u_u8 * 2u8.pow(i as u32)
+        }
+
+        ret
+    }
 
     pub fn get_bits(&self) -> Vec<Bit> {
         let bits = self.unravel();
 
         bits
     }
+
+    pub fn shift_left(&self, num: usize) -> Byte {
+        let bits = self.unravel();
+        
+        let bits_truncated = &bits[num..].to_vec();
+
+        let rem = vec![Bit::Zero; num];
+
+        let mut trunc_clone = bits_truncated.clone();
+        
+        trunc_clone.extend(rem);
+
+        match self.endian {
+            Endian::Little => Self::from_bit_vec_le(trunc_clone),
+            Endian::Big => Self::from_bit_vec_be(trunc_clone),
+        }
+    }
+
+
+    pub fn shift_right(&self, num: usize) -> Byte {
+        let bits = self.unravel();
+
+        let prepend_bits = vec![Bit::Zero; 8 - num];
+
+        let mut bits_clone = bits.clone();
+        
+        bits_clone.splice(0..0, prepend_bits.into_iter());
+
+        let bits_splice = &bits_clone[0..8].to_vec();
+
+        let bits_cloned = bits_splice.clone();
+
+        match self.endian {
+            Endian::Little => Self::from_bit_vec_le(bits_cloned),
+            Endian::Big => Self::from_bit_vec_be(bits_cloned),
+        }
+    }
+
+    pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
+        let dec = self.into_u8();
+        let other_dec = other.into_u8();
+
+        dec >= other_dec
+    }
+
+    pub fn subtract_together(&self, other: Self) -> Byte {
+        let mut self_bits = self.unravel();
+        let mut other_bits = other.unravel();
+
+        let mut ai = 7;
+        let mut bi = 7;
+
+        let mut borrow_indices: Vec<usize> = vec![];
+
+        let mut res: Vec<Bit> = vec![];
+
+        loop {
+
+            let pair = (self_bits[ai], other_bits[bi]);
+
+            match pair {
+                (Bit::One, Bit::One) => res.push(Bit::Zero),
+                (Bit::One, Bit::Zero) => res.push(Bit::One),
+                (Bit::Zero, Bit::One) => {
+                    let mut found_index = 0usize;
+
+                    for i in (0..7 - ai).rev() {
+                        if self_bits[i] == Bit::One {
+                            found_index = i;
+                            break;
+                        }
+                    }
+
+                    let mut num_ones = 2;
+                    
+                    for i in found_index..ai {
+                        if self_bits[i] == Bit::One {
+                            self_bits[i] = Bit::Zero;
+                        } else if self_bits[i] == Bit::Zero {
+                            if num_ones > 0 {
+                                self_bits[i] = Bit::One;
+                                num_ones -= 1;
+                            }
+                        }
+                    }
+
+                    if num_ones != 0 {
+                        res.push(Bit::One);
+                    }
+                },
+                (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
+            }
+
+
+            ai -= 1;
+            bi -= 1;
+
+            if ai == 0 || bi == 0 {
+                break;;
+            }
+
+        }
+
+        res.reverse();
+
+        res.splice(0..0, vec![Bit::Zero; 32 - res.len()]);
+
+        match self.endian {
+            Endian::Little => Self::from_bit_vec_le(res),
+            Endian::Big => Self::from_bit_vec_be(res),
+        }
+
+    }
+
+    pub fn divide_together(&self, other: Self) -> (Byte, Byte) {
+        let mut q = Byte::new_zeros();
+        let mut r = Byte::new_zeros();
+
+        let mut i = 7;
+
+        let mut n = self.clone();
+        let mut d = other.clone();
+
+        let mut n_bits = self.unravel();
+        let mut d_bits = other.unravel();
+
+        loop {
+            r = r << 1;
+
+            r.lsb =  n_bits[i];
+
+            if r.is_greater_than_or_equal(other) {
+                r = r - d;
+
+                q[8 - i] =  Bit::One;
+            }
+
+            i -= 1;
+
+            if i == 0 {
+                break;
+            }
+
+        }
+
+        (q, r)
+
+    }
+
+    pub fn multiply_together(&self, other: Self) -> Byte {
+        let b = self.unravel();
+ 
+        let size = 7;
+        let zeros = Self::new_zeros();
+ 
+        let mut sums: Vec<Self> = vec![];
+ 
+        for (i, d) in b.into_iter().enumerate() {
+             if d == Bit::Zero {
+                 sums.push(zeros.clone());
+             } else {
+                 let mut a_clone = self.clone();
+                 a_clone = a_clone << i;
+                 sums.push(a_clone);
+             }
+        }
+ 
+ 
+        let mut res = Self::new_zeros();
+ 
+        sums.into_iter().for_each(|x| res = res + x);
+ 
+        res
+ 
+     }
+
+
+     pub fn add_together(&self, other: Self) -> Byte {
+        let self_bits = self.unravel();
+        let other_bits = other.unravel();
+
+        let mut ai = 7;
+        let mut bi = 7;
+
+        let mut carry = 0;
+
+        let mut res: Vec<Bit> = vec![];
+        loop {
+
+            let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
+            
+            carry = match val > 1 {
+                true => {
+                    val %= 2;
+
+                    1
+                },
+                false => 0,
+            };
+
+            let vb: Bit = val.into();
+
+            res.push(vb);
+
+            ai -= 1;
+            bi -= 1;
+
+            if ai == 0 || bi == 0 {
+                break;
+            }
+            
+        }
+
+        let pad = 32 - res.len();
+
+        let padding = vec![Bit::Zero; pad];
+
+        res.splice(0..0, padding);
+
+        match self.endian {
+            Endian::Little => Self::from_bit_vec_le(res),
+            Endian::Big => Self::from_bit_vec_be(res),
+        }
+    }
     
 }
+
+impl std::ops::Index<usize> for Byte {
+    type Output = Bit;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.msb,
+            1 => &self.msb1,
+            2 => &self.msb2, 
+            3 => &self.msb3,
+            4 => &self.lsb3,
+            5 => &self.lsb2,
+            6 => &self.lsb1,
+            7 => &self.lsb,
+            _ => panic!("Index should not be larger than 8")
+        }
+    }
+}
+
+impl std::ops::IndexMut<usize> for Byte {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.msb,
+            1 => &mut self.msb1,
+            2 => &mut self.msb2, 
+            3 => &mut self.msb3,
+            4 => &mut self.lsb3,
+            5 => &mut self.lsb2,
+            6 => &mut self.lsb1,
+            7 => &mut self.lsb,
+            _ => panic!("Index should not be larger than 8")
+        }
+    }
+}
+
 
 impl std::ops::BitAnd for Byte {
     type Output = Byte;
@@ -699,6 +1210,68 @@ impl std::ops::BitXor for Byte {
 
     fn bitxor(self, rhs: Self) -> Self::Output {
         self.xor(rhs)
+    }
+}
+
+impl std::ops::Shl<usize> for Byte {
+    type Output = Byte;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        self.shift_left(rhs)
+    }
+}
+
+impl std::ops::Shr<usize> for Byte {
+    type Output = Byte;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        self.shift_right(rhs)
+    }
+}
+
+impl std::ops::Add for Byte {
+    type Output = Byte;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        self.add_together(rhs)
+    }
+}
+
+impl std::ops::Sub for Byte {
+    type Output = Byte;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.subtract_together(rhs)
+    }
+    
+}
+
+impl std::ops::Mul  for Byte {
+    type Output = Byte;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.multiply_together(rhs)
+    }
+}
+
+impl std::ops::Div for Byte {
+    type Output = Byte;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        let (q, _) = self.divide_together(rhs);
+
+        q
+    }
+}
+
+
+impl std::ops::Rem for Byte {
+    type Output = Byte;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        let (_, r) = self.divide_together(rhs);
+
+        r
     }
 }
 
@@ -1041,7 +1614,7 @@ impl ByteWord {
 
     }
 
-
+    
     
     pub fn add_together(&self, other: Self) -> ByteWord {
         let self_bits = self.unravel_bit();

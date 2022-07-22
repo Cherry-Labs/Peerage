@@ -1,6 +1,7 @@
 #![allow(unused)]
 
-pub mod mersenne_twister;
+pub mod quadrupleword;
+pub mod byte;
 
 #[cfg(test)]
 mod tests {

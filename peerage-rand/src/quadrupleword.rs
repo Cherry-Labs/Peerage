@@ -3,7 +3,7 @@ use peerage_utils::bin_utils::QuadrupleWord;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Copy, Default)]
-pub struct MerseneTwisterRand {
+pub struct RandomQuadrupleWord {
     mt: PeerageCollection<QuadrupleWord>,
     index: usize,
     lower_mask: QuadrupleWord,
@@ -16,7 +16,7 @@ pub struct MerseneTwisterRand {
 
 }
 
-impl MerseneTwisterRand {
+impl RandomQuadrupleWord {
     pub fn new() -> Self {
         let seed_quadrupleword = Self::get_seed();
         let mt = PeerageCollection::<QuadrupleWord>::new_i0_from_item(seed_quadrupleword);
