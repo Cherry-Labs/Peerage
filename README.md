@@ -56,9 +56,7 @@ The necessary proc macros.
 This is a holder enum, a bit like Option, a bit like Box. I need to rework it a bit. It can be used to hold several types into one type.
 
 
-
-The rest of the projects are empty, don't bother. But slowly, they will be filled.
-
+Explanation for the rest coming.
 
 ### I wanna help! What should I do?
 
