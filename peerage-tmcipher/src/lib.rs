@@ -1,9 +1,8 @@
 #![allow(unused)]
 
-pub mod hex_b64;
-pub mod passphrase_codec;
-mod constant_values;
-pub mod base_128_codec;
+mod constants;
+mod cipher;
+pub mod key;
 
 #[macro_use]
 extern crate lazy_static;

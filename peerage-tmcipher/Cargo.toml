@@ -1,10 +1,11 @@
 [package]
-name = "peerage-codecs"
+name = "peerage-tmcipher"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-peerage-utils = { path = "../peerage-utils" }
 lazy_static = "*"
+peerage-utils = { path = "../peerage-utils" }
+peerage-rand = { path = "../peerage-rand" }

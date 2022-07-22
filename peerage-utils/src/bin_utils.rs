@@ -93,7 +93,7 @@ lazy_static! {
 }
 
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Hash, Copy, PartialEq, Eq, Debug)]
 pub enum Bit {
     One,
     Zero,
@@ -112,6 +112,12 @@ impl Bit {
             0 => Self::Zero,
             _ => panic!("Wrong binary digit")
         }
+    }
+
+    pub fn vec_bit_from_char(v: Vec<char>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| Self::from_u8(x as u8) )
+            .collect::<Vec<Bit>>()
     }
 
     pub fn into_u8(&self) -> u8 {
@@ -249,7 +255,7 @@ impl Into<u8> for Bit {
 }
 
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Endian {
     Little,
     Big,
@@ -261,7 +267,7 @@ impl Default for Endian {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Hash, Debug, Default, PartialEq, Eq)]
 pub struct Byte {
     msb: Bit,
     msb1: Bit,
@@ -464,7 +470,7 @@ impl std::ops::BitXor for Byte {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Hash, Debug, Default, Eq, PartialEq)]
 pub struct ByteWord {
     upper_byte: Byte,
     up_mid_byte: Byte,
@@ -952,7 +958,7 @@ impl std::ops::Rem for ByteWord {
 
 
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Hash, Default, Eq, PartialEq)]
 pub struct QuadrupleWord {
     upper_word: ByteWord,
     mid_upper_word: ByteWord,
@@ -1011,6 +1017,24 @@ impl QuadrupleWord {
         let bits_vec = Bit::vec_from_vec(v);
 
         Self::from_128_bits(bits_vec)
+    }
+
+    pub fn from_string(s: String) -> Self {
+        let s_new = match s.len() > 16 {
+            true => s[..16].to_string(),
+            false => format!("{}{}", s, vec!["0"; 16 - s.len()].join("")).to_string(),
+        };
+
+        let chars = s_new.chars();
+
+        let mut bit_vec: Vec<Bit> = vec![];
+
+        chars
+                    .into_iter()
+                    .map(|x| format!("{:08b}", x as u8))
+                    .for_each(|x| bit_vec.extend(Bit::vec_bit_from_char(x.chars().collect::<Vec<char>>())));
+
+        Self::from_128_bits(bit_vec)
     }
 
     pub fn from_usize(u: usize) -> Self {
@@ -1260,6 +1284,28 @@ impl QuadrupleWord {
         let num = u128::from_str_radix(&bits_str, 2).unwrap();
 
         num
+    }
+
+    pub fn pow(&self, num: usize) -> Self {
+        let mut self_clone = self.clone();
+
+        for _ in 0..num {
+            self_clone = self_clone * self_clone;
+        }
+
+        self_clone
+    }
+
+    pub fn pow_self(&self, num: QuadrupleWord) -> Self {
+        let mut self_clone = self.clone();
+
+        let num_qw = num.into_u128();
+
+        for _ in 0..num_qw {
+            self_clone = self_clone * self_clone;
+        }
+
+        self_clone
     }
 }
 

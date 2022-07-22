@@ -40,6 +40,18 @@ impl PeerageHash {
         }
     }
 
+    pub fn new_from_quadrupleworld(qw: QuadrupleWord) -> Self {
+        let bits = qw.into_num_bits();
+
+        let mut bits_array = [0u8; 1024];
+
+        for i in 0..bits.len() {
+            bits_array[i] = bits[i]
+        }
+
+        Self::new(bits_array)
+    }
+
     fn do_all_the_rounds(&mut self) {
         for _ in 0..3 {
             for i in (0usize..8usize).step_by(2) {
@@ -63,6 +75,10 @@ impl PeerageHash {
                             self.output_octuplet[5] +
                             self.output_octuplet[6] +
                             self.output_octuplet[7]
+    }
+
+    pub fn get_final_output(&self) -> QuadrupleWord {
+        self.final_output.clone()
     }
 
     fn set_outputs(&mut self) {

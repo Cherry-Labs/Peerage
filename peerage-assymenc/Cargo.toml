@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 peerage-utils = { path = "../peerage-utils" }
 peerage-rand = { path = "../peerage-rand" }
+peerage-hash = { path = "../peerage-hash" }
 lazy_static = "*"
 num-traits = "0.2.15"
 rand = "0.8.0"

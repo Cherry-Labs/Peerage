@@ -16,5 +16,6 @@ members = [
     "peerage-codecs",
     "peerage-rand",
     "peerage-protocol",
-    "peerage-assymenc"
+    "peerage-assymenc",
+    "peerage-tmcipher"
 ]
