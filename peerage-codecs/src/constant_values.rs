@@ -15,7 +15,7 @@ lazy_static! {
         btm
     }; 
 
-    static ref BASE_128_STRS: HashMap<QuadrupleWord, String> = {
+    pub static ref BASE_128_STRS: HashMap<QuadrupleWord, String> = {
         let mut hm = HashMap::<QuadrupleWord, String>::new();
 
         for i in 0u128..128 {

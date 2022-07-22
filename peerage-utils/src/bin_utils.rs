@@ -213,34 +213,118 @@ impl std::ops::BitXor for Bit {
 
 
 impl std::ops::Add for Bit {
-    type Output = u8;
+    type Output = Bit;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let a: u8 = self.into();
-        let b: u8 = rhs.into();
-
-        a + b
+        match self {
+            Self::One => {
+                match rhs {
+                    Bit::One => Bit::Zero,
+                    Bit::Zero => Bit::One,
+                }
+            },
+            Self::Zero => {
+                match rhs {
+                    Bit::One => Bit::One,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+        }
     }
 }
 
 impl std::ops::Sub for Bit {
-    type Output = u8;
+    type Output = Bit;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let a: u8 = self.into();
-        let b: u8 = rhs.into();
-
-        a - b
+        match self {
+            Self::One => {
+                match rhs {
+                    Bit::One => Bit::Zero,
+                    Bit::Zero => Bit::One,
+                }
+            },
+            Self::Zero => {
+                match rhs {
+                    Bit::One => Bit::One,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+        }
     }
 }
 
+impl std::ops::Mul for Bit {
+    type Output = Bit;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        match self {
+            Self::One => {
+                match rhs {
+                    Bit::One => Bit::One,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+            Self::Zero => {
+                match rhs {
+                    Bit::One => Bit::Zero,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+        }
+    }
+}
+
+
+impl std::ops::Div for Bit {
+    type Output = Bit;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        match self {
+            Self::One => {
+                match rhs {
+                    Bit::One => Bit::One,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+            Self::Zero => {
+                match rhs {
+                    Bit::One => Bit::Zero,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+        }
+    }
+}
+
+
+impl std::ops::Rem for Bit {
+    type Output = Bit;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        match self {
+            Self::One => {
+                match rhs {
+                    Bit::One => Bit::One,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+            Self::Zero => {
+                match rhs {
+                    Bit::One => Bit::Zero,
+                    Bit::Zero => Bit::Zero,
+                }
+            },
+        }
+    }
+}
 
 impl From<u8> for Bit {
     fn from(u: u8) -> Self {
         match u {
             1 => Self::One,
             0 => Self::Zero,
-            _ => panic!("Error: wrong binry digit")
+            _ => Bit::Zero
         }
     }
 }
@@ -251,6 +335,154 @@ impl Into<u8> for Bit {
             Self::One => 1,
             Self::Zero => 0,
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct Nibble {
+    bit_one: Bit,
+    bit_two: Bit,
+    bit_tree: Bit,
+    bit_four: Bit,
+}
+
+impl Nibble {
+    pub fn from_vec(v: Vec<Bit>) -> Self {
+        Self { 
+            bit_one: v[0], 
+            bit_two: v[1], 
+            bit_tree: v[2], 
+            bit_four: v[3] 
+        }
+    }
+
+    pub fn from_quartet_bit(b: (Bit, Bit, Bit, Bit)) -> Self {
+        Self { 
+            bit_one: b.0, 
+            bit_two: b.1, 
+            bit_tree: b.2, 
+            bit_four: b.3
+        }
+    }
+
+    pub fn from_4_bit_number(num: u8) -> Self {
+        let bits = format!("{num:08b}");
+
+        let bits_slice = &bits[4..];
+
+        let v = bits_slice.chars()
+                    .map(|x| Bit::from_u8(x as u8))
+                    .collect::<Vec<Bit>>();
+
+
+        Self::from_vec(v)
+
+    }
+
+    pub fn unwrap_to_vec(&self) -> Vec<Bit> {
+        vec![self.bit_one, self.bit_two, self.bit_tree, self.bit_four]
+    }
+
+    pub fn to_decimal(&self) -> u8 {
+        let mut unwrapped = self.unwrap_to_vec();
+
+        unwrapped.reverse();
+
+        let mut dec = 0u8;
+
+        for (i, b) in unwrapped.into_iter().enumerate() {
+            let b_u8 = b.into_u8();
+
+            dec += b_u8 * 2u8.pow(i as u32);
+        }
+
+        dec
+    }
+
+    pub fn add_together(&self, other: Self) -> Self {
+        Self { 
+            bit_one: self.bit_one + other.bit_one, 
+            bit_two: self.bit_two + other.bit_two, 
+            bit_tree: self.bit_tree + other.bit_tree, 
+            bit_four: self.bit_four + other.bit_four
+        }
+    }
+
+    pub fn sub_together(&self, other: Self) -> Self {
+        Self { 
+            bit_one: self.bit_one - other.bit_one, 
+            bit_two: self.bit_two - other.bit_two, 
+            bit_tree: self.bit_tree - other.bit_tree, 
+            bit_four: self.bit_four - other.bit_four
+        }
+    }
+
+    pub fn mul_together(&self, other: Self) -> Self {
+        Self { 
+            bit_one: self.bit_one * other.bit_one, 
+            bit_two: self.bit_two * other.bit_two, 
+            bit_tree: self.bit_tree * other.bit_tree, 
+            bit_four: self.bit_four * other.bit_four
+        }
+    }
+
+    pub fn div_together(&self, other: Self) -> Self {
+        Self { 
+            bit_one: self.bit_one / other.bit_one, 
+            bit_two: self.bit_two / other.bit_two, 
+            bit_tree: self.bit_tree / other.bit_tree, 
+            bit_four: self.bit_four / other.bit_four
+        }
+    }
+
+    pub fn rem_together(&self, other: Self) -> Self {
+        Self { 
+            bit_one: self.bit_one % other.bit_one, 
+            bit_two: self.bit_two % other.bit_two, 
+            bit_tree: self.bit_tree % other.bit_tree, 
+            bit_four: self.bit_four % other.bit_four
+        }
+    }
+}
+
+
+impl std::ops::Add for Nibble {
+    type Output = Nibble;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        self.add_together(rhs)
+    }
+}
+
+impl std::ops::Sub for Nibble {
+    type Output = Nibble;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.sub_together(rhs)
+    }
+}
+
+impl std::ops::Mul for Nibble {
+    type Output = Nibble;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.mul_together(rhs)
+    }
+}
+
+impl std::ops::Div for Nibble {
+    type Output = Nibble;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.div_together(rhs)
+    }
+}
+
+impl std::ops::Rem for Nibble {
+    type Output = Nibble;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        self.rem_together(rhs)
     }
 }
 
@@ -822,7 +1054,8 @@ impl ByteWord {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-            let mut val = self_bits[ai] + other_bits[bi] + carry;
+
+            let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
             
             carry = match val > 1 {
                 true => {

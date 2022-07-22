@@ -3,44 +3,36 @@ use peerage_rand::mersenne_twister::MerseneTwisterRand;
 
 pub struct KeyPhrase {
     key_str: String,
-    key: [QuadrupleWord; 2],
+    key: [QuadrupleWord; 8],
     rand_element: QuadrupleWord,
 
 }
 
+pub type ResultKey = std::result::Result<KeyPhrase, ()>;
 
 impl KeyPhrase {
-    pub fn from_str(s: String) -> Self {
-        let key_str = match s.len() > 32 {
-            true => s[..32].to_string(),
-            false => {
-                let pad = vec!["0"; 32 - s.len()].join("");
+    pub fn from_str(s: String) -> ResultKey {
+        if s.len() != 128 {
+            Err(())
+        }
 
-                let s_padded = format!("{}{}", s, pad);
+        let key = [QuadrupleWord::default(); 8];
+        
+        let mut ind = 0usize;
 
+        for i in (0..128).step_by(16) {
+            let sub_str = &s[i..i + 16];
 
-                s_padded.to_string()
-            
-            },
-        };
+            key[ind] = QuadrupleWord::from_string(sub_str.to_string());
 
+            ind += 1;
+        }
 
-        let s1 = &key_str[..16];
-        let s2 = &key_str[16..];
+        let key_str = s.clone();
 
+        let rand_element = MerseneTwisterRand::new().rng();
 
-        let key_1 = QuadrupleWord::from_string(s1.to_string());
-        let key_2 = QuadrupleWord::from_string(s2.to_string());
-
-
-        let key = [key_1, key_2];
-
-        let mut rand_gen = MerseneTwisterRand::new();
-
-        let rand_element = rand_gen.rng();
-
-
-        Self { key_str, key, rand_element }
+        Ok(Self { key_str, key, rand_element })
 
 
     }
