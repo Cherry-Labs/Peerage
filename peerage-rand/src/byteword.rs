@@ -3,7 +3,7 @@ use peerage_utils::bin_utils::ByteWord;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Copy, Default)]
-pub struct RandomQuadrupleWord {
+pub struct RandomByteWord {
     mt: PeerageCollection<ByteWord>,
     index: usize,
     lower_mask: ByteWord,
@@ -16,7 +16,7 @@ pub struct RandomQuadrupleWord {
 
 }
 
-impl RandomQuadrupleWord {
+impl RandomByteWord {
     pub fn new() -> Self {
         let seed_quadrupleword = Self::get_seed();
         let mt = PeerageCollection::<ByteWord>::new_i0_from_item(seed_quadrupleword);

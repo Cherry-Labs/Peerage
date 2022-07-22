@@ -3,7 +3,7 @@ use peerage_utils::bin_utils::Nibble;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Copy, Default)]
-pub struct RandomByte {
+pub struct RandomNibble {
     mt: PeerageCollection<Nibble>,
     index: usize,
     lower_mask: Nibble,
@@ -16,7 +16,7 @@ pub struct RandomByte {
 
 }
 
-impl RandomByte {
+impl RandomNibble {
     pub fn new() -> Self {
         let seed_quadrupleword = Self::get_seed();
         let mt = PeerageCollection::<Nibble>::new_i0_from_item(seed_quadrupleword);

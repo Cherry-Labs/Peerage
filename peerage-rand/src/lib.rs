@@ -1,9 +1,10 @@
 #![allow(unused)]
 
-pub mod quadrupleword;
-pub mod byte;
-pub mod nibble;
-pub mod byteword;
+mod quadrupleword;
+mod byte;
+mod nibble;
+mod byteword;
+pub mod rand;
 
 #[cfg(test)]
 mod tests {
