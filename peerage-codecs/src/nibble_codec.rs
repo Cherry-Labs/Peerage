@@ -31,6 +31,12 @@ impl NibbleCodec {
 
         ret
     }
+
+    pub fn encode(v: Vec<QuadrupleWord>) -> String {
+        let self_obj = Self::new(v);
+
+        self_obj.encode_inner()
+    }
     
     pub fn decodec(s: String) -> Vec<QuadrupleWord> {
         let mut nibbles: Vec<Nibble> = vec![];
