@@ -15,8 +15,8 @@ lazy_static! {
         btm
     }; 
 
-    static ref BASE_128_STRS: HashMap<QuadrupleWord, &'static str> = {
-        let mut hm = HashMap::<QuadrupleWord, &'static str>::new();
+    static ref BASE_128_STRS: HashMap<QuadrupleWord, String> = {
+        let mut hm = HashMap::<QuadrupleWord, String>::new();
 
         for i in 0u128..128 {
             let added_nums = match i < 124 {
@@ -32,7 +32,7 @@ lazy_static! {
             let char2 = BASE64_TABLE[&second_key];
             let char3 = BASE64_TABLE[&third_key];
             
-            let value = format!("{}{}{}", char1, char2, char3).as_str();
+            let value = format!("{}{}{}", char1, char2, char3);
         
             let key = QuadrupleWord::from_u128(i);
 
