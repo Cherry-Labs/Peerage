@@ -1540,6 +1540,36 @@ impl QuadrupleWord {
 
         self_clone
     }
+
+    pub fn into_nibbles(&self) -> Vec<Nibble> {
+        let self_bits = self.into_bits();
+
+        let mut vec_nibble: Vec<Nibble> = vec![];
+
+        for i in (0usize..128usize).step_by(4) {
+            let vec_slice = self_bits[i..i + 4].to_vec();
+
+            let nibble = Nibble::from_vec(vec_slice);
+
+            vec_nibble.push(nibble);
+        }
+
+        vec_nibble
+    }
+
+    pub fn from_nibble(v: Vec<Nibble>) -> Self {
+        let mut bits: Vec<Bit> = vec![];
+
+        for n in v {
+            let n_unwrapped = n.unwrap_to_vec();
+
+            for n in n_unwrapped {
+                bits.push(n)
+            }
+        }
+
+        Self::from_128_bits(bits)
+    }
 }
 
 
