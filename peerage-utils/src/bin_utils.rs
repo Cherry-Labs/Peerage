@@ -338,7 +338,7 @@ impl Into<u8> for Bit {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Default)]
 pub struct Nibble {
     bit_one: Bit,
     bit_two: Bit,
@@ -436,6 +436,36 @@ impl Nibble {
         let bits_cloned = bits_splice.clone();
 
         Self::from_vec(bits_cloned)
+    }
+
+    pub fn xor_together(&self, other: Self) -> Self {
+        let mut zero = Self::new_zeros();
+
+        for i in 0..4 {
+            zero[i] = self[i] ^ other[i];
+        }
+
+        zero
+    }
+
+    pub fn and_together(&self, other: Self) -> Self {
+        let mut zero = Self::new_zeros();
+
+        for i in 0..4 {
+            zero[i] = self[i] & other[i];
+        }
+
+        zero
+    }
+
+    pub fn or_together(&self, other: Self) -> Self {
+        let mut zero = Self::new_zeros();
+
+        for i in 0..4 {
+            zero[i] = self[i] | other[i];
+        }
+
+        zero
     }
 
     pub fn subtract_together(&self, other: Self) -> Nibble {
@@ -634,6 +664,29 @@ impl std::ops::Index<usize> for Nibble {
     }
 }
 
+impl std::ops::BitXor for Nibble {
+    type Output = Nibble;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        self.xor_together(rhs)
+    }
+}
+
+impl std::ops::BitAnd for Nibble {
+    type Output = Nibble;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        self.and_together(rhs)
+    }
+}
+
+impl std::ops::BitOr for Nibble {
+    type Output = Nibble;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.or_together(rhs)
+    }
+}
 
 impl std::ops::IndexMut<usize> for Nibble {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
@@ -1311,6 +1364,31 @@ impl ByteWord {
         }
 
         Self::from_byte_vec(bytes)
+    }
+
+    pub fn from_u32(u: u32) -> Self {
+        let v = format!("{u:032b}")
+                .chars()
+                .map(|x| Bit::from_u8(x as u8))
+                .collect::<Vec<Bit>>();
+
+        Self::from_32_bits(v)
+    }
+
+    pub fn into_u32(&self) -> u32 {
+        let bits = self.unravel_bit();
+
+        let mut str_bits = String::new();
+
+        for b in bits {
+            let b_u8 = b.into_u8();
+
+            str_bits = format!("{}{}", str_bits, b_u8);
+
+        }
+
+        u32::from_str_radix(&str_bits, 2).unwrap()
+
     }
 
     pub fn from_byte_vec(v: Vec<Byte>) -> Self {

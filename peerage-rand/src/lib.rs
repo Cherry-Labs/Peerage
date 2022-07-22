@@ -2,6 +2,8 @@
 
 pub mod quadrupleword;
 pub mod byte;
+pub mod nibble;
+pub mod byteword;
 
 #[cfg(test)]
 mod tests {
