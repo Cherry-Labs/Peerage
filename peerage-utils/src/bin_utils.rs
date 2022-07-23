@@ -904,6 +904,41 @@ impl Byte {
         }
     }
 
+    pub fn into_nibble(&self) -> [Nibble; 2] {
+        let mut nibbles = [Nibble::new_zeros(); 2];
+
+        let self_bits = self.unravel();
+
+        let mut j = 0usize;
+
+        for i in (0usize..8usize).step_by(4) {
+            let bits = self_bits[i..i + 4].to_vec();
+
+            let nibble = Nibble::from_vec(bits);
+
+            nibbles[j] = nibble;
+
+            j += 1;
+        }
+
+        nibbles
+    }
+
+    pub fn from_nibble(n: [Nibble; 2]) -> Self {
+        let first = n[0];
+        let second = n[1];
+
+        let first_unwrapped = first.unwrap_to_vec();
+        let second_unwrapped = second.unwrap_to_vec();
+
+        let flattened = vec![first_unwrapped, second_unwrapped]
+                    .into_iter()
+                    .flatten()
+                    .collect::<Vec<Bit>>();
+
+        Self::from_bit_vec_le(flattened)
+    }
+
     pub fn and(&self, other: Self) -> Byte {
         let bits = self.unravel();
         let other_bits = self.unravel();
@@ -1389,6 +1424,42 @@ impl ByteWord {
 
         u32::from_str_radix(&str_bits, 2).unwrap()
 
+    }
+
+    pub fn from_nibble(n: [Nibble; 8]) -> Self {
+        let mut bits: Vec<Bit>  = vec![];
+
+        for i in 0..8 {
+            let curr_nibble = n[i];
+
+            let nib_bits = curr_nibble.unwrap_to_vec();
+
+            for b in nib_bits {
+                bits.push(b);
+            }
+        }
+
+        Self::from_32_bits(bits)
+    }
+
+    pub fn into_nibble(&self) -> [Nibble; 8] {
+        let mut nibbles = [Nibble::new_zeros(); 8];
+
+        let self_bits = self.unravel_bit();
+
+        let mut j = 0usize;
+
+        for i in (0usize..32usize).step_by(4) {
+            let bits = self_bits[i..i + 4].to_vec();
+
+            let nibble = Nibble::from_vec(bits);
+
+            nibbles[j] = nibble;
+
+            j += 1;
+        }
+
+        nibbles
     }
 
     pub fn from_byte_vec(v: Vec<Byte>) -> Self {
@@ -2192,30 +2263,36 @@ impl QuadrupleWord {
         self_clone
     }
 
-    pub fn into_nibbles(&self) -> Vec<Nibble> {
+    pub fn into_nibbles(&self) -> [Nibble; 32] {
         let self_bits = self.into_bits();
 
-        let mut vec_nibble: Vec<Nibble> = vec![];
+        let mut vec_nibble = [Nibble::new_zeros(); 32];
+        
+        let mut j = 0usize;
 
         for i in (0usize..128usize).step_by(4) {
             let vec_slice = self_bits[i..i + 4].to_vec();
 
             let nibble = Nibble::from_vec(vec_slice);
 
-            vec_nibble.push(nibble);
+            vec_nibble[j] = nibble;
+
+            j += 1
         }
 
         vec_nibble
     }
 
-    pub fn from_nibble(v: Vec<Nibble>) -> Self {
+    pub fn from_nibble(n: [Nibble; 32]) -> Self {
         let mut bits: Vec<Bit> = vec![];
 
-        for n in v {
-            let n_unwrapped = n.unwrap_to_vec();
+        for i in 0..32 {
+            let curr_nibble = n[i];
 
-            for n in n_unwrapped {
-                bits.push(n)
+            let curr_nibble_unwrapped = curr_nibble.unwrap_to_vec();
+
+            for n in curr_nibble_unwrapped {
+                bits.push(n);
             }
         }
 

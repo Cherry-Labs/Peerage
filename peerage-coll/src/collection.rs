@@ -29,6 +29,9 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
         }
     }
 
+    pub fn new() -> Self {
+        Self::default()
+    }
    
     pub fn from_vector(v: Vec<T>) -> Self {
         if v.len() > 17408 {
@@ -85,6 +88,17 @@ impl<T: Clone + Copy + Default + Default> PeerageCollection<T> {
         }
 
         false
+    }
+
+    pub fn into_vec(&self) -> Vec<T> {
+        let mut v: Vec<T> = vec![];
+
+        for i in 0..self.len() {
+            let item = self.get_at(i).unwrap();
+            v.push(item);
+        }
+
+        v
     }
 
     pub fn default_and_replace(

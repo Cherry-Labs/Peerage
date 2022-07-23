@@ -5,6 +5,7 @@ pub mod passphrase_codec;
 mod constant_values;
 pub mod nibble_codec;
 
+
 #[macro_use]
 extern crate lazy_static;
 
