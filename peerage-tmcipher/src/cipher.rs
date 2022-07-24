@@ -1,6 +1,6 @@
 use crate::constants::*;
 use peerage_codecs::nibble_codec::NibbleCodec;
-use peerage_utils::{bin_utils::{QuadrupleWord, Byte, Nibble, ByteWord}, traits::Key};
+use peerage_utils::{bin_utils::{QuadrupleWord, Byte, Nibble, ByteWord, Bit}, traits::Key};
 use crate::key::KeyPhrase;
 use peerage_rand::rand::*;
 use peerage_coll::collection::PeerageCollection;
@@ -57,7 +57,41 @@ impl Cipher {
         
         let s_self = codec.encode();
 
-        let s_keyphrase = self.keyphrase
+        let s_key = self.keyphrase.encode();
+        
+        let s_freq = self.encode_freqs();
+
+        format!("__SEL__{s_self}__KEY__{s_key}__FRE__{s_freq}__")
+    }
+
+    fn encode_freqs(&self) -> String {
+        let (nib_freq, 
+            byt_freq,
+            byw_freq,
+            qyw_freq) = self.freq_counters;
+        
+        let mut s_1 = String::new();
+        let mut s_2 = String::new();
+        let mut s_3 = String::new();
+        let mut s_4 = String::new();
+
+        nib_freq
+            .into_iter()
+            .for_each(|x| { s_1 = format!("{s_1}.{x}") } );
+
+        byt_freq
+            .into_iter()
+            .for_each(|x| { s_2 = format!("{s_2}.{x}") } );
+
+        byw_freq
+            .into_iter()
+            .for_each(|x| { s_3 = format!("{s_3}.{x}") } );
+
+        byw_freq
+            .into_iter()
+            .for_each(|x| { s_4 = format!("{s_4}.{x}") } );
+    
+        format!("//NIB//{s_1}//BYT//{s_2}//BYW//{s_3}//QYW//{s_4}//")
     }
 
     fn decode_freqs(s: String) -> (String, String, String, String) {
@@ -88,7 +122,7 @@ impl Cipher {
         (s_1, s_2, s_3, s_4)
     }
 
-    pub fn from_encoded(s_self: String, s_keyphrase: String, s_freq: String) -> Self {
+    fn from_encoded_inner(s_self: String, s_keyphrase: String, s_freq: String) -> Self {
         let rand_codec = NibbleCodec::decodec(s_self);
 
         let qw_rand = rand_codec.get_qw().into_vec();
@@ -142,64 +176,85 @@ impl Cipher {
          }
     }
 
-    fn do_one_round_qw_encrypt(&mut self, qw: QuadrupleWord) -> QuadrupleWord {
-        let mut res = qw.clone();
+    pub fn from_encoded(s: String) -> Self {
+        let mut s_self = String::new();
+        let mut s_keyphrase = String::new();
+        let mut s_freq = String::new();
 
-        for i in 0usize..32usize {
-            self.freq_counters.3[i] = ((self.quadruple_words[i] % res) + i as u128).into_u128() as usize;
-            res = self.quadruple_words[i] * qw_i;
-            res = self.quadruple_words[i] + qw_i;
-            res = self.quadruple_words[i] ^ qw_i;
+        let mut s_split = s.split("__");
 
+        loop {
+            match s_split.next() {
+                Some(str) => {
+                    match str {
+                        "SEL" => {
+                            let s_unwrap = s_split.next().unwrap();
+
+                            s_self = s_unwrap.to_string();
+                        },
+                        "KEY" => {
+                            let s_unwrap = s_split.next().unwrap();
+
+                            s_keyphrase = s_unwrap.to_string();
+                        },
+                        "FRE" => {
+                            let s_unwrap = s_split.next().unwrap();
+
+                            s_freq = s_unwrap.to_string();
+                        },
+                        _ => continue,
+                    }
+                },
+                None => break,
+            }
         }
 
-
-        for (j, k) in (0usize..128usize)
-                    .into_iter()
-                    .zip((0usize..128usize)
-                    .rev().into_iter()) 
-        {
-            res = res - (self.freq_counters.3[j] * self.freq_counters.3[k]) as u128;
-        }
-
-        res
+        Self::from_encoded_inner(s_self, s_keyphrase, s_freq)
     }
 
-    fn do_one_round_qw_decrypt(&self, qw: QuadrupleWord) -> QuadrupleWord {
-        let mut res = qw.clone();
+    fn freq_round_one_of_four_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
 
+        while bits_clone.len() % 4 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (nib_freq, _, _, _) = self.freq_counters;
         
-        for i in 0usize..32usize {
-            let qw_i = QuadrupleWord::from_usize(i);
-            res = self.quadruple_words[i] ^ qw_i;
-            res = self.quadruple_words[i] - qw_i;
-            res = self.quadruple_words[i] / qw_i;
+        let mut freq_iter = nib_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one + curr_freq;
+                
+            };
+
+            let two = one / (freq_iter.get_quarters() as u8);
+            let three = two * (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one + two + three;
+
+            opped_vec.extend(vec!(one, two, three, four));
 
         }
 
-        for (j, k) in (0usize..128usize)
-                    .into_iter()
-                    .zip((0usize..128usize)
-                    .rev().into_iter()) 
-        {
-            res = res + (self.freq_counters.3[j] / self.freq_counters.3[k]) as u128;
-        }
-
-        res
-    }
-
-    fn do_one_round_bw_encrypt(&self, bw: ByteWord) -> ByteWord {
-        let mut res = bw.clone();
-
-        for i in 0u32..32u32 {
-            let bw_i = ByteWord::from_u32(i);
-            res = self.byte_words[i as usize] / bw_i;
-            res = self.byte_words[i as usize] - bw_i;
-            res = self.byte_words[i as usize] & bw_i;
-
-        }
-
-        res
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
     }
     
 }

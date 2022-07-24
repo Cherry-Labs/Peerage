@@ -98,6 +98,13 @@ impl KeyPhrase {
         let bytes = self.bytes.to_vec();
         let nibbles = self.nibbles.to_vec();
 
-        
+        let codec = NibbleCodec::from_vec(
+                    quadruple_words, 
+                    byte_words, 
+                    bytes, 
+                    nibbles
+                );
+
+        codec.encode()
     }
 }

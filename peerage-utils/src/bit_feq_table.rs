@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 #[derive(Clone, Copy)]
 pub struct NibbleFreqTable {
     a: usize,
@@ -348,5 +350,111 @@ impl std::ops::IndexMut<usize> for QuadrupleWordFreqTable {
         } else {
             panic!("Index must not be larger than 127")
         }
+    }
+}
+
+pub trait Indexer: Copy + Clone +std::ops::Index<
+        usize,
+        Output = usize,
+        > + 
+        std::ops::IndexMut<
+        usize> {}
+
+#[derive(Clone, Copy)]
+pub struct FreqIter<T: Indexer, const M: usize> {
+    object: T,
+    index: usize,
+}
+
+impl<T: Indexer, const M: usize> FreqIter<T, M> {
+    pub fn into_iter(object: T) -> Self {
+        Self { object, index: 0usize }
+    }
+    
+    pub fn get_index(&self) -> usize {
+        self.object[self.index]
+    }
+
+    pub fn increase_index(&mut self) {
+        match self.index == M - 1 {
+            true => self.index = 0,
+            false => self.index += 1,
+        }
+    }
+
+    pub fn get_middle(&self) -> usize {
+        self.object[M / 2]
+    }
+
+    pub fn get_first(&self) -> usize {
+        self.object[0]
+    }
+
+    pub fn get_last(&self) -> usize {
+        self.object[M - 1]
+    }
+
+    pub fn get_quarters(&self) -> usize {
+        self.object[M / 4]
+    }
+
+    pub fn get_three_fourths(&self) -> usize {
+        self.object[3 * (M / 4)]
+    }
+}
+
+impl<T: Indexer, const M: usize> std::iter::Iterator for FreqIter<T, M> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let item = self.get_index();
+        self.increase_index();
+        Some(item)
+    }
+}
+
+impl Indexer for NibbleFreqTable {}
+impl Indexer for ByteFreqTable {}
+impl Indexer for ByteWordFreqTable {}
+impl Indexer for QuadrupleWordFreqTable {}
+
+impl<'a> std::iter::IntoIterator for NibbleFreqTable {
+    type Item = usize;
+
+    type IntoIter = FreqIter<NibbleFreqTable, 4usize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FreqIter::into_iter(self)
+    }
+}
+
+impl std::iter::IntoIterator for ByteFreqTable {
+    type Item = usize;
+
+    type IntoIter = FreqIter<ByteFreqTable, 8usize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FreqIter::into_iter(self)
+    }
+}
+
+
+impl std::iter::IntoIterator for ByteWordFreqTable {
+    type Item = usize;
+
+    type IntoIter = FreqIter<ByteWordFreqTable, 32usize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FreqIter::into_iter(self)
+    }
+}
+
+impl std::iter::IntoIterator for QuadrupleWordFreqTable {
+    type Item = usize;
+
+    type IntoIter = FreqIter<QuadrupleWordFreqTable, 128usize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FreqIter::into_iter(self)
     }
 }
