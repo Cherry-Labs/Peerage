@@ -29,6 +29,13 @@ impl NibbleCodec {
          }
     }
 
+    pub fn from_vec(
+        quadruple_words: Vec<QuadrupleWord>,
+        byte_words: Vec<ByteWord>,
+        bytes: Vec<Bytes>,
+        
+    )
+
     pub fn new_random() -> Self {
         let quadruple_words: PeerageCollection<QuadrupleWord> = coll![RandomQuadrupleWord::rng_inner();32];
         let byte_words: PeerageCollection<ByteWord> = coll![RandomByteWord::rng_inner();16];

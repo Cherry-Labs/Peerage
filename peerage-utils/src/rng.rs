@@ -1,6 +1,7 @@
 use shuffle::shuffler::Shuffler;
 use shuffle::irs::Irs;
 use rand::rngs::mock::StepRng;
+use rand::Rng;
 
 
 
@@ -13,4 +14,13 @@ pub fn shufle_between_0_and_3() -> Vec<usize> {
     irs.shuffle(&mut input, &mut rng);
 
     input
+}
+
+pub fn rand_usize() -> usize {
+    let mut rng = rand::thread_rng();
+
+    let n: usize = rng.gen();
+
+
+    n
 }

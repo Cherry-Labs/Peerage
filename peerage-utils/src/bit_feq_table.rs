@@ -7,6 +7,10 @@ pub struct NibbleFreqTable {
 }
 
 impl NibbleFreqTable {
+    pub fn new_random() -> Self {
+        Self::from_usize_vec(vec![crate::rng::rand_usize(); 4])
+    }
+
     pub fn unravel(&self) -> Vec<usize> {
         vec![self.a, self.b, self.c, self.d]
     }
@@ -70,6 +74,10 @@ pub struct ByteFreqTable {
 }
 
 impl ByteFreqTable {
+    pub fn new_random() -> Self {
+        Self::from_usize_vec(vec![crate::rng::rand_usize(); 8])
+    }
+
     pub fn unravel(&self) -> Vec<usize> {
         vec![self.a.unravel(), self.b.unravel()]
             .into_iter()
@@ -151,6 +159,10 @@ pub struct ByteWordFreqTable {
 }
 
 impl ByteWordFreqTable {
+    pub fn new_random() -> Self {
+        Self::from_usize_vec(vec![crate::rng::rand_usize(); 32])
+    }
+
     pub fn unravel(&self) -> Vec<usize> {
         vec![self.a,
                 self.b,
@@ -246,6 +258,11 @@ pub struct QuadrupleWordFreqTable {
 
 
 impl QuadrupleWordFreqTable {
+    pub fn new_random() -> Self {
+        Self::from_usize_vec(vec![crate::rng::rand_usize(); 128])
+    }
+
+    
     pub fn unravel(&self) -> Vec<usize> {
         vec![
                 self.a,

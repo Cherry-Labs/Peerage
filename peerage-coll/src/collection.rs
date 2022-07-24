@@ -383,3 +383,16 @@ impl<T: Clone +
                 }
             }
         }
+
+
+impl<T: Clone + Copy + Default> From<Vec<T>> for PeerageCollection<T> {
+    fn from(v: Vec<T>) -> Self {
+        Self::from_vector(v)
+    }
+}
+
+impl<T: Clone + Copy + Default> Into<Vec<T>> for PeerageCollection<T> {
+    fn into(self) -> Vec<T> {
+        self.into_vec()
+    }
+}

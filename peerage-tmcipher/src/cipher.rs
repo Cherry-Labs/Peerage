@@ -28,10 +28,10 @@ impl Cipher {
         let bytes =  [RandomByte::rng_inner(); 8];
         let nibbles =  [RandomNibble::rng_inner(); 4];
         let freq_counters = (
-            NibbleFreqTable::new_zeros(),
-            ByteFreqTable::new_zeros(),
-            ByteWordFreqTable::new_zeros(),
-            QuadrupleWordFreqTable::new_zeros(),
+            NibbleFreqTable::new_random(),
+            ByteFreqTable::new_random(),
+            ByteWordFreqTable::new_random(),
+            QuadrupleWordFreqTable::new_random(),
         );
 
         Self { 
@@ -55,7 +55,9 @@ impl Cipher {
         
         let codec = NibbleCodec::new(quadruple_words, byte_words, bytes, nibbles);
         
-        codec.encode()
+        let s_self = codec.encode();
+
+        let s_keyphrase = self.keyphrase
     }
 
     fn decode_freqs(s: String) -> (String, String, String, String) {
@@ -140,14 +142,24 @@ impl Cipher {
          }
     }
 
-    fn do_one_round_qw_encrypt(&self, qw: QuadrupleWord) -> QuadrupleWord {
+    fn do_one_round_qw_encrypt(&mut self, qw: QuadrupleWord) -> QuadrupleWord {
         let mut res = qw.clone();
 
         for i in 0usize..32usize {
-            let qw_i = QuadrupleWord::from_usize(i);
+            self.freq_counters.3[i] = ((self.quadruple_words[i] % res) + i as u128).into_u128() as usize;
             res = self.quadruple_words[i] * qw_i;
             res = self.quadruple_words[i] + qw_i;
             res = self.quadruple_words[i] ^ qw_i;
+
+        }
+
+
+        for (j, k) in (0usize..128usize)
+                    .into_iter()
+                    .zip((0usize..128usize)
+                    .rev().into_iter()) 
+        {
+            res = res - (self.freq_counters.3[j] * self.freq_counters.3[k]) as u128;
         }
 
         res
@@ -156,12 +168,21 @@ impl Cipher {
     fn do_one_round_qw_decrypt(&self, qw: QuadrupleWord) -> QuadrupleWord {
         let mut res = qw.clone();
 
+        
         for i in 0usize..32usize {
             let qw_i = QuadrupleWord::from_usize(i);
             res = self.quadruple_words[i] ^ qw_i;
             res = self.quadruple_words[i] - qw_i;
             res = self.quadruple_words[i] / qw_i;
 
+        }
+
+        for (j, k) in (0usize..128usize)
+                    .into_iter()
+                    .zip((0usize..128usize)
+                    .rev().into_iter()) 
+        {
+            res = res + (self.freq_counters.3[j] / self.freq_counters.3[k]) as u128;
         }
 
         res

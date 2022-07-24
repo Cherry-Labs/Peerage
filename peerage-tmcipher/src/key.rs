@@ -91,4 +91,13 @@ impl KeyPhrase {
     
    
     }
+
+    pub fn encode(&self) -> String {
+        let quadruple_words = self.quadruple_words.to_vec();
+        let byte_words = self.byte_words.to_vec();
+        let bytes = self.bytes.to_vec();
+        let nibbles = self.nibbles.to_vec();
+
+        
+    }
 }
