@@ -4,6 +4,7 @@ use peerage_utils::{bin_utils::{QuadrupleWord, Byte, Nibble, ByteWord}, traits::
 use crate::key::KeyPhrase;
 use peerage_rand::rand::*;
 use peerage_coll::collection::PeerageCollection;
+use peerage_utils::bit_feq_table::*;
 
 #[derive(Clone, Copy)]
 pub struct Cipher {
@@ -12,6 +13,12 @@ pub struct Cipher {
     byte_words: [ByteWord; 16],
     bytes: [Byte; 8],
     nibbles: [Nibble; 4],
+    freq_counters: (
+        NibbleFreqTable,
+        ByteFreqTable,
+        ByteWordFreqTable,
+        QuadrupleWordFreqTable
+    )
 }
 
 impl Cipher {
@@ -20,13 +27,20 @@ impl Cipher {
         let byte_words =  [RandomByteWord::rng_inner(); 16];
         let bytes =  [RandomByte::rng_inner(); 8];
         let nibbles =  [RandomNibble::rng_inner(); 4];
+        let freq_counters = (
+            NibbleFreqTable::new_zeros(),
+            ByteFreqTable::new_zeros(),
+            ByteWordFreqTable::new_zeros(),
+            QuadrupleWordFreqTable::new_zeros(),
+        );
 
         Self { 
             keyphrase,
             bytes,
             nibbles, 
             byte_words, 
-            quadruple_words 
+            quadruple_words,
+            freq_counters,
         }
 
     }
@@ -44,7 +58,35 @@ impl Cipher {
         codec.encode()
     }
 
-    pub fn from_encoded(s_self: String, s_keyphrase: String) -> Self {
+    fn decode_freqs(s: String) -> (String, String, String, String) {
+        // -> //NIB//12.13.12.12//BYT//23.22.
+        
+        let mut s_split = s.split("//");
+
+        let mut s_1 = String::new();
+        let mut s_2 = String::new();
+        let mut s_3 = String::new();
+        let mut s_4 = String::new();
+
+        loop {
+            match s_split.next() {
+                Some(str) => {
+                    match str {
+                        "NIB" => s_1 = s_split.next().unwrap().to_string(),
+                        "BYT" => s_2 = s_split.next().unwrap().to_string(),
+                        "BYW" => s_3 = s_split.next().unwrap().to_string(),
+                        "QYW" => s_4 = s_split.next().unwrap().to_string(),
+                        _ => continue,
+                    }
+                },
+                None => break,
+            }
+        }
+
+        (s_1, s_2, s_3, s_4)
+    }
+
+    pub fn from_encoded(s_self: String, s_keyphrase: String, s_freq: String) -> Self {
         let rand_codec = NibbleCodec::decodec(s_self);
 
         let qw_rand = rand_codec.get_qw().into_vec();
@@ -76,12 +118,25 @@ impl Cipher {
 
         let keyphrase = KeyPhrase::from_encoded(s_keyphrase);
 
+        let (nib_freq, 
+            byt_freq,
+            byw_freq,
+            qyw_freq) = Self::decode_freqs(s_freq);
+        
+        let freq_counters = (
+            NibbleFreqTable::from_enc_str(nib_freq),
+            ByteFreqTable::from_enc_str(byt_freq),
+            ByteWordFreqTable::from_enc_str(byw_freq),
+            QuadrupleWordFreqTable::from_enc_str(qyw_freq),
+        );
+
         Self { 
             keyphrase,
             quadruple_words, 
             byte_words, 
             bytes, 
-            nibbles
+            nibbles,
+            freq_counters,
          }
     }
 

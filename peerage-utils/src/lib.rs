@@ -6,7 +6,7 @@ pub mod bin_utils;
 pub mod traits;
 mod rng;
 mod tty;
-mod bit_feq_table;
+pub mod bit_feq_table;
 
 #[cfg(test)]
 mod tests {

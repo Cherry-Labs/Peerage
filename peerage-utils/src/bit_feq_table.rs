@@ -10,6 +10,10 @@ impl NibbleFreqTable {
     pub fn unravel(&self) -> Vec<usize> {
         vec![self.a, self.b, self.c, self.d]
     }
+    
+    pub fn new_zeros() -> Self {
+        Self::from_usize_vec(vec![0; 4])
+    }
 
     pub fn from_usize_vec(v: Vec<usize>) -> Self {
         assert_eq!(v.len(), 4);
@@ -18,7 +22,16 @@ impl NibbleFreqTable {
     }
 
     pub fn from_enc_str(s: String) -> Self {
-        
+        let v = s.split(".")
+                            .map(|x| {
+                                x.chars().map(|x| x.is_numeric());
+
+                                usize::from_str_radix(&format!("{x}"), 10).unwrap()
+                            })
+                            .collect::<Vec<usize>>();
+
+
+        Self::from_usize_vec(v)
     }
 }
 
@@ -64,6 +77,10 @@ impl ByteFreqTable {
             .collect::<Vec<usize>>()
     }
 
+    pub fn new_zeros() -> Self {
+        Self::from_usize_vec(vec![0; 8])
+    }
+
     pub fn from_nibbles(v: Vec<NibbleFreqTable>) -> Self {
         assert_eq!(v.len(), 2);
 
@@ -84,6 +101,19 @@ impl ByteFreqTable {
         }
 
         Self::from_nibbles(v_nibbles)
+    }
+
+    pub fn from_enc_str(s: String) -> Self {
+        let v = s.split(".")
+                            .map(|x| {
+                                x.chars().map(|x| x.is_numeric());
+
+                                usize::from_str_radix(&format!("{x}"), 10).unwrap()
+                            })
+                            .collect::<Vec<usize>>();
+
+
+        Self::from_usize_vec(v)
     }
 
 }
@@ -132,6 +162,10 @@ impl ByteWordFreqTable {
                     .collect::<Vec<usize>>()
     }
 
+    pub fn new_zeros() -> Self {
+        Self::from_usize_vec(vec![0; 32])
+    }
+
     pub fn from_bytes(v: Vec<ByteFreqTable>) -> Self {
         assert_eq!(v.len(), 4);
 
@@ -152,6 +186,19 @@ impl ByteWordFreqTable {
         }
 
         Self::from_bytes(v_bytes)
+    }
+
+    pub fn from_enc_str(s: String) -> Self {
+        let v = s.split(".")
+                            .map(|x| {
+                                x.chars().map(|x| x.is_numeric());
+
+                                usize::from_str_radix(&format!("{x}"), 10).unwrap()
+                            })
+                            .collect::<Vec<usize>>();
+
+
+        Self::from_usize_vec(v)
     }
 }
 
@@ -212,6 +259,10 @@ impl QuadrupleWordFreqTable {
             .collect::<Vec<usize>>()
     }
 
+    pub fn new_zeros() -> Self {
+        Self::from_usize_vec(vec![0; 128])
+    }
+
     pub fn from_byte_words(v: Vec<ByteWordFreqTable>) -> Self {
         assert_eq!(v.len(), 4);
 
@@ -232,6 +283,19 @@ impl QuadrupleWordFreqTable {
         }
 
         Self::from_byte_words(v_byte_words)
+    }
+
+    pub fn from_enc_str(s: String) -> Self {
+        let v = s.split(".")
+                            .map(|x| {
+                                x.chars().map(|x| x.is_numeric());
+
+                                usize::from_str_radix(&format!("{x}"), 10).unwrap()
+                            })
+                            .collect::<Vec<usize>>();
+
+
+        Self::from_usize_vec(v)
     }
 }
 
