@@ -1,53 +1,94 @@
-use peerage_utils::bin_utils::QuadrupleWord;
-use peerage_rand::quadrupleword::RandomQuadrupleWord;
+use peerage_utils::bin_utils::{QuadrupleWord, ByteWord, Byte, Nibble};
 use peerage_codecs::nibble_codec::NibbleCodec;
 
 
 #[derive(Clone, Copy)]
-pub struct KeyPhrase([QuadrupleWord; 8]);
+pub struct KeyPhrase {
+    quadruple_words: [QuadrupleWord; 32],
+    byte_words: [ByteWord; 16],
+    bytes: [Byte; 8],
+    nibbles: [Nibble; 4],
+}
 
 impl KeyPhrase {
-    pub fn from_str(s: String) -> Self {
-        if s.len() != 128 {
-            panic!("Key length must be equal to 128")
-        }
-        let rand_element = RandomQuadrupleWord::new().rng();
+   pub fn new() -> Self {
+        let rand_codec = NibbleCodec::new_random();
 
-        let mut key = [QuadrupleWord::default(); 8];
-                let rand_element = RandomQuadrupleWord::new().rng();
-
-        let mut ind = 0usize;
-
-        for i in (0..128).step_by(16) {
-            let sub_str = &s[i..i + 16];
-
-            key[ind] = QuadrupleWord::from_string(sub_str.to_string()) + rand_element;
-
-            ind += 1;
-        }
-
-        let key_str = s.clone();
+        let qw_rand = rand_codec.get_qw().into_vec();
+        let bw_rand = rand_codec.get_bw().into_vec();
+        let by_rand = rand_codec.get_by().into_vec();
+        let ni_rand = rand_codec.get_ni().into_vec();
 
 
-        KeyPhrase(key)
-    }
+        let mut quadruple_words = [QuadrupleWord::default(); 32];
+        let mut byte_words = [ByteWord::default(); 16];
+        let mut bytes = [Byte::default(); 8];
+        let mut nibbles = [Nibble::default(); 4];
 
-    pub fn from_nibble_codec(s: String) -> Self {
-        let vec_qw = NibbleCodec::decodec(s);
-
-        let mut key = [QuadrupleWord::default(); 8];
-
-        for i in 0..vec_qw.len() {
-            key[i] = vec_qw[i];
+        for i in 0usize..32usize {
+            quadruple_words[i] = qw_rand[i];
         }
 
-        KeyPhrase(key)
-    }
+        for i in 0usize..16usize {
+            byte_words[i] = bw_rand[i];
+        }
 
-    pub fn encde_nibble(&self) -> String {
-        let KeyPhrase(self_keys) = self;
-        let self_key_vec = self_keys.to_vec();
+        for i in 0usize..8usize {
+            bytes[i] = by_rand[i];
+        }
 
-        NibbleCodec::encode(self_key_vec)
+        for i in 0usize..4usize {
+            nibbles[i] = ni_rand[i];
+        }
+
+        Self { 
+            quadruple_words, 
+            byte_words, 
+            bytes, 
+            nibbles
+         }
+    
+   
+   
+    }    
+
+    pub fn from_encoded(s: String) -> Self {
+        let rand_codec = NibbleCodec::decodec(s);
+
+        let qw_rand = rand_codec.get_qw().into_vec();
+        let bw_rand = rand_codec.get_bw().into_vec();
+        let by_rand = rand_codec.get_by().into_vec();
+        let ni_rand = rand_codec.get_ni().into_vec();
+
+
+        let mut quadruple_words = [QuadrupleWord::default(); 32];
+        let mut byte_words = [ByteWord::default(); 16];
+        let mut bytes = [Byte::default(); 8];
+        let mut nibbles = [Nibble::default(); 4];
+
+        for i in 0usize..32usize {
+            quadruple_words[i] = qw_rand[i];
+        }
+
+        for i in 0usize..16usize {
+            byte_words[i] = bw_rand[i];
+        }
+
+        for i in 0usize..8usize {
+            bytes[i] = by_rand[i];
+        }
+
+        for i in 0usize..4usize {
+            nibbles[i] = ni_rand[i];
+        }
+
+        Self { 
+            quadruple_words, 
+            byte_words, 
+            bytes, 
+            nibbles
+         }
+    
+   
     }
 }

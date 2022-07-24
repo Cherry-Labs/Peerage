@@ -14,11 +14,12 @@ pub struct NibbleCodec {
 
 
 impl NibbleCodec {
-    fn new(
+    pub fn new(
         quadruple_words: PeerageCollection<QuadrupleWord>,
-        nibbles: PeerageCollection<Nibble>,
         byte_words: PeerageCollection<ByteWord>,
-        bytes: PeerageCollection<Byte>
+        bytes: PeerageCollection<Byte>,
+        nibbles: PeerageCollection<Nibble>,
+
     ) -> Self {
         Self { 
             quadruple_words,
@@ -42,6 +43,22 @@ impl NibbleCodec {
          }
 
     
+    }
+
+    pub fn get_qw(&self) -> PeerageCollection<QuadrupleWord> {
+        self.quadruple_words.clone()
+    }
+
+    pub fn get_bw(&self) -> PeerageCollection<ByteWord> {
+        self.byte_words.clone()
+    }
+
+    pub fn get_by(&self) -> PeerageCollection<Byte> {
+        self.bytes.clone()
+    }
+
+    pub fn get_ni(&self) -> PeerageCollection<Nibble> {
+        self.nibbles.clone()
     }
 
     pub fn encode(&self) -> String {
@@ -251,7 +268,7 @@ impl NibbleCodec {
                 let nibbles = PeerageCollection::from_vector(self.nibbles.clone());
 
 
-                NibbleCodec::new(quadruple_words, nibbles, byte_words, bytes)
+                NibbleCodec::new(quadruple_words, byte_words, bytes, nibbles)
             }
 
         }

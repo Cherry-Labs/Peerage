@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "*"
+peerage-coll = { path = "../peerage-coll" }
 peerage-utils = { path = "../peerage-utils" }
 peerage-rand = { path = "../peerage-rand" }
 peerage-codecs = { path = "../peerage-codecs" }

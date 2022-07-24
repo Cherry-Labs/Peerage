@@ -90,6 +90,8 @@ lazy_static! {
         hm
     };
 
+
+
 }
 
 
@@ -150,6 +152,23 @@ impl Bit {
         }
     }
 
+    pub fn nand(&self, other: Self) -> Self {
+        match self {
+            Bit::One => {
+                match other {
+                    Bit::One => Self::Zero,
+                    Bit::Zero => Self::One,
+                }
+            },
+            Bit::Zero => {
+                match other {
+                    Bit::One => Self::One,
+                    Bit::Zero => Self::One,
+                }
+            },
+        }
+    }
+
     pub fn or(&self, other: Bit) -> Bit {
         match other {
             Bit::One => {
@@ -182,6 +201,30 @@ impl Bit {
                 }
             },
         }
+    }
+
+    pub fn not_self(&self) -> Self {
+        match self {
+            Bit::One => Self::Zero,
+            Bit::Zero => Self::One,
+        }
+    }
+}
+
+
+impl std::ops::Not for Bit {
+    type Output = Bit;
+
+    fn not(self) -> Self::Output {
+        self.not_self()
+    }
+}
+
+impl std::ops::Neg for Bit  {
+    type Output = Bit;
+
+    fn neg(self) -> Self::Output {
+        self.not_self()
     }
 }
 
@@ -448,6 +491,31 @@ impl Nibble {
         zero
     }
 
+    pub fn neg_self(&self) -> Self {
+        let self_vec = self.unwrap_to_vec();
+
+        let mut v: Vec<Bit> = vec![Bit::default(); 4];
+
+        for i in 0usize..4usize {
+            v[i] = -self_vec[i]
+        }
+
+        Self::from_vec(v)
+    }
+
+    pub fn nand_together(&self, other: Self) -> Self {
+        let self_unwrapped = self.unwrap_to_vec();
+        let other_unwrapped = other.unwrap_to_vec();
+
+        let mut v = vec![Bit::default(); 4];
+
+        for i in 0usize..4usize {
+            v[i] = self_unwrapped[i].nand(other_unwrapped[i]);
+        }
+
+        Self::from_vec(v)
+    }
+
     pub fn and_together(&self, other: Self) -> Self {
         let mut zero = Self::new_zeros();
 
@@ -649,6 +717,15 @@ impl Nibble {
         Self::from_vec(res)
     }
 }
+
+impl std::ops::Neg for Nibble {
+    type Output = Nibble;
+
+    fn neg(self) -> Self::Output {
+        self.neg_self()
+    }
+}
+
 
 impl std::ops::Index<usize> for Nibble {
     type Output = Bit;
@@ -937,6 +1014,37 @@ impl Byte {
                     .collect::<Vec<Bit>>();
 
         Self::from_bit_vec_le(flattened)
+    }
+
+    pub fn neg_self(&self) -> Self {
+        let self_vec = self.unravel();
+
+        let mut v: Vec<Bit> = vec![Bit::default(); 8];
+
+        for i in 0usize..8usize {
+            v[i] = -self_vec[i]
+        }
+
+        match self.endian {
+            Endian::Little => Self::from_bit_vec_le(v),
+            Endian::Big => Self::from_bit_vec_be(v),
+        }
+    }
+
+    pub fn nand_together(&self, other: Self) -> Self {
+        let self_unwrapped = self.unravel();
+        let other_unwrapped = other.unravel();
+
+        let mut v = vec![Bit::default(); 8];
+
+        for i in 0usize..8usize {
+            v[i] = self_unwrapped[i].nand(other_unwrapped[i]);
+        }
+
+        match self.endian {
+            Endian::Little => Self::from_bit_vec_le(v),
+            Endian::Big => Self::from_bit_vec_be(v),
+        }
     }
 
     pub fn and(&self, other: Self) -> Byte {
@@ -1241,6 +1349,15 @@ impl Byte {
     
 }
 
+
+impl std::ops::Neg for Byte {
+    type Output = Byte;
+
+    fn neg(self) -> Self::Output {
+        self.neg_self()
+    }
+}
+
 impl std::ops::Index<usize> for Byte {
     type Output = Bit;
 
@@ -1486,6 +1603,31 @@ impl ByteWord {
         let bytes_unraveled = self.unravel_byte();
 
         bytes_unraveled.into_iter().map(|x| x.unravel()).flatten().collect::<Vec<Bit>>()
+    }
+
+    pub fn neg_self(&self) -> Self {
+        let self_vec = self.unravel_bit();
+
+        let mut v: Vec<Bit> = vec![Bit::default(); 32];
+
+        for i in 0usize..32usize {
+            v[i] = -self_vec[i]
+        }
+
+        Self::from_32_bits(v)
+    }
+
+    pub fn nand_together(&self, other: Self) -> Self {
+        let self_unwrapped = self.unravel_bit();
+        let other_unwrapped = other.unravel_bit();
+
+        let mut v = vec![Bit::default(); 32];
+
+        for i in 0usize..32usize {
+            v[i] = self_unwrapped[i].nand(other_unwrapped[i]);
+        }
+
+        Self::from_32_bits(v)
     }
 
     pub fn and(&self, other: ByteWord) -> ByteWord {
@@ -1825,6 +1967,14 @@ impl ByteWord {
 
 }
 
+impl std::ops::Neg for ByteWord {
+    type Output = ByteWord;
+
+    fn neg(self) -> Self::Output {
+        self.neg_self()
+    }
+}
+
 impl std::ops::BitAnd for ByteWord {
     type Output = ByteWord;
 
@@ -2138,6 +2288,31 @@ impl QuadrupleWord {
         Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
     }
 
+    pub fn neg_self(&self) -> Self {
+        let self_vec = self.into_bits();
+
+        let mut v: Vec<Bit> = vec![Bit::default(); 128];
+
+        for i in 0usize..128usize {
+            v[i] = -self_vec[i]
+        }
+
+        Self::from_128_bits(v)
+    }
+
+    pub fn nand_together(&self, other: Self) -> Self {
+        let self_unwrapped = self.into_bits();
+        let other_unwrapped = other.into_bits();
+
+        let mut v = vec![Bit::default(); 128];
+
+        for i in 0usize..128usize {
+            v[i] = self_unwrapped[i].nand(other_unwrapped[i]);
+        }
+
+        Self::from_128_bits(v)
+    }
+
     pub fn and_together(&self, other: Self) -> QuadrupleWord {
         let upper_word = self.upper_word & other.upper_word;
         let mid_upper_word = self.mid_upper_word & other.mid_upper_word;
@@ -2436,3 +2611,10 @@ impl std::ops::IndexMut<usize> for QuadrupleWord {
 }
 
 
+impl std::ops::Neg for QuadrupleWord {
+    type Output = QuadrupleWord;
+
+    fn neg(self) -> Self::Output {
+        self.neg_self()
+    }
+}
