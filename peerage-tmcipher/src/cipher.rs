@@ -18,7 +18,8 @@ pub struct Cipher {
         ByteFreqTable,
         ByteWordFreqTable,
         QuadrupleWordFreqTable
-    )
+    ),
+    sub
 }
 
 impl Cipher {
@@ -256,5 +257,323 @@ impl Cipher {
             .collect::<Vec<Bit>>()
     
     }
+
+    fn freq_round_one_of_four_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 4 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (nib_freq, _, _, _) = self.freq_counters;
+        
+        let mut freq_iter = nib_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one - curr_freq;
+                
+            };
+
+            let two = one * (freq_iter.get_quarters() as u8);
+            let three = two / (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one - two - three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
     
+    }
+
+
+    fn freq_round_two_of_four_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 8 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (_, byt_freq, _, _) = self.freq_counters;
+        
+        let mut freq_iter = byt_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one * curr_freq;
+                
+            };
+
+            let two = one + (freq_iter.get_quarters() as u8);
+            let three = two - (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one / two / three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
+    }
+
+
+
+    fn freq_round_two_of_four_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 8 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (_, byt_freq, _, _) = self.freq_counters;
+        
+        let mut freq_iter = byt_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one / curr_freq;
+                
+            };
+
+            let two = one - (freq_iter.get_quarters() as u8);
+            let three = two + (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one * two * three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
+    }
+
+    fn freq_round_thee_of_four_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 8 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (_, _, byw_freq, _) = self.freq_counters;
+        
+        let mut freq_iter = byw_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one + curr_freq;
+                
+            };
+
+            let two = one * (freq_iter.get_quarters() as u8);
+            let three = two / (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one * two / three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
+    }
+
+
+    fn freq_round_thee_of_four_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 8 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (_, _, byw_freq, _) = self.freq_counters;
+        
+        let mut freq_iter = byw_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one - curr_freq;
+                
+            };
+
+            let two = one / (freq_iter.get_quarters() as u8);
+            let three = two * (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one / two * three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
+    }
+
+    fn freq_round_four_of_four_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 8 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (_, _, _, qyw_freq) = self.freq_counters;
+        
+        let mut freq_iter = qyw_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one / curr_freq;
+                
+            };
+
+            let two = one - (freq_iter.get_quarters() as u8);
+            let three = two * (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one + two - three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
+    }
+
+    fn freq_round_four_of_four_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let mut bits_clone = bits.clone();
+
+        while bits_clone.len() % 8 != 0 {
+            bits_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let (_, _, _, qyw_freq) = self.freq_counters;
+        
+        let mut freq_iter = qyw_freq.into_iter();
+
+        let mut opped_vec: Vec<Nibble>= vec![];
+
+        for i in (0usize..bits_clone.len()).step_by(4) {
+            let v = bits_clone[i..i + 4].to_vec();
+
+            let obj = Nibble::from_vec(v);
+
+            let mut one = Nibble::new_zeros();
+            
+            for _ in 0..freq_iter.clone().count() {
+                let curr_freq= freq_iter.next().unwrap() as u8;
+
+                one = one * curr_freq;
+                
+            };
+
+            let two = one + (freq_iter.get_quarters() as u8);
+            let three = two / (freq_iter.get_three_fourths() as u8);
+
+
+            let four = one - two + three;
+
+            opped_vec.extend(vec!(one, two, three, four));
+
+        }
+
+        opped_vec
+            .into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    
+    }
 }

@@ -70,6 +70,95 @@ impl std::ops::IndexMut<usize> for NibbleFreqTable {
 }
 
 #[derive(Clone, Copy)]
+pub struct SessetFreqTable {
+    a: usize,
+    b: usize,
+    c: usize,
+    d: usize,
+    e: usize,
+    f: usize,
+}
+
+impl SessetFreqTable {
+    pub fn new_random() -> Self {
+        Self::from_usize_vec(vec![crate::rng::rand_usize(); 6])
+    }
+
+    pub fn unravel(&self) -> Vec<usize> {
+        vec![
+            self.a, 
+            self.b, 
+            self.c, 
+            self.d,
+            self.e,
+            self.f,
+        ]
+    }
+    
+    pub fn new_zeros() -> Self {
+        Self::from_usize_vec(vec![0; 6])
+    }
+
+    pub fn from_usize_vec(v: Vec<usize>) -> Self {
+        assert_eq!(v.len(), 6);
+
+        Self { 
+            a: v[0], 
+            b: v[1], 
+            c: v[2], 
+            d: v[3],
+            e: v[4],
+            f: v[5]
+        }
+    }
+
+    pub fn from_enc_str(s: String) -> Self {
+        let v = s.split(".")
+                            .map(|x| {
+                                x.chars().map(|x| x.is_numeric());
+
+                                usize::from_str_radix(&format!("{x}"), 10).unwrap()
+                            })
+                            .collect::<Vec<usize>>();
+
+
+        Self::from_usize_vec(v)
+    }
+}
+
+impl std::ops::Index<usize> for SessetFreqTable {
+    type Output = usize;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.a,
+            1 => &self.b,
+            2 => &self.c,
+            3 => &self.d,
+            4 => &self.e,
+            5 => &self.f,
+            _ => panic!("Index should not be larger than 5")
+
+        }
+    }
+}
+
+impl std::ops::IndexMut<usize> for SessetFreqTable {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.a,
+            1 => &mut self.b,
+            2 => &mut self.c,
+            3 => &mut self.d,
+            4 => &mut self.e,
+            5 => &mut self.f,
+            _ => panic!("Index should not be larger than 5")
+
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
 pub struct ByteFreqTable {
     a: NibbleFreqTable,
     b: NibbleFreqTable,
@@ -151,6 +240,9 @@ impl std::ops::IndexMut<usize> for ByteFreqTable {
         }
     }
 }
+
+
+
 
 #[derive(Clone, Copy)]
 pub struct ByteWordFreqTable {
@@ -246,6 +338,91 @@ impl std::ops::IndexMut<usize> for ByteWordFreqTable {
             &mut self.d[index % 8]
         } else {
             panic!("Index must not be larger than 31")
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct DoubleWordFreqTable {
+    a: ByteWordFreqTable,
+    b: ByteWordFreqTable,
+}
+
+
+impl DoubleWordFreqTable {
+    pub fn new_random() -> Self {
+        Self::from_usize_vec(vec![crate::rng::rand_usize(); 64])
+    }
+
+    
+    pub fn unravel(&self) -> Vec<usize> {
+        vec![
+                self.a,
+                self.b,
+            ]
+            .into_iter()
+            .map(|x| x.unravel())
+            .flatten()
+            .collect::<Vec<usize>>()
+    }
+
+    pub fn new_zeros() -> Self {
+        Self::from_usize_vec(vec![0; 64])
+    }
+
+    pub fn from_byte_words(v: Vec<ByteWordFreqTable>) -> Self {
+        assert_eq!(v.len(), 4);
+
+        Self { a: v[0], b: v[1] }
+    }
+
+    pub fn from_usize_vec(v: Vec<usize>) -> Self {
+        assert_eq!(v.len(), 64);
+
+        let mut v_byte_words: Vec<ByteWordFreqTable> = vec![];
+
+        for i in (0..64).step_by(32) {
+            let curr_v = v[i..i + 32].to_vec();
+
+            let byte_word_freq = ByteWordFreqTable::from_usize_vec(curr_v);
+
+            v_byte_words.push(byte_word_freq);
+        }
+
+        Self::from_byte_words(v_byte_words)
+    }
+
+    pub fn from_enc_str(s: String) -> Self {
+        let v = s.split(".")
+                            .map(|x| {
+                                x.chars().map(|x| x.is_numeric());
+
+                                usize::from_str_radix(&format!("{x}"), 10).unwrap()
+                            })
+                            .collect::<Vec<usize>>();
+
+
+        Self::from_usize_vec(v)
+    }
+}
+
+impl std::ops::Index<usize> for DoubleWordFreqTable {
+    type Output = usize;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index > 32 {
+            true => &self.b[index % 32],
+            false => &self.a[index]
+        }
+    }
+}
+
+
+impl std::ops::IndexMut<usize> for DoubleWordFreqTable {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index > 32 {
+            true => &mut self.b[index % 32],
+            false => &mut self.a[index]
         }
     }
 }
@@ -364,11 +541,12 @@ pub trait Indexer: Copy + Clone +std::ops::Index<
 pub struct FreqIter<T: Indexer, const M: usize> {
     object: T,
     index: usize,
+    index_impl: usize, 
 }
 
 impl<T: Indexer, const M: usize> FreqIter<T, M> {
     pub fn into_iter(object: T) -> Self {
-        Self { object, index: 0usize }
+        Self { object, index: 0usize, index_impl: 0usize }
     }
     
     pub fn get_index(&self) -> usize {
@@ -380,6 +558,10 @@ impl<T: Indexer, const M: usize> FreqIter<T, M> {
             true => self.index = 0,
             false => self.index += 1,
         }
+    }
+
+    pub fn index_increase_impl(&mut self) {
+        self.index_impl += 1;
     }
 
     pub fn get_middle(&self) -> usize {
@@ -409,19 +591,36 @@ impl<T: Indexer, const M: usize> std::iter::Iterator for FreqIter<T, M> {
     fn next(&mut self) -> Option<Self::Item> {
         let item = self.get_index();
         self.increase_index();
-        Some(item)
+        self.index_increase_impl();
+        
+        match self.index % M == 0 {
+            true => None,
+            false => Some(item),
+        }
     }
 }
 
 impl Indexer for NibbleFreqTable {}
+impl Indexer for SessetFreqTable {}
 impl Indexer for ByteFreqTable {}
 impl Indexer for ByteWordFreqTable {}
+impl Indexer for DoubleWordFreqTable {}
 impl Indexer for QuadrupleWordFreqTable {}
 
 impl<'a> std::iter::IntoIterator for NibbleFreqTable {
     type Item = usize;
 
     type IntoIter = FreqIter<NibbleFreqTable, 4usize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FreqIter::into_iter(self)
+    }
+}
+
+impl std::iter::IntoIterator for SessetFreqTable {
+    type Item = usize;
+
+    type IntoIter = FreqIter<SessetFreqTable, 6usize>;
 
     fn into_iter(self) -> Self::IntoIter {
         FreqIter::into_iter(self)
@@ -449,6 +648,16 @@ impl std::iter::IntoIterator for ByteWordFreqTable {
     }
 }
 
+impl std::iter::IntoIterator for DoubleWordFreqTable {
+    type Item = usize;
+
+    type IntoIter = FreqIter<DoubleWordFreqTable, 64usize>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FreqIter::into_iter(self)
+    }
+}
+
 impl std::iter::IntoIterator for QuadrupleWordFreqTable {
     type Item = usize;
 
@@ -458,3 +667,4 @@ impl std::iter::IntoIterator for QuadrupleWordFreqTable {
         FreqIter::into_iter(self)
     }
 }
+
