@@ -69,7 +69,7 @@ impl RandomByte {
     }
 
     pub fn rng(&mut self) -> Byte {
-        if self.index >= 1024 {
+        if self.index >= 32 {
             self.twist();
         }
 
@@ -88,9 +88,9 @@ impl RandomByte {
         let two_qdw = Byte::from_decimal(2, Endian::Little);
         let qdw_zero = Byte::new_zeros();
 
-        for i in 0usize..1024 - 1 {
+        for i in 0usize..32 - 1 {
             let x = self.mt[i] & self.upper_mask;
-            let y = self.mt[(i + 1) % 1024] & self.lower_mask;
+            let y = self.mt[(i + 1) % 32] & self.lower_mask;
             
             let xy = x + y;
 

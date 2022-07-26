@@ -1,32 +1,32 @@
 use peerage_coll::collection::PeerageCollection;
-use peerage_utils::bin_utils::Nibble;
+use peerage_utils::bin_utils::ByteWord;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Copy, Default)]
-pub struct RandomNibble {
-    mt: PeerageCollection<Nibble>,
+pub struct RandomByteWord {
+    mt: PeerageCollection<ByteWord>,
     index: usize,
-    lower_mask: Nibble,
-    upper_mask: Nibble,
-    f: Nibble,
+    lower_mask: ByteWord,
+    upper_mask: ByteWord,
+    f: ByteWord,
     w: usize,
-    m: Nibble,
-    r: Nibble,
-    a: Nibble,
+    m: ByteWord,
+    r: ByteWord,
+    a: ByteWord,
 
 }
 
-impl RandomNibble {
+impl RandomByteWord {
     pub fn new() -> Self {
         let seed_quadrupleword = Self::get_seed();
-        let mt = PeerageCollection::<Nibble>::new_i0_from_item(seed_quadrupleword);
+        let mt = PeerageCollection::<ByteWord>::new_i0_from_item(seed_quadrupleword);
         let index = 1024usize + 1;
-        let f = Nibble::from_4_bit_number(2);
+        let f = ByteWord::from_u32(500);
         let w = 128usize;
-        let m = Nibble::from_4_bit_number(8);
-        let r = Nibble::from_4_bit_number(10);
-        let a = Nibble::from_4_bit_number(15);
-        let lower_mask = (r >> 1) - Nibble::from_4_bit_number(5);
+        let m = ByteWord::from_u32(64);
+        let r = ByteWord::from_u32(80);
+        let a = ByteWord::from_u32(10);
+        let lower_mask = (r >> 1) - ByteWord::from_u32(1);
         let upper_mask = seed_quadrupleword - lower_mask; 
 
         Self { 
@@ -43,7 +43,7 @@ impl RandomNibble {
 
     }
 
-    fn get_seed() -> Nibble {
+    fn get_seed() -> ByteWord {
         let start = SystemTime::now();
         let since_the_epoch = start
             .duration_since(UNIX_EPOCH)
@@ -53,7 +53,7 @@ impl RandomNibble {
         let duration_usize = (since_the_epoch.as_secs_f32() / 1000_000.0) as usize;
 
       
-        let qdp = Nibble::from_4_bit_number(duration_usize as u8 % 15);
+        let qdp = ByteWord::from_u32(duration_usize as u32);
     
         return qdp
     }
@@ -63,13 +63,13 @@ impl RandomNibble {
         self.mt[0] = Self::get_seed();
 
         for i in 1..index {
-            let i_qdw = Nibble::from_4_bit_number(i as u8);
+            let i_qdw = ByteWord::from_u32(i as u32);
             self.mt[i] = (self.f * (self.mt[i - 1] ^ (self.mt[i - 1] >> (self.w - 2))) + i_qdw) 
         }
     }
 
-    pub fn rng(&mut self) -> Nibble {
-        if self.index >= 24 {
+    pub fn rng(&mut self) -> ByteWord {
+        if self.index >= 256 {
             self.twist();
         }
 
@@ -85,12 +85,12 @@ impl RandomNibble {
     }
 
     fn twist(&mut self) {
-        let two_qdw = Nibble::from_4_bit_number(2);
-        let qdw_zero = Nibble::new_zeros();
+        let two_qdw = ByteWord::from_u32(2);
+        let qdw_zero = ByteWord::new_zeros();
 
-        for i in 0usize..24 - 1 {
+        for i in 0usize..256 - 1 {
             let x = self.mt[i] & self.upper_mask;
-            let y = self.mt[(i + 1) % 24] & self.lower_mask;
+            let y = self.mt[(i + 1) % 256] & self.lower_mask;
             
             let xy = x + y;
 
@@ -103,13 +103,13 @@ impl RandomNibble {
                 }
             }
             
-            self.mt[i] = self.mt[((i as u8 + self.m.to_decimal()) % 15u8) as usize] ^ x_a;
+            self.mt[i] = self.mt[((i as u32 + self.m.into_u32()) % u32::MAX) as usize] ^ x_a;
         }
 
         self.index = 0;
     }
 
-    pub fn rng_inner() -> Nibble {
+    pub fn rng_inner() -> ByteWord {
         Self::new().rng()
     }
 
