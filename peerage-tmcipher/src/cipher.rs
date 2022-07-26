@@ -1,6 +1,7 @@
 use crate::constants::*;
 use peerage_codecs::nibble_codec::NibbleCodec;
-use peerage_utils::{bin_utils::{QuadrupleWord, Byte, Nibble, ByteWord, Bit}, traits::Key};
+use peerage_utils::bin_utils::*;
+use peerage_utils::traits::Key;
 use crate::key::KeyPhrase;
 use peerage_rand::rand::*;
 use peerage_coll::collection::PeerageCollection;
@@ -9,38 +10,49 @@ use peerage_utils::bit_feq_table::*;
 #[derive(Clone, Copy)]
 pub struct Cipher {
     keyphrase: KeyPhrase,
-    quadruple_words: [QuadrupleWord; 32],
-    byte_words: [ByteWord; 16],
+    quadruple_words: [QuadrupleWord; 128],
+    double_words: [DoubleWord; 64],
+    byte_words: [ByteWord; 32],
     bytes: [Byte; 8],
+    sessets: [Sesset; 6],
     nibbles: [Nibble; 4],
     freq_counters: (
         NibbleFreqTable,
+        SessetFreqTable,
         ByteFreqTable,
         ByteWordFreqTable,
+        DoubleWordFreqTable,
         QuadrupleWordFreqTable
     ),
 }
 
 impl Cipher {
     pub fn new(keyphrase: KeyPhrase) -> Self {
-        let quadruple_words =  [RandomQuadrupleWord::rng_inner(); 32];
-        let byte_words =  [RandomByteWord::rng_inner(); 16];
+        let quadruple_words =  [RandomQuadrupleWord::rng_inner(); 128];
+        let double_words = [RandomDoubleWord::rng_inner(); 64];
+        let byte_words =  [RandomByteWord::rng_inner(); 32];
         let bytes =  [RandomByte::rng_inner(); 8];
+        let sessets = [RandomSesset::rng_inner(); 6];
         let nibbles =  [RandomNibble::rng_inner(); 4];
+        
         let freq_counters = (
             NibbleFreqTable::new_random(),
+            SessetFreqTable::new_random(),
             ByteFreqTable::new_random(),
             ByteWordFreqTable::new_random(),
+            DoubleWordFreqTable::new_random(),
             QuadrupleWordFreqTable::new_random(),
         );
 
         Self { 
             keyphrase,
-            bytes,
-            nibbles, 
-            byte_words, 
             quadruple_words,
-            freq_counters,
+            double_words,
+            byte_words,
+            bytes,
+            sessets,
+            nibbles,
+            freq_counters
         }
 
     }
@@ -48,8 +60,10 @@ impl Cipher {
 
     pub fn encode(&self) -> String {
         let quadruple_words = PeerageCollection::from_vector(self.quadruple_words.to_vec());
+        let double_words = PeerageCollection::from_vector(self.double_words.to_vec());
         let byte_words = PeerageCollection::from_vector(self.byte_words.to_vec());
         let bytes = PeerageCollection::from_vector(self.bytes.to_vec());
+        let sessets = PeerageCollection::from_vector(self.sessets.to_vec)
         let nibbles = PeerageCollection::from_vector(self.nibbles.to_vec());
     
         

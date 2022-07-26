@@ -227,10 +227,10 @@ impl DoubleWord {
         self_clone
     }
 
-    pub fn into_nibbles(&self) -> [Nibble; 32] {
+    pub fn into_nibbles(&self) -> [Nibble; 16] {
         let self_bits = self.into_bits();
 
-        let mut vec_nibble = [Nibble::new_zeros(); 32];
+        let mut vec_nibble = [Nibble::new_zeros(); 16];
 
         let mut j = 0usize;
 
@@ -247,10 +247,10 @@ impl DoubleWord {
         vec_nibble
     }
 
-    pub fn from_nibble(n: [Nibble; 32]) -> Self {
+    pub fn from_nibble(n: [Nibble; 16]) -> Self {
         let mut bits: Vec<Bit> = vec![];
 
-        for i in 0..32 {
+        for i in 0..16 {
             let curr_nibble = n[i];
 
             let curr_nibble_unwrapped = curr_nibble.unwrap_to_vec();
