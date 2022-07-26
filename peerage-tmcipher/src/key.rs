@@ -3,12 +3,12 @@ use peerage_utils::bin_utils::{Byte, ByteWord, DoubleWord, Nibble, QuadrupleWord
 
 #[derive(Clone, Copy)]
 pub struct KeyPhrase {
-    quadruple_words: [QuadrupleWord; 128],
-    double_words: [DoubleWord; 64],
-    byte_words: [ByteWord; 32],
-    bytes: [Byte; 8],
-    sessets: [Sesset; 6],
-    nibbles: [Nibble; 4],
+    pub quadruple_words: [QuadrupleWord; 128],
+    pub double_words: [DoubleWord; 64],
+    pub byte_words: [ByteWord; 32],
+    pub bytes: [Byte; 8],
+    pub sessets: [Sesset; 6],
+    pub nibbles: [Nibble; 4],
 }
 
 impl KeyPhrase {

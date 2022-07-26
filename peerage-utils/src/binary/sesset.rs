@@ -66,6 +66,28 @@ impl Sesset {
         [first, second]
     }
 
+    pub fn vec_self_from_vec_bit(v: Vec<Bit>) -> Vec<Self> {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 6 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        (0..v_mut.len())
+                .step_by(6)
+                .into_iter()
+                .map(|i| Self::from_vec(v_mut[i..i + 6].to_vec()))
+                .collect::<Vec<Sesset>>()
+    }
+
+    pub fn v_self_to_vec_bits(v: Vec<Sesset>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
+
     pub fn from_nibble(n: [Nibble; 2]) -> Self {
         Self {
             bit_one: n[0][2],

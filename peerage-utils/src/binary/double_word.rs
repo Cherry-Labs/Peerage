@@ -263,6 +263,27 @@ impl DoubleWord {
         Self::from_64_bits(bits)
     }
 
+    pub fn vec_self_from_vec_bit(v: Vec<Bit>) -> Vec<Self> {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 64 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        (0..v_mut.len())
+                .step_by(64)
+                .into_iter()
+                .map(|i| Self::from_64_bits(v_mut[i..i + 64].to_vec()))
+                .collect::<Vec<DoubleWord>>()
+    }
+
+    pub fn v_self_to_vec_bits(v: Vec<DoubleWord>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.into_bits())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn shift_left(&self, num: usize) -> Self {
         let bits = self.into_bits();
 

@@ -87,6 +87,28 @@ impl QuadrupleWord {
         Self::from_128_bits(bit_vec)
     }
 
+
+    pub fn vec_self_from_vec_bit(v: Vec<Bit>) -> Vec<Self> {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 128 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        (0..v_mut.len())
+                .step_by(128)
+                .into_iter()
+                .map(|i| Self::from_128_bits(v_mut[i..i + 128].to_vec()))
+                .collect::<Vec<QuadrupleWord>>()
+    }
+
+    pub fn v_self_to_vec_bits(v: Vec<QuadrupleWord>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.into_bits())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn from_usize(u: usize) -> Self {
         let usize_128_str = format!("{u:0128b}");
 

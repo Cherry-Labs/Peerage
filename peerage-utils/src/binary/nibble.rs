@@ -50,6 +50,27 @@ impl Nibble {
         Self::from_vec(v)
     }
 
+    pub fn vec_self_from_vec_bit(v: Vec<Bit>) -> Vec<Self> {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 4 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        (0..v_mut.len())
+                .step_by(4)
+                .into_iter()
+                .map(|i| Self::from_vec(v_mut[i..i + 4].to_vec()))
+                .collect::<Vec<Nibble>>()
+    }
+
+    pub fn v_self_to_vec_bits(v: Vec<Nibble>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn unwrap_to_vec(&self) -> Vec<Bit> {
         vec![self.bit_one, self.bit_two, self.bit_three, self.bit_four]
     }

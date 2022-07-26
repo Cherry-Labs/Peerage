@@ -98,6 +98,27 @@ impl ByteWord {
         nibbles
     }
 
+    pub fn vec_self_from_vec_bit(v: Vec<Bit>) -> Vec<Self> {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 32 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        (0..v_mut.len())
+                .step_by(32)
+                .into_iter()
+                .map(|i| Self::from_32_bits(v_mut[i..i + 32].to_vec()))
+                .collect::<Vec<ByteWord>>()
+    }
+
+    pub fn v_self_to_vec_bits(v: Vec<ByteWord>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.unravel_bit())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn from_byte_vec(v: Vec<Byte>) -> Self {
         Self {
             upper_byte: v[0],

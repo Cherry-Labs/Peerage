@@ -183,6 +183,27 @@ impl Byte {
         Self::from_bit_vec_le(flattened)
     }
 
+    pub fn vec_self_from_vec_bit(v: Vec<Bit>) -> Vec<Self> {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 8 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        (0..v_mut.len())
+                .step_by(8)
+                .into_iter()
+                .map(|i| Self::from_bit_vec_le(v_mut[i..i + 8].to_vec()))
+                .collect::<Vec<Byte>>()
+    }
+
+    pub fn v_self_to_vec_bits(v: Vec<Byte>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.unravel())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn neg_self(&self) -> Self {
         let self_vec = self.unravel();
 
