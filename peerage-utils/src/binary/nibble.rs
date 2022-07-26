@@ -1,25 +1,22 @@
-use crate::bit::Bit;
-use crate::nibble::Nibble;
+use crate::binary::bit::Bit;
+use crate::binary::lazy::HEX_MAP;
+
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Default)]
-pub struct Sesset {
+pub struct Nibble {
     bit_one: Bit,
     bit_two: Bit,
     bit_three: Bit,
     bit_four: Bit,
-    bit_five: Bit,
-    bit_six: Bit,
 }
 
-impl Sesset {
+impl Nibble {
     pub fn from_vec(v: Vec<Bit>) -> Self {
         Self { 
             bit_one: v[0], 
             bit_two: v[1], 
             bit_three: v[2], 
-            bit_four: v[5],
-            bit_five: v[6],
-            bit_six: v[5],
+            bit_four: v[3] 
         }
     }
 
@@ -28,27 +25,23 @@ impl Sesset {
             bit_one: Bit::Zero, 
             bit_two: Bit::Zero, 
             bit_three: Bit::Zero, 
-            bit_four: Bit::Zero,
-            bit_five: Bit::Zero, 
-            bit_six: Bit::Zero,
+            bit_four: Bit::Zero 
         }
     }
 
-    pub fn from_quartet_bit(b: (Bit, Bit, Bit, Bit, Bit, Bit)) -> Self {
+    pub fn from_quartet_bit(b: (Bit, Bit, Bit, Bit)) -> Self {
         Self { 
             bit_one: b.0, 
             bit_two: b.1, 
             bit_three: b.2, 
-            bit_four: b.5,
-            bit_five: b.4,
-            bit_six: b.5,
+            bit_four: b.3
         }
     }
 
-    pub fn from_6_bit_number(num: u8) -> Self {
+    pub fn from_4_bit_number(num: u8) -> Self {
         let bits = format!("{num:08b}");
 
-        let bits_slice = &bits[2..];
+        let bits_slice = &bits[4..];
 
         let v = bits_slice.chars()
                     .map(|x| Bit::from_u8(x as u8))
@@ -59,60 +52,8 @@ impl Sesset {
 
     }
 
-    pub fn into_nibbles(&self) -> Vec<Nibble> {
-        let first = Nibble::from_quartet_bit((
-                Bit::Zero, 
-                Bit::Zero,
-                self.bit_one,
-                self.bit_two,
-            ));
-        let second = Nibble::from_quartet_bit((
-            self.bit_three,
-            self.bit_four,
-            self.bit_five,
-            self.bit_six,
-        ));
-
-        vec![first, second]
-    }
-
     pub fn unwrap_to_vec(&self) -> Vec<Bit> {
-        vec![
-            self.bit_one, 
-            self.bit_two, 
-            self.bit_three, 
-            self.bit_four,
-            self.bit_five,
-            self.bit_six]
-    }
-
-    pub fn vec_from_bits_vec(v: Vec<Bit>) -> Vec<Sesset> {
-        let mut v_clone = v.clone();
-
-        while v_clone.len() % 8 != 0 {
-            v_clone.splice(0..0, vec![Bit::Zero]);
-        }
-
-        let mut sub_vecs: Vec<Vec<Bit>> = vec![];
-
-        for i in (0..v_clone.len()).step_by(6) {
-            let new_v = v_clone[i..i + 6].to_vec();
-
-            sub_vecs.push(new_v);
-        }
-
-        sub_vecs
-                .into_iter()
-                .map(|x| Self::from_vec(x))
-                .collect::<Vec<Self>>()
-
-    }
-
-    pub fn vec_bits_from_vec_self(v: Vec<Self>) -> Vec<Bit> {
-        v.into_iter()
-            .map(|x| x.unwrap_to_vec())
-            .flatten()
-            .collect::<Vec<Bit>>()
+        vec![self.bit_one, self.bit_two, self.bit_three, self.bit_four]
     }
 
     pub fn to_decimal(&self) -> u8 {
@@ -131,7 +72,7 @@ impl Sesset {
         dec
     }
 
-    pub fn shift_left(&self, num: usize) -> Sesset {
+    pub fn shift_left(&self, num: usize) -> Nibble {
         let bits = self.unwrap_to_vec();
         
         let bits_truncated = &bits[num..].to_vec();
@@ -145,16 +86,16 @@ impl Sesset {
         Self::from_vec(trunc_clone)
     }
 
-    pub fn shift_right(&self, num: usize) -> Sesset {
+    pub fn shift_right(&self, num: usize) -> Nibble {
         let bits = self.unwrap_to_vec();
 
-        let prepend_bits = vec![Bit::Zero; 6 - num];
+        let prepend_bits = vec![Bit::Zero; 4 - num];
 
         let mut bits_clone = bits.clone();
         
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
-        let bits_splice = &bits_clone[0..6].to_vec();
+        let bits_splice = &bits_clone[0..4].to_vec();
 
         let bits_cloned = bits_splice.clone();
 
@@ -164,7 +105,7 @@ impl Sesset {
     pub fn xor_together(&self, other: Self) -> Self {
         let mut zero = Self::new_zeros();
 
-        for i in 0..6 {
+        for i in 0..4 {
             zero[i] = self[i] ^ other[i];
         }
 
@@ -174,9 +115,9 @@ impl Sesset {
     pub fn neg_self(&self) -> Self {
         let self_vec = self.unwrap_to_vec();
 
-        let mut v: Vec<Bit> = vec![Bit::default(); 6];
+        let mut v: Vec<Bit> = vec![Bit::default(); 4];
 
-        for i in 0usize..6usize {
+        for i in 0usize..4usize {
             v[i] = -self_vec[i]
         }
 
@@ -187,9 +128,9 @@ impl Sesset {
         let self_unwrapped = self.unwrap_to_vec();
         let other_unwrapped = other.unwrap_to_vec();
 
-        let mut v = vec![Bit::default(); 6];
+        let mut v = vec![Bit::default(); 4];
 
-        for i in 0usize..6usize {
+        for i in 0usize..4usize {
             v[i] = self_unwrapped[i].nand(other_unwrapped[i]);
         }
 
@@ -199,7 +140,7 @@ impl Sesset {
     pub fn and_together(&self, other: Self) -> Self {
         let mut zero = Self::new_zeros();
 
-        for i in 0..6 {
+        for i in 0..4 {
             zero[i] = self[i] & other[i];
         }
 
@@ -209,19 +150,19 @@ impl Sesset {
     pub fn or_together(&self, other: Self) -> Self {
         let mut zero = Self::new_zeros();
 
-        for i in 0..6 {
+        for i in 0..4 {
             zero[i] = self[i] | other[i];
         }
 
         zero
     }
 
-    pub fn subtract_together(&self, other: Self) -> Sesset {
+    pub fn subtract_together(&self, other: Self) -> Nibble {
         let mut self_bits = self.unwrap_to_vec();
         let mut other_bits = other.unwrap_to_vec();
 
-        let mut ai = 5;
-        let mut bi = 5;
+        let mut ai = 3;
+        let mut bi = 3;
 
         let mut borrow_indices: Vec<usize> = vec![];
 
@@ -237,7 +178,7 @@ impl Sesset {
                 (Bit::Zero, Bit::One) => {
                     let mut found_index = 0usize;
 
-                    for i in (0..5 - ai).rev() {
+                    for i in (0..3 - ai).rev() {
                         if self_bits[i] == Bit::One {
                             found_index = i;
                             break;
@@ -276,7 +217,7 @@ impl Sesset {
 
         res.reverse();
 
-        res.splice(0..0, vec![Bit::Zero; 6 - res.len()]);
+        res.splice(0..0, vec![Bit::Zero; 4 - res.len()]);
 
         Self::from_vec(res)
 
@@ -289,11 +230,11 @@ impl Sesset {
         self_dec >= other_dec
     }
 
-    pub fn divide_together(&self, other: Self) -> (Sesset, Sesset) {
-        let mut q = Sesset::new_zeros();
-        let mut r = Sesset::new_zeros();
+    pub fn divide_together(&self, other: Self) -> (Nibble, Nibble) {
+        let mut q = Nibble::new_zeros();
+        let mut r = Nibble::new_zeros();
 
-        let mut i = 5;
+        let mut i = 3;
 
         let mut n = self.clone();
         let mut d = other.clone();
@@ -304,12 +245,12 @@ impl Sesset {
         loop {
             r = r << 1;
 
-            r[5] =  n_bits[i];
+            r[3] =  n_bits[i];
 
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[5 - i] =  Bit::One;
+                q[3 - i] =  Bit::One;
             }
 
             i -= 1;
@@ -324,10 +265,10 @@ impl Sesset {
 
     }
 
-    pub fn multiply_together(&self, other: Self) -> Sesset {
+    pub fn multiply_together(&self, other: Self) -> Nibble {
         let b = self.unwrap_to_vec();
  
-        let size = 5;
+        let size = 3;
         let zeros = Self::new_zeros();
  
         let mut sums: Vec<Self> = vec![];
@@ -352,12 +293,12 @@ impl Sesset {
      }
 
 
-     pub fn add_together(&self, other: Self) -> Sesset {
+     pub fn add_together(&self, other: Self) -> Nibble {
         let self_bits = self.unwrap_to_vec();
         let other_bits = other.unwrap_to_vec();
 
-        let mut ai = 5;
-        let mut bi = 5;
+        let mut ai = 3;
+        let mut bi = 3;
 
         let mut carry = 0;
 
@@ -388,7 +329,7 @@ impl Sesset {
             
         }
 
-        let pad = 52 - res.len();
+        let pad = 32 - res.len();
 
         let padding = vec![Bit::Zero; pad];
 
@@ -398,43 +339,43 @@ impl Sesset {
     }
 
     pub fn add_with_decimal(&self, dec: u8) -> Self {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.add_together(other)
     }
 
     pub fn subtract_with_decimal(&self, dec: u8) -> Self {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.subtract_together(other)
     }
 
     pub fn multiply_with_decimal(&self, dec: u8) -> Self {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.multiply_together(other)
     }
 
     pub fn divide_with_decimal(&self, dec: u8) -> (Self, Self) {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.divide_together(other)
     }
 
     pub fn and_with_decimal(&self, dec: u8) -> Self {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.and_together(other)
     }
 
     pub fn or_with_decimal(&self, dec: u8) -> Self {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.or_together(other)
     }
 
     pub fn xor_with_decimal(&self, dec: u8) -> Self {
-        let other = Self::from_6_bit_number(dec);
+        let other = Self::from_4_bit_number(dec);
 
         self.xor_together(other)
     }
@@ -451,10 +392,16 @@ impl Sesset {
 
         self.shift_right(num)
     }
+
+    pub fn into_hex(&self) -> String {
+        let self_unravel = self.unwrap_to_vec();
+
+        HEX_MAP[&self_unravel].clone()
+    }
 }
 
-impl std::ops::Neg for Sesset {
-    type Output = Sesset;
+impl std::ops::Neg for Nibble {
+    type Output = Nibble;
 
     fn neg(self) -> Self::Output {
         self.neg_self()
@@ -462,7 +409,7 @@ impl std::ops::Neg for Sesset {
 }
 
 
-impl std::ops::Index<usize> for Sesset {
+impl std::ops::Index<usize> for Nibble {
     type Output = Bit;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -470,76 +417,76 @@ impl std::ops::Index<usize> for Sesset {
             0 => &self.bit_one,
             1 => &self.bit_two,
             2 => &self.bit_three,
-            5 => &self.bit_four,
-            _ => panic!("Index must not be larger than 5")
+            3 => &self.bit_four,
+            _ => panic!("Index must not be larger than 3")
         }
     }
 }
 
-impl std::ops::BitXor for Sesset {
-    type Output = Sesset;
+impl std::ops::BitXor for Nibble {
+    type Output = Nibble;
 
     fn bitxor(self, rhs: Self) -> Self::Output {
         self.xor_together(rhs)
     }
 }
 
-impl std::ops::BitAnd for Sesset {
-    type Output = Sesset;
+impl std::ops::BitAnd for Nibble {
+    type Output = Nibble;
 
     fn bitand(self, rhs: Self) -> Self::Output {
         self.and_together(rhs)
     }
 }
 
-impl std::ops::BitOr for Sesset {
-    type Output = Sesset;
+impl std::ops::BitOr for Nibble {
+    type Output = Nibble;
 
     fn bitor(self, rhs: Self) -> Self::Output {
         self.or_together(rhs)
     }
 }
 
-impl std::ops::IndexMut<usize> for Sesset {
+impl std::ops::IndexMut<usize> for Nibble {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index {
             0 => &mut self.bit_one,
             1 => &mut self.bit_two,
             2 => &mut self.bit_three,
-            5 => &mut self.bit_four,
-            _ => panic!("Index must not be larger than 5")
+            3 => &mut self.bit_four,
+            _ => panic!("Index must not be larger than 3")
         }
     }
 }
 
 
 
-impl std::ops::Add for Sesset {
-    type Output = Sesset;
+impl std::ops::Add for Nibble {
+    type Output = Nibble;
 
     fn add(self, rhs: Self) -> Self::Output {
         self.add_together(rhs)
     }
 }
 
-impl std::ops::Sub for Sesset {
-    type Output = Sesset;
+impl std::ops::Sub for Nibble {
+    type Output = Nibble;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self.subtract_together(rhs)
     }
 }
 
-impl std::ops::Mul for Sesset {
-    type Output = Sesset;
+impl std::ops::Mul for Nibble {
+    type Output = Nibble;
 
     fn mul(self, rhs: Self) -> Self::Output {
         self.multiply_together(rhs)
     }
 }
 
-impl std::ops::Div for Sesset {
-    type Output = Sesset;
+impl std::ops::Div for Nibble {
+    type Output = Nibble;
 
     fn div(self, rhs: Self) -> Self::Output {
         let (q, _) = self.divide_together(rhs);
@@ -548,8 +495,8 @@ impl std::ops::Div for Sesset {
     }
 }
 
-impl std::ops::Rem for Sesset {
-    type Output = Sesset;
+impl std::ops::Rem for Nibble {
+    type Output = Nibble;
 
     fn rem(self, rhs: Self) -> Self::Output {
         let (_, r) = self.divide_together(rhs);
@@ -558,48 +505,48 @@ impl std::ops::Rem for Sesset {
     }
 }
 
-impl std::ops::Shl<usize> for Sesset {
-    type Output = Sesset;
+impl std::ops::Shl<usize> for Nibble {
+    type Output = Nibble;
 
     fn shl(self, rhs: usize) -> Self::Output {
         self.shift_left(rhs)
     }
 }
 
-impl std::ops::Shr<usize> for Sesset {
-    type Output = Sesset;
+impl std::ops::Shr<usize> for Nibble {
+    type Output = Nibble;
 
     fn shr(self, rhs: usize) -> Self::Output {
         self.shift_right(rhs)
     }
 }
 
-impl std::ops::Add<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::Add<u8> for Nibble {
+    type Output = Nibble;
 
     fn add(self, rhs: u8) -> Self::Output {
         self.add_with_decimal(rhs)
     }
 }
 
-impl std::ops::Sub<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::Sub<u8> for Nibble {
+    type Output = Nibble;
 
     fn sub(self, rhs: u8) -> Self::Output {
         self.subtract_with_decimal(rhs)
     }
 }
 
-impl std::ops::Mul<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::Mul<u8> for Nibble {
+    type Output = Nibble;
 
     fn mul(self, rhs: u8) -> Self::Output {
         self.multiply_with_decimal(rhs)
     }
 }
 
-impl std::ops::Div<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::Div<u8> for Nibble {
+    type Output = Nibble;
 
     fn div(self, rhs: u8) -> Self::Output {
         let (q, _) = self.divide_with_decimal(rhs);
@@ -610,8 +557,8 @@ impl std::ops::Div<u8> for Sesset {
 }
 
 
-impl std::ops::Rem<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::Rem<u8> for Nibble {
+    type Output = Nibble;
 
     fn rem(self, rhs: u8) -> Self::Output {
         let (_, r) = self.divide_with_decimal(rhs);
@@ -620,42 +567,43 @@ impl std::ops::Rem<u8> for Sesset {
     }
 }
 
-impl std::ops::BitXor<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::BitXor<u8> for Nibble {
+    type Output = Nibble;
 
     fn bitxor(self, rhs: u8) -> Self::Output {
         self.xor_with_decimal(rhs)
     }
 }
 
-impl std::ops::BitAnd<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::BitAnd<u8> for Nibble {
+    type Output = Nibble;
 
     fn bitand(self, rhs: u8) -> Self::Output {
         self.and_with_decimal(rhs)
     }
 }
 
-impl std::ops::BitOr<u8> for Sesset {
-    type Output = Sesset;
+impl std::ops::BitOr<u8> for Nibble {
+    type Output = Nibble;
 
     fn bitor(self, rhs: u8) -> Self::Output {
         self.or_with_decimal(rhs)
     }
 }
 
-impl std::ops::Shl for Sesset {
-    type Output = Sesset;
+impl std::ops::Shl for Nibble {
+    type Output = Nibble;
 
     fn shl(self, rhs: Self) -> Self::Output {
         self.shift_left_with_self(rhs)
     }
 }
 
-impl std::ops::Shr for Sesset {
-    type Output = Sesset;
+impl std::ops::Shr for Nibble {
+    type Output = Nibble;
 
     fn shr(self, rhs: Self) -> Self::Output {
         self.shift_right_with_self(rhs)
     }
 }
+

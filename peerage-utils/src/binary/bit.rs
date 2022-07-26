@@ -1,4 +1,4 @@
-use crate::byte::Byte;
+use crate::binary::byte::Byte;
 
 
 #[derive(Clone, Hash, Copy, PartialEq, Eq, Debug)]

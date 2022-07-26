@@ -1,8 +1,8 @@
 
-use crate::bit::Bit;
-use crate::nibble::Nibble;
-use crate::byte::{Endian, Byte};
-use crate::lazy::HEX_MAP;
+use crate::binary::bit::Bit;
+use crate::binary::nibble::Nibble;
+use crate::binary::byte::{Endian, Byte};
+use crate::binary::lazy::HEX_MAP;
 
 #[derive(Clone, Copy, Hash, Debug, Default, Eq, PartialEq)]
 pub struct ByteWord {

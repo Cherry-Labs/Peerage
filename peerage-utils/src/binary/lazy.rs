@@ -1,5 +1,5 @@
 use std::{collections::HashMap, vec, ops::Rem};
-use crate::bit::Bit;
+use crate::binary::bit::Bit;
 
 lazy_static! {
     pub static ref HEX_MAP: HashMap<Vec<Bit>, String> = {

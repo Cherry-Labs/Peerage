@@ -1,6 +1,6 @@
-use crate::bit::Bit;
-use crate::nibble::Nibble;
-use crate::lazy::HEX_MAP;
+use crate::binary::bit::Bit;
+use crate::binary::nibble::Nibble;
+use crate::binary::lazy::HEX_MAP;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Endian {

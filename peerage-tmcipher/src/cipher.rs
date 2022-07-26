@@ -19,7 +19,6 @@ pub struct Cipher {
         ByteWordFreqTable,
         QuadrupleWordFreqTable
     ),
-    sub
 }
 
 impl Cipher {
