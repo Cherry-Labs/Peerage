@@ -5,7 +5,7 @@ use peerage_utils::bin_utils::*;
 use crate::rounder::Rounder;
 use crate::hash_bin::HashBin;
 use peerage_coll::collection::PeerageCollection;
-use peerage_codecs::hex_b64::HexBase64Pair;
+use peerage_codecs::hex_b64_pair::HexBase64Pair;
 
 #[derive(Clone, Copy)]
 pub struct PeerageHash {

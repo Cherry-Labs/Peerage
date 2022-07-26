@@ -1,15 +1,34 @@
-use std::collections::{BTreeMap,HashMap};
-use peerage_utils::bin_utils::Nibble;
+use std::collections::HashMap;
+use peerage_utils::bin_utils::{Nibble, Sesset};
+
 
 lazy_static! {
-    pub static ref BASE64_TABLE: BTreeMap<u8, char> = {
-        let mut btm = BTreeMap::<u8, char>::new();
+    pub static ref SESSET_CHAR: HashMap<Sesset, char> = {
+        let mut btm = HashMap::<Sesset, char>::new();
 
         
         let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
         for (u, c) in characters.char_indices() {
-            btm.insert(u as u8, c);
+            let sesset = Sesset::from_6_bit_number(u as u8);
+
+            btm.insert(sesset, c);
+        }
+
+        btm
+    }; 
+
+
+    pub static ref CHAR_SESSET: HashMap<char, Sesset> = {
+        let mut btm = HashMap::<char, Sesset>::new();
+
+        
+        let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+        for (u, c) in characters.char_indices() {
+            let sesset = Sesset::from_6_bit_number(u as u8);
+
+            btm.insert(c, sesset);
         }
 
         btm

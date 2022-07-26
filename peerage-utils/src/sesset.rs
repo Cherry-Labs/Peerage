@@ -86,6 +86,35 @@ impl Sesset {
             self.bit_six]
     }
 
+    pub fn vec_from_bits_vec(v: Vec<Bit>) -> Vec<Sesset> {
+        let mut v_clone = v.clone();
+
+        while v_clone.len() % 8 != 0 {
+            v_clone.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let mut sub_vecs: Vec<Vec<Bit>> = vec![];
+
+        for i in (0..v_clone.len()).step_by(6) {
+            let new_v = v_clone[i..i + 6].to_vec();
+
+            sub_vecs.push(new_v);
+        }
+
+        sub_vecs
+                .into_iter()
+                .map(|x| Self::from_vec(x))
+                .collect::<Vec<Self>>()
+
+    }
+
+    pub fn vec_bits_from_vec_self(v: Vec<Self>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.unwrap_to_vec())
+            .flatten()
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn to_decimal(&self) -> u8 {
         let mut unwrapped = self.unwrap_to_vec();
 

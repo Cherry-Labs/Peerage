@@ -7,3 +7,7 @@ pub use crate::byte::Byte;
 pub use crate::byte_word::ByteWord;
 pub use crate::double_word::DoubleWord;
 pub use crate::quadruple_word::QuadrupleWord;
+
+
+
+pub use crate::byte::Endian;

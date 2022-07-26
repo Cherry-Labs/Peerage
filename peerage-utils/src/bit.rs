@@ -1,3 +1,5 @@
+use crate::byte::Byte;
+
 
 #[derive(Clone, Hash, Copy, PartialEq, Eq, Debug)]
 pub enum Bit {
@@ -20,6 +22,14 @@ impl Bit {
         }
     }
 
+    pub fn from_char(c: char) -> Self {
+        match c {
+            '1' => Self::One,
+            '0' => Self::Zero,
+            _ => panic!("Wrong binary digit!")
+        }
+    }
+
     pub fn vec_bit_from_char(v: Vec<char>) -> Vec<Bit> {
         v.into_iter()
             .map(|x| Self::from_u8(x as u8) )
@@ -37,6 +47,45 @@ impl Bit {
         v.into_iter()
             .map(|x| Bit::from_u8(x))
             .collect::<Vec<Bit>>()
+    }
+
+    pub fn vec_from_str(s: String) -> Vec<Self> {     
+        s.chars()
+            .map(|x| { 
+                let ss = format!("{:08b}", x as u8);
+                let bits_iter = ss.chars()
+                            .map(|c| Self::from_char(c))
+                            .collect::<Vec<Bit>>();
+
+                bits_iter       
+        })
+        .flatten()
+        .collect::<Vec<Bit>>()
+
+    }
+
+    pub fn vec_self_to_str(v: Vec<Bit>) -> String {
+        let mut v_mut = v.clone();
+
+        while v_mut.len() % 8 != 0 {
+            v_mut.splice(0..0, vec![Bit::Zero]);
+        }
+
+        let mut s = String::new();
+
+        for i in (0..v_mut.len()).step_by(8) {
+            let sub = v_mut[i..i + 8].to_vec();
+            
+            let by = Byte::from_bit_vec_le(sub);
+
+            let by_num = by.into_u8();
+
+            let by_char = by_num as char;
+
+            s = format!("{s}{by_char}")
+        }
+
+        s
     }
 
     pub fn and(&self, other: Bit) -> Bit {
