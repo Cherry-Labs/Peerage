@@ -1,30 +1,28 @@
-
 use crate::binary::bit::Bit;
-use crate::binary::nibble::Nibble;
 use crate::binary::byte::Byte;
 use crate::binary::byte_word::ByteWord;
 use crate::binary::lazy::HEX_MAP;
+use crate::binary::nibble::Nibble;
 
 #[derive(Clone, Copy, Debug, Hash, Default, Eq, PartialEq)]
 pub struct DoubleWord {
     upper_word: ByteWord,
-    lower_word: ByteWord
+    lower_word: ByteWord,
 }
 
 impl DoubleWord {
-    pub fn new(
-        upper_word: ByteWord, 
-        lower_word: ByteWord,
-    ) -> Self
-    {
-        Self { upper_word,  lower_word }
+    pub fn new(upper_word: ByteWord, lower_word: ByteWord) -> Self {
+        Self {
+            upper_word,
+            lower_word,
+        }
     }
 
     pub fn new_ones() -> Self {
         let upper_word = ByteWord::new_ones();
         let lower_word = ByteWord::new_ones();
 
-        Self::new(upper_word,  lower_word)
+        Self::new(upper_word, lower_word)
     }
 
     pub fn new_zeros() -> Self {
@@ -65,9 +63,9 @@ impl DoubleWord {
         let mut bit_vec: Vec<Bit> = vec![];
 
         chars
-                    .into_iter()
-                    .map(|x| format!("{:08b}", x as u8))
-                    .for_each(|x| bit_vec.extend(Bit::vec_bit_from_char(x.chars().collect::<Vec<char>>())));
+            .into_iter()
+            .map(|x| format!("{:08b}", x as u8))
+            .for_each(|x| bit_vec.extend(Bit::vec_bit_from_char(x.chars().collect::<Vec<char>>())));
 
         Self::from_64_bits(bit_vec)
     }
@@ -76,76 +74,62 @@ impl DoubleWord {
         let usize_64_str = format!("{u:064b}");
 
         let bits = usize_64_str
-                                .chars()
-                                .map(|x| {
-                                    let x_str = format!("{x}");
+            .chars()
+            .map(|x| {
+                let x_str = format!("{x}");
 
-                                    let x_u8 = x_str.parse::<u8>().unwrap();
+                let x_u8 = x_str.parse::<u8>().unwrap();
 
-                                    let bit: Bit = x_u8.into();
+                let bit: Bit = x_u8.into();
 
-                                    bit
-                                }).collect::<Vec<Bit>>();
-    
+                bit
+            })
+            .collect::<Vec<Bit>>();
+
         Self::from_64_bits(bits)
-
     }
 
     pub fn from_u64(u: u64) -> Self {
         let u_bits = format!("{u:064b}");
-        
+
         let bits = u_bits
-                                .chars()
-                                .map(|x| {
-                                    let x_str = format!("{x}");
+            .chars()
+            .map(|x| {
+                let x_str = format!("{x}");
 
-                                    let x_u8 = x_str.parse::<u8>().unwrap();
+                let x_u8 = x_str.parse::<u8>().unwrap();
 
-                                    let bit: Bit = x_u8.into();
+                let bit: Bit = x_u8.into();
 
-                                    bit
-                                }).collect::<Vec<Bit>>();
-    
+                bit
+            })
+            .collect::<Vec<Bit>>();
+
         Self::from_64_bits(bits)
-
     }
 
     pub fn from_64_bits(v: Vec<Bit>) -> Self {
-
         let upper_bits_ref = &v[0..32].to_vec();
         let lower_bits_ref = &v[32..64].to_vec();
 
-        let (
-            upper_bits,
-            lower_bits
-        ) = (
-            upper_bits_ref.clone(),
-            lower_bits_ref.clone()
-        );
+        let (upper_bits, lower_bits) = (upper_bits_ref.clone(), lower_bits_ref.clone());
 
         let upper_word = ByteWord::from_32_bits(upper_bits);
-                let lower_word = ByteWord::from_32_bits(lower_bits);
+        let lower_word = ByteWord::from_32_bits(lower_bits);
 
         Self::new(upper_word, lower_word)
     }
 
     pub fn from_8_bytes(v: Vec<Byte>) -> Self {
-        let upper_bytes_ref = &v[0..4].to_vec();       
+        let upper_bytes_ref = &v[0..4].to_vec();
         let lower_bytes_ref = &v[4..8].to_vec();
 
-        let (
-            upper_bytes,
-            lower_bytes
-        ) = (
-            upper_bytes_ref.clone(),
-            lower_bytes_ref.clone()
-        );
+        let (upper_bytes, lower_bytes) = (upper_bytes_ref.clone(), lower_bytes_ref.clone());
 
         let upper_word = ByteWord::from_byte_vec(upper_bytes);
-              let lower_word = ByteWord::from_byte_vec(lower_bytes);
+        let lower_word = ByteWord::from_byte_vec(lower_bytes);
 
         Self::new(upper_word, lower_word)
-
     }
 
     pub fn neg_self(&self) -> Self {
@@ -190,9 +174,7 @@ impl DoubleWord {
     pub fn into_num_bits(&self) -> Vec<u8> {
         let vb = self.into_bits();
 
-        vb.into_iter()
-            .map(|x| x.into_u8())
-            .collect::<Vec<u8>>() 
+        vb.into_iter().map(|x| x.into_u8()).collect::<Vec<u8>>()
     }
 
     pub fn shuffle_fields(&mut self) {
@@ -201,15 +183,13 @@ impl DoubleWord {
         for (i, u) in new_shuffle.into_iter().enumerate() {
             self[i] = self[u]
         }
-
-
     }
 
     pub fn shuffle_manually(&mut self, new_shuffle: Vec<usize>) {
         for (i, u) in new_shuffle.into_iter().enumerate() {
             self[i] = self[u]
         }
-    } 
+    }
 
     pub fn into_u64(&self) -> u64 {
         let self_unwrapped = self.into_bits();
@@ -218,10 +198,8 @@ impl DoubleWord {
 
         self_unwrapped
             .into_iter()
-            .for_each(|x| {
-                bits_str = format!("{}{}", bits_str, x.into_u8())
-            });
-        
+            .for_each(|x| bits_str = format!("{}{}", bits_str, x.into_u8()));
+
         let num = u64::from_str_radix(&bits_str, 2).unwrap();
 
         num
@@ -253,7 +231,7 @@ impl DoubleWord {
         let self_bits = self.into_bits();
 
         let mut vec_nibble = [Nibble::new_zeros(); 32];
-        
+
         let mut j = 0usize;
 
         for i in (0usize..64usize).step_by(4) {
@@ -285,16 +263,15 @@ impl DoubleWord {
         Self::from_64_bits(bits)
     }
 
-
     pub fn shift_left(&self, num: usize) -> Self {
         let bits = self.into_bits();
-        
+
         let bits_truncated = &bits[num..].to_vec();
 
         let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-        
+
         trunc_clone.extend(rem);
 
         Self::from_64_bits(trunc_clone)
@@ -306,7 +283,7 @@ impl DoubleWord {
         let prepend_bits = vec![Bit::Zero; 64 - num];
 
         let mut bits_clone = bits.clone();
-        
+
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
         let bits_splice = &bits_clone[0..64].to_vec();
@@ -358,7 +335,6 @@ impl DoubleWord {
         let mut res: Vec<Bit> = vec![];
 
         loop {
-
             let pair = (self_bits[ai], other_bits[bi]);
 
             match pair {
@@ -375,7 +351,7 @@ impl DoubleWord {
                     }
 
                     let mut num_ones = 2;
-                    
+
                     for i in found_index..ai {
                         if self_bits[i] == Bit::One {
                             self_bits[i] = Bit::Zero;
@@ -390,18 +366,16 @@ impl DoubleWord {
                     if num_ones != 0 {
                         res.push(Bit::One);
                     }
-                },
+                }
                 (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
             }
-
 
             ai -= 1;
             bi -= 1;
 
             if ai == 0 || bi == 0 {
-                break;;
+                break;
             }
-
         }
 
         res.reverse();
@@ -409,7 +383,6 @@ impl DoubleWord {
         res.splice(0..0, vec![Bit::Zero; 64 - res.len()]);
 
         Self::from_64_bits(res)
-
     }
 
     pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
@@ -434,12 +407,12 @@ impl DoubleWord {
         loop {
             r = r << 1;
 
-            r[127] =  n_bits[i];
+            r[127] = n_bits[i];
 
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[127 - i] =  Bit::One;
+                q[127 - i] = Bit::One;
             }
 
             i -= 1;
@@ -447,42 +420,37 @@ impl DoubleWord {
             if i == 0 {
                 break;
             }
-
         }
 
         (q, r)
-
     }
 
     pub fn multiply_together(&self, other: Self) -> Self {
         let b = self.into_bits();
- 
+
         let size = 127;
         let zeros = Self::new_zeros();
- 
+
         let mut sums: Vec<Self> = vec![];
- 
+
         for (i, d) in b.into_iter().enumerate() {
-             if d == Bit::Zero {
-                 sums.push(zeros.clone());
-             } else {
-                 let mut a_clone = self.clone();
-                 a_clone = a_clone << i;
-                 sums.push(a_clone);
-             }
+            if d == Bit::Zero {
+                sums.push(zeros.clone());
+            } else {
+                let mut a_clone = self.clone();
+                a_clone = a_clone << i;
+                sums.push(a_clone);
+            }
         }
- 
- 
+
         let mut res = Self::new_zeros();
- 
+
         sums.into_iter().for_each(|x| res = res + x);
- 
+
         res
- 
-     }
+    }
 
-
-     pub fn add_together(&self, other: Self) -> Self {
+    pub fn add_together(&self, other: Self) -> Self {
         let self_bits = self.into_bits();
         let other_bits = other.into_bits();
 
@@ -493,15 +461,14 @@ impl DoubleWord {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-
             let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
-            
+
             carry = match val > 1 {
                 true => {
                     val %= 2;
 
                     1
-                },
+                }
                 false => 0,
             };
 
@@ -515,7 +482,6 @@ impl DoubleWord {
             if ai == 0 || bi == 0 {
                 break;
             }
-            
         }
 
         let pad = 64 - res.len();
@@ -526,7 +492,6 @@ impl DoubleWord {
 
         Self::from_64_bits(res)
     }
-
 
     pub fn add_with_decimal(&self, dec: u64) -> Self {
         let other = Self::from_u64(dec);
@@ -552,7 +517,6 @@ impl DoubleWord {
         self.divide_together(other)
     }
 
-   
     pub fn and_with_decimal(&self, dec: u64) -> Self {
         let other = Self::from_u64(dec);
 
@@ -582,9 +546,7 @@ impl DoubleWord {
 
         self.shift_right(num)
     }
-    
 }
-
 
 impl std::ops::Add for DoubleWord {
     type Output = DoubleWord;
@@ -617,7 +579,6 @@ impl std::ops::BitOr for DoubleWord {
         self.or_together(rhs)
     }
 }
-
 
 impl std::ops::BitXor for DoubleWord {
     type Output = DoubleWord;
@@ -699,21 +660,19 @@ impl std::ops::Index<usize> for DoubleWord {
     fn index(&self, index: usize) -> &Self::Output {
         match index > 32 {
             true => &self.lower_word[index % 32],
-            false => &self.upper_word[index]
+            false => &self.upper_word[index],
         }
     }
 }
-
 
 impl std::ops::IndexMut<usize> for DoubleWord {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index > 32 {
             true => &mut self.lower_word[index % 32],
-            false => &mut self.upper_word[index]
+            false => &mut self.upper_word[index],
         }
     }
 }
-
 
 impl std::ops::Neg for DoubleWord {
     type Output = DoubleWord;
@@ -722,7 +681,6 @@ impl std::ops::Neg for DoubleWord {
         self.neg_self()
     }
 }
-
 
 impl std::ops::Add<u64> for DoubleWord {
     type Output = DoubleWord;
@@ -756,9 +714,7 @@ impl std::ops::Div<u64> for DoubleWord {
 
         q
     }
-
 }
-
 
 impl std::ops::Rem<u64> for DoubleWord {
     type Output = DoubleWord;
@@ -769,7 +725,6 @@ impl std::ops::Rem<u64> for DoubleWord {
         r
     }
 }
-
 
 impl std::ops::BitAnd<u64> for DoubleWord {
     type Output = DoubleWord;

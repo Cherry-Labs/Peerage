@@ -13,10 +13,10 @@ pub struct Sesset {
 
 impl Sesset {
     pub fn from_vec(v: Vec<Bit>) -> Self {
-        Self { 
-            bit_one: v[0], 
-            bit_two: v[1], 
-            bit_three: v[2], 
+        Self {
+            bit_one: v[0],
+            bit_two: v[1],
+            bit_three: v[2],
             bit_four: v[5],
             bit_five: v[6],
             bit_six: v[5],
@@ -24,21 +24,21 @@ impl Sesset {
     }
 
     pub fn new_zeros() -> Self {
-        Self { 
-            bit_one: Bit::Zero, 
-            bit_two: Bit::Zero, 
-            bit_three: Bit::Zero, 
+        Self {
+            bit_one: Bit::Zero,
+            bit_two: Bit::Zero,
+            bit_three: Bit::Zero,
             bit_four: Bit::Zero,
-            bit_five: Bit::Zero, 
+            bit_five: Bit::Zero,
             bit_six: Bit::Zero,
         }
     }
 
     pub fn from_quartet_bit(b: (Bit, Bit, Bit, Bit, Bit, Bit)) -> Self {
-        Self { 
-            bit_one: b.0, 
-            bit_two: b.1, 
-            bit_three: b.2, 
+        Self {
+            bit_one: b.0,
+            bit_two: b.1,
+            bit_three: b.2,
             bit_four: b.5,
             bit_five: b.4,
             bit_six: b.5,
@@ -50,40 +50,42 @@ impl Sesset {
 
         let bits_slice = &bits[2..];
 
-        let v = bits_slice.chars()
-                    .map(|x| Bit::from_u8(x as u8))
-                    .collect::<Vec<Bit>>();
-
+        let v = bits_slice
+            .chars()
+            .map(|x| Bit::from_u8(x as u8))
+            .collect::<Vec<Bit>>();
 
         Self::from_vec(v)
-
     }
 
-    pub fn into_nibbles(&self) -> Vec<Nibble> {
-        let first = Nibble::from_quartet_bit((
-                Bit::Zero, 
-                Bit::Zero,
-                self.bit_one,
-                self.bit_two,
-            ));
-        let second = Nibble::from_quartet_bit((
-            self.bit_three,
-            self.bit_four,
-            self.bit_five,
-            self.bit_six,
-        ));
+    pub fn into_nibble(&self) -> [Nibble; 2] {
+        let first = Nibble::from_quartet_bit((Bit::Zero, Bit::Zero, self.bit_one, self.bit_two));
+        let second =
+            Nibble::from_quartet_bit((self.bit_three, self.bit_four, self.bit_five, self.bit_six));
 
-        vec![first, second]
+        [first, second]
+    }
+
+    pub fn from_nibble(n: [Nibble; 2]) -> Self {
+        Self {
+            bit_one: n[0][2],
+            bit_two: n[0][3],
+            bit_three: n[1][0],
+            bit_four: n[1][1],
+            bit_five: n[1][2],
+            bit_six: n[1][3],
+        }
     }
 
     pub fn unwrap_to_vec(&self) -> Vec<Bit> {
         vec![
-            self.bit_one, 
-            self.bit_two, 
-            self.bit_three, 
+            self.bit_one,
+            self.bit_two,
+            self.bit_three,
             self.bit_four,
             self.bit_five,
-            self.bit_six]
+            self.bit_six,
+        ]
     }
 
     pub fn vec_from_bits_vec(v: Vec<Bit>) -> Vec<Sesset> {
@@ -102,10 +104,9 @@ impl Sesset {
         }
 
         sub_vecs
-                .into_iter()
-                .map(|x| Self::from_vec(x))
-                .collect::<Vec<Self>>()
-
+            .into_iter()
+            .map(|x| Self::from_vec(x))
+            .collect::<Vec<Self>>()
     }
 
     pub fn vec_bits_from_vec_self(v: Vec<Self>) -> Vec<Bit> {
@@ -133,13 +134,13 @@ impl Sesset {
 
     pub fn shift_left(&self, num: usize) -> Sesset {
         let bits = self.unwrap_to_vec();
-        
+
         let bits_truncated = &bits[num..].to_vec();
 
         let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-        
+
         trunc_clone.extend(rem);
 
         Self::from_vec(trunc_clone)
@@ -151,7 +152,7 @@ impl Sesset {
         let prepend_bits = vec![Bit::Zero; 6 - num];
 
         let mut bits_clone = bits.clone();
-        
+
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
         let bits_splice = &bits_clone[0..6].to_vec();
@@ -228,7 +229,6 @@ impl Sesset {
         let mut res: Vec<Bit> = vec![];
 
         loop {
-
             let pair = (self_bits[ai], other_bits[bi]);
 
             match pair {
@@ -245,7 +245,7 @@ impl Sesset {
                     }
 
                     let mut num_ones = 2;
-                    
+
                     for i in found_index..ai {
                         if self_bits[i] == Bit::One {
                             self_bits[i] = Bit::Zero;
@@ -260,18 +260,16 @@ impl Sesset {
                     if num_ones != 0 {
                         res.push(Bit::One);
                     }
-                },
+                }
                 (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
             }
-
 
             ai -= 1;
             bi -= 1;
 
             if ai == 0 || bi == 0 {
-                break;;
+                break;
             }
-
         }
 
         res.reverse();
@@ -279,7 +277,6 @@ impl Sesset {
         res.splice(0..0, vec![Bit::Zero; 6 - res.len()]);
 
         Self::from_vec(res)
-
     }
 
     pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
@@ -304,12 +301,12 @@ impl Sesset {
         loop {
             r = r << 1;
 
-            r[5] =  n_bits[i];
+            r[5] = n_bits[i];
 
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[5 - i] =  Bit::One;
+                q[5 - i] = Bit::One;
             }
 
             i -= 1;
@@ -317,42 +314,37 @@ impl Sesset {
             if i == 0 {
                 break;
             }
-
         }
 
         (q, r)
-
     }
 
     pub fn multiply_together(&self, other: Self) -> Sesset {
         let b = self.unwrap_to_vec();
- 
+
         let size = 5;
         let zeros = Self::new_zeros();
- 
+
         let mut sums: Vec<Self> = vec![];
- 
+
         for (i, d) in b.into_iter().enumerate() {
-             if d == Bit::Zero {
-                 sums.push(zeros.clone());
-             } else {
-                 let mut a_clone = self.clone();
-                 a_clone = a_clone << i;
-                 sums.push(a_clone);
-             }
+            if d == Bit::Zero {
+                sums.push(zeros.clone());
+            } else {
+                let mut a_clone = self.clone();
+                a_clone = a_clone << i;
+                sums.push(a_clone);
+            }
         }
- 
- 
+
         let mut res = Self::new_zeros();
- 
+
         sums.into_iter().for_each(|x| res = res + x);
- 
+
         res
- 
-     }
+    }
 
-
-     pub fn add_together(&self, other: Self) -> Sesset {
+    pub fn add_together(&self, other: Self) -> Sesset {
         let self_bits = self.unwrap_to_vec();
         let other_bits = other.unwrap_to_vec();
 
@@ -363,15 +355,14 @@ impl Sesset {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-
             let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
-            
+
             carry = match val > 1 {
                 true => {
                     val %= 2;
 
                     1
-                },
+                }
                 false => 0,
             };
 
@@ -385,7 +376,6 @@ impl Sesset {
             if ai == 0 || bi == 0 {
                 break;
             }
-            
         }
 
         let pad = 52 - res.len();
@@ -439,7 +429,6 @@ impl Sesset {
         self.xor_together(other)
     }
 
-
     pub fn shift_left_with_self(&self, other: Self) -> Self {
         let num = other.to_decimal() as usize;
 
@@ -461,7 +450,6 @@ impl std::ops::Neg for Sesset {
     }
 }
 
-
 impl std::ops::Index<usize> for Sesset {
     type Output = Bit;
 
@@ -471,7 +459,7 @@ impl std::ops::Index<usize> for Sesset {
             1 => &self.bit_two,
             2 => &self.bit_three,
             5 => &self.bit_four,
-            _ => panic!("Index must not be larger than 5")
+            _ => panic!("Index must not be larger than 5"),
         }
     }
 }
@@ -507,12 +495,10 @@ impl std::ops::IndexMut<usize> for Sesset {
             1 => &mut self.bit_two,
             2 => &mut self.bit_three,
             5 => &mut self.bit_four,
-            _ => panic!("Index must not be larger than 5")
+            _ => panic!("Index must not be larger than 5"),
         }
     }
 }
-
-
 
 impl std::ops::Add for Sesset {
     type Output = Sesset;
@@ -606,9 +592,7 @@ impl std::ops::Div<u8> for Sesset {
 
         q
     }
-
 }
-
 
 impl std::ops::Rem<u8> for Sesset {
     type Output = Sesset;

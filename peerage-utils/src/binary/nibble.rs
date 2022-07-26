@@ -1,7 +1,6 @@
 use crate::binary::bit::Bit;
 use crate::binary::lazy::HEX_MAP;
 
-
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Default)]
 pub struct Nibble {
     bit_one: Bit,
@@ -12,29 +11,29 @@ pub struct Nibble {
 
 impl Nibble {
     pub fn from_vec(v: Vec<Bit>) -> Self {
-        Self { 
-            bit_one: v[0], 
-            bit_two: v[1], 
-            bit_three: v[2], 
-            bit_four: v[3] 
+        Self {
+            bit_one: v[0],
+            bit_two: v[1],
+            bit_three: v[2],
+            bit_four: v[3],
         }
     }
 
     pub fn new_zeros() -> Self {
-        Self { 
-            bit_one: Bit::Zero, 
-            bit_two: Bit::Zero, 
-            bit_three: Bit::Zero, 
-            bit_four: Bit::Zero 
+        Self {
+            bit_one: Bit::Zero,
+            bit_two: Bit::Zero,
+            bit_three: Bit::Zero,
+            bit_four: Bit::Zero,
         }
     }
 
     pub fn from_quartet_bit(b: (Bit, Bit, Bit, Bit)) -> Self {
-        Self { 
-            bit_one: b.0, 
-            bit_two: b.1, 
-            bit_three: b.2, 
-            bit_four: b.3
+        Self {
+            bit_one: b.0,
+            bit_two: b.1,
+            bit_three: b.2,
+            bit_four: b.3,
         }
     }
 
@@ -43,13 +42,12 @@ impl Nibble {
 
         let bits_slice = &bits[4..];
 
-        let v = bits_slice.chars()
-                    .map(|x| Bit::from_u8(x as u8))
-                    .collect::<Vec<Bit>>();
-
+        let v = bits_slice
+            .chars()
+            .map(|x| Bit::from_u8(x as u8))
+            .collect::<Vec<Bit>>();
 
         Self::from_vec(v)
-
     }
 
     pub fn unwrap_to_vec(&self) -> Vec<Bit> {
@@ -74,13 +72,13 @@ impl Nibble {
 
     pub fn shift_left(&self, num: usize) -> Nibble {
         let bits = self.unwrap_to_vec();
-        
+
         let bits_truncated = &bits[num..].to_vec();
 
         let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-        
+
         trunc_clone.extend(rem);
 
         Self::from_vec(trunc_clone)
@@ -92,7 +90,7 @@ impl Nibble {
         let prepend_bits = vec![Bit::Zero; 4 - num];
 
         let mut bits_clone = bits.clone();
-        
+
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
         let bits_splice = &bits_clone[0..4].to_vec();
@@ -169,7 +167,6 @@ impl Nibble {
         let mut res: Vec<Bit> = vec![];
 
         loop {
-
             let pair = (self_bits[ai], other_bits[bi]);
 
             match pair {
@@ -186,7 +183,7 @@ impl Nibble {
                     }
 
                     let mut num_ones = 2;
-                    
+
                     for i in found_index..ai {
                         if self_bits[i] == Bit::One {
                             self_bits[i] = Bit::Zero;
@@ -201,18 +198,16 @@ impl Nibble {
                     if num_ones != 0 {
                         res.push(Bit::One);
                     }
-                },
+                }
                 (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
             }
-
 
             ai -= 1;
             bi -= 1;
 
             if ai == 0 || bi == 0 {
-                break;;
+                break;
             }
-
         }
 
         res.reverse();
@@ -220,7 +215,6 @@ impl Nibble {
         res.splice(0..0, vec![Bit::Zero; 4 - res.len()]);
 
         Self::from_vec(res)
-
     }
 
     pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
@@ -245,12 +239,12 @@ impl Nibble {
         loop {
             r = r << 1;
 
-            r[3] =  n_bits[i];
+            r[3] = n_bits[i];
 
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[3 - i] =  Bit::One;
+                q[3 - i] = Bit::One;
             }
 
             i -= 1;
@@ -258,42 +252,37 @@ impl Nibble {
             if i == 0 {
                 break;
             }
-
         }
 
         (q, r)
-
     }
 
     pub fn multiply_together(&self, other: Self) -> Nibble {
         let b = self.unwrap_to_vec();
- 
+
         let size = 3;
         let zeros = Self::new_zeros();
- 
+
         let mut sums: Vec<Self> = vec![];
- 
+
         for (i, d) in b.into_iter().enumerate() {
-             if d == Bit::Zero {
-                 sums.push(zeros.clone());
-             } else {
-                 let mut a_clone = self.clone();
-                 a_clone = a_clone << i;
-                 sums.push(a_clone);
-             }
+            if d == Bit::Zero {
+                sums.push(zeros.clone());
+            } else {
+                let mut a_clone = self.clone();
+                a_clone = a_clone << i;
+                sums.push(a_clone);
+            }
         }
- 
- 
+
         let mut res = Self::new_zeros();
- 
+
         sums.into_iter().for_each(|x| res = res + x);
- 
+
         res
- 
-     }
+    }
 
-
-     pub fn add_together(&self, other: Self) -> Nibble {
+    pub fn add_together(&self, other: Self) -> Nibble {
         let self_bits = self.unwrap_to_vec();
         let other_bits = other.unwrap_to_vec();
 
@@ -304,15 +293,14 @@ impl Nibble {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-
             let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
-            
+
             carry = match val > 1 {
                 true => {
                     val %= 2;
 
                     1
-                },
+                }
                 false => 0,
             };
 
@@ -326,7 +314,6 @@ impl Nibble {
             if ai == 0 || bi == 0 {
                 break;
             }
-            
         }
 
         let pad = 32 - res.len();
@@ -380,7 +367,6 @@ impl Nibble {
         self.xor_together(other)
     }
 
-
     pub fn shift_left_with_self(&self, other: Self) -> Self {
         let num = other.to_decimal() as usize;
 
@@ -408,7 +394,6 @@ impl std::ops::Neg for Nibble {
     }
 }
 
-
 impl std::ops::Index<usize> for Nibble {
     type Output = Bit;
 
@@ -418,7 +403,7 @@ impl std::ops::Index<usize> for Nibble {
             1 => &self.bit_two,
             2 => &self.bit_three,
             3 => &self.bit_four,
-            _ => panic!("Index must not be larger than 3")
+            _ => panic!("Index must not be larger than 3"),
         }
     }
 }
@@ -454,12 +439,10 @@ impl std::ops::IndexMut<usize> for Nibble {
             1 => &mut self.bit_two,
             2 => &mut self.bit_three,
             3 => &mut self.bit_four,
-            _ => panic!("Index must not be larger than 3")
+            _ => panic!("Index must not be larger than 3"),
         }
     }
 }
-
-
 
 impl std::ops::Add for Nibble {
     type Output = Nibble;
@@ -553,9 +536,7 @@ impl std::ops::Div<u8> for Nibble {
 
         q
     }
-
 }
-
 
 impl std::ops::Rem<u8> for Nibble {
     type Output = Nibble;
@@ -606,4 +587,3 @@ impl std::ops::Shr for Nibble {
         self.shift_right_with_self(rhs)
     }
 }
-

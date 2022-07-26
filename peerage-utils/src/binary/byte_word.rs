@@ -1,8 +1,6 @@
-
 use crate::binary::bit::Bit;
+use crate::binary::byte::{Byte, Endian};
 use crate::binary::nibble::Nibble;
-use crate::binary::byte::{Endian, Byte};
-use crate::binary::lazy::HEX_MAP;
 
 #[derive(Clone, Copy, Hash, Debug, Default, Eq, PartialEq)]
 pub struct ByteWord {
@@ -43,9 +41,9 @@ impl ByteWord {
 
     pub fn from_u32(u: u32) -> Self {
         let v = format!("{u:032b}")
-                .chars()
-                .map(|x| Bit::from_u8(x as u8))
-                .collect::<Vec<Bit>>();
+            .chars()
+            .map(|x| Bit::from_u8(x as u8))
+            .collect::<Vec<Bit>>();
 
         Self::from_32_bits(v)
     }
@@ -59,15 +57,13 @@ impl ByteWord {
             let b_u8 = b.into_u8();
 
             str_bits = format!("{}{}", str_bits, b_u8);
-
         }
 
         u32::from_str_radix(&str_bits, 2).unwrap()
-
     }
 
     pub fn from_nibble(n: [Nibble; 8]) -> Self {
-        let mut bits: Vec<Bit>  = vec![];
+        let mut bits: Vec<Bit> = vec![];
 
         for i in 0..8 {
             let curr_nibble = n[i];
@@ -103,7 +99,12 @@ impl ByteWord {
     }
 
     pub fn from_byte_vec(v: Vec<Byte>) -> Self {
-        Self { upper_byte: v[0], up_mid_byte: v[1], low_mid_byte: v[2], lower_byte: v[3] }
+        Self {
+            upper_byte: v[0],
+            up_mid_byte: v[1],
+            low_mid_byte: v[2],
+            lower_byte: v[3],
+        }
     }
 
     pub fn new_zeros() -> Self {
@@ -119,13 +120,22 @@ impl ByteWord {
     }
 
     pub fn unravel_byte(&self) -> Vec<Byte> {
-        vec![self.upper_byte, self.up_mid_byte, self.low_mid_byte, self.lower_byte]
+        vec![
+            self.upper_byte,
+            self.up_mid_byte,
+            self.low_mid_byte,
+            self.lower_byte,
+        ]
     }
 
     pub fn unravel_bit(&self) -> Vec<Bit> {
         let bytes_unraveled = self.unravel_byte();
 
-        bytes_unraveled.into_iter().map(|x| x.unravel()).flatten().collect::<Vec<Bit>>()
+        bytes_unraveled
+            .into_iter()
+            .map(|x| x.unravel())
+            .flatten()
+            .collect::<Vec<Bit>>()
     }
 
     pub fn neg_self(&self) -> Self {
@@ -206,13 +216,13 @@ impl ByteWord {
 
     pub fn shift_left(&self, num: usize) -> ByteWord {
         let bits = self.unravel_bit();
-        
+
         let bits_truncated = &bits[num..].to_vec();
 
         let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-        
+
         trunc_clone.extend(rem);
 
         Self::from_32_bits(trunc_clone)
@@ -224,7 +234,7 @@ impl ByteWord {
         let prepend_bits = vec![Bit::Zero; 32 - num];
 
         let mut bits_clone = bits.clone();
-        
+
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
         let bits_splice = &bits_clone[0..32].to_vec();
@@ -244,7 +254,6 @@ impl ByteWord {
         bits[index] = set;
 
         let new_obj = Self::from_32_bits(bits);
-
 
         *self = new_obj;
     }
@@ -266,19 +275,18 @@ impl ByteWord {
 
         let bits = self.unravel_bit();
 
-
         bits == v
     }
 
     pub fn multiply_together(&self, other: Self) -> ByteWord {
-       let b = self.unravel_bit();
+        let b = self.unravel_bit();
 
-       let size = 31;
-       let zeros = Self::new_zeros();
+        let size = 31;
+        let zeros = Self::new_zeros();
 
-       let mut sums: Vec<Self> = vec![];
+        let mut sums: Vec<Self> = vec![];
 
-       for (i, d) in b.into_iter().enumerate() {
+        for (i, d) in b.into_iter().enumerate() {
             if d == Bit::Zero {
                 sums.push(zeros.clone());
             } else {
@@ -286,17 +294,14 @@ impl ByteWord {
                 a_clone = a_clone << i;
                 sums.push(a_clone);
             }
-       }
+        }
 
+        let mut res = Self::new_zeros();
 
-       let mut res = Self::new_zeros();
+        sums.into_iter().for_each(|x| res = res + x);
 
-       sums.into_iter().for_each(|x| res = res + x);
-
-       res
-
+        res
     }
-
 
     pub fn divide_together(&self, other: Self) -> (ByteWord, ByteWord) {
         let mut q = ByteWord::new_zeros();
@@ -318,7 +323,7 @@ impl ByteWord {
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[31 - i] =  Bit::One;
+                q[31 - i] = Bit::One;
             }
 
             i -= 1;
@@ -326,11 +331,9 @@ impl ByteWord {
             if i == 0 {
                 break;
             }
-
         }
 
         (q, r)
-
     }
 
     pub fn is_equal(&self, other: Self) -> bool {
@@ -347,7 +350,6 @@ impl ByteWord {
         let sub_bits = subtract.unravel_bit();
 
         sub_bits[0] == Bit::Zero
-        
     }
 
     pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
@@ -374,7 +376,6 @@ impl ByteWord {
         let mut res: Vec<Bit> = vec![];
 
         loop {
-
             let pair = (self_bits[ai], other_bits[bi]);
 
             match pair {
@@ -391,7 +392,7 @@ impl ByteWord {
                     }
 
                     let mut num_ones = 2;
-                    
+
                     for i in found_index..ai {
                         if self_bits[i] == Bit::One {
                             self_bits[i] = Bit::Zero;
@@ -406,18 +407,16 @@ impl ByteWord {
                     if num_ones != 0 {
                         res.push(Bit::One);
                     }
-                },
+                }
                 (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
             }
-
 
             ai -= 1;
             bi -= 1;
 
             if ai == 0 || bi == 0 {
-                break;;
+                break;
             }
-
         }
 
         res.reverse();
@@ -425,11 +424,8 @@ impl ByteWord {
         res.splice(0..0, vec![Bit::Zero; 32 - res.len()]);
 
         Self::from_32_bits(res)
-
     }
 
-    
-    
     pub fn add_together(&self, other: Self) -> ByteWord {
         let self_bits = self.unravel_bit();
         let other_bits = other.unravel_bit();
@@ -441,15 +437,14 @@ impl ByteWord {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-
             let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
-            
+
             carry = match val > 1 {
                 true => {
                     val %= 2;
 
                     1
-                },
+                }
                 false => 0,
             };
 
@@ -463,7 +458,6 @@ impl ByteWord {
             if ai == 0 || bi == 0 {
                 break;
             }
-            
         }
 
         let pad = 32 - res.len();
@@ -541,7 +535,6 @@ impl ByteWord {
 
         self.shift_right(num)
     }
-
 }
 
 impl std::ops::Neg for ByteWord {
@@ -567,7 +560,6 @@ impl std::ops::BitOr for ByteWord {
         self.or(rhs)
     }
 }
-
 
 impl std::ops::BitXor for ByteWord {
     type Output = ByteWord;
@@ -601,7 +593,6 @@ impl std::ops::Add for ByteWord {
     }
 }
 
-
 impl std::ops::Sub for ByteWord {
     type Output = ByteWord;
 
@@ -615,7 +606,7 @@ impl std::ops::Mul for ByteWord {
 
     fn mul(self, rhs: Self) -> Self::Output {
         self.multiply_together(rhs)
-    }    
+    }
 }
 
 impl std::ops::Div for ByteWord {
@@ -672,7 +663,6 @@ impl std::ops::IndexMut<usize> for ByteWord {
     }
 }
 
-
 impl std::ops::Add<u32> for ByteWord {
     type Output = ByteWord;
 
@@ -705,9 +695,7 @@ impl std::ops::Div<u32> for ByteWord {
 
         q
     }
-
 }
-
 
 impl std::ops::Rem<u32> for ByteWord {
     type Output = ByteWord;

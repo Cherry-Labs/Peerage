@@ -1,6 +1,6 @@
 use crate::binary::bit::Bit;
-use crate::binary::nibble::Nibble;
 use crate::binary::lazy::HEX_MAP;
+use crate::binary::nibble::Nibble;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Endian {
@@ -14,7 +14,6 @@ impl Default for Endian {
     }
 }
 
-
 #[derive(Clone, Copy, Hash, Debug, Default, PartialEq, Eq)]
 pub struct Byte {
     msb: Bit,
@@ -25,84 +24,82 @@ pub struct Byte {
     lsb2: Bit,
     lsb1: Bit,
     lsb: Bit,
-    endian: Endian
+    endian: Endian,
 }
-
-
 
 impl Byte {
     pub fn from_u8_vec_le(v: Vec<u8>) -> Self {
-        Self { 
-            msb: v[7].into(), 
-            msb1: v[6].into(), 
-            msb2: v[5].into(), 
-            msb3: v[4].into(), 
-            lsb3: v[3].into(), 
-            lsb2: v[2].into(), 
-            lsb1: v[1].into(), 
+        Self {
+            msb: v[7].into(),
+            msb1: v[6].into(),
+            msb2: v[5].into(),
+            msb3: v[4].into(),
+            lsb3: v[3].into(),
+            lsb2: v[2].into(),
+            lsb1: v[1].into(),
             lsb: v[0].into(),
-            endian: Endian::Little
+            endian: Endian::Little,
         }
     }
 
     pub fn from_bit_vec_le(v: Vec<Bit>) -> Self {
-        Self { 
-            msb: v[7], 
-            msb1: v[6], 
-            msb2: v[5], 
-            msb3: v[4], 
-            lsb3: v[3], 
-            lsb2: v[2], 
-            lsb1: v[1], 
+        Self {
+            msb: v[7],
+            msb1: v[6],
+            msb2: v[5],
+            msb3: v[4],
+            lsb3: v[3],
+            lsb2: v[2],
+            lsb1: v[1],
             lsb: v[0],
-            endian: Endian::Little
+            endian: Endian::Little,
         }
     }
 
     pub fn from_u8_vec_be(v: Vec<u8>) -> Self {
-        Self { 
-            msb: v[0].into(), 
-            msb1: v[1].into(), 
-            msb2: v[2].into(), 
-            msb3: v[3].into(), 
-            lsb3: v[4].into(), 
-            lsb2: v[5].into(), 
-            lsb1: v[6].into(), 
+        Self {
+            msb: v[0].into(),
+            msb1: v[1].into(),
+            msb2: v[2].into(),
+            msb3: v[3].into(),
+            lsb3: v[4].into(),
+            lsb2: v[5].into(),
+            lsb1: v[6].into(),
             lsb: v[7].into(),
-            endian: Endian::Big
+            endian: Endian::Big,
         }
     }
 
     pub fn from_bit_vec_be(v: Vec<Bit>) -> Self {
-        Self { 
-            msb: v[0], 
-            msb1: v[1], 
-            msb2: v[2], 
-            msb3: v[3], 
-            lsb3: v[4], 
-            lsb2: v[5], 
-            lsb1: v[6], 
+        Self {
+            msb: v[0],
+            msb1: v[1],
+            msb2: v[2],
+            msb3: v[3],
+            lsb3: v[4],
+            lsb2: v[5],
+            lsb1: v[6],
             lsb: v[7],
-            endian: Endian::Big
+            endian: Endian::Big,
         }
     }
 
     pub fn new_zeros() -> Self {
-        Self { 
-            msb: Bit::Zero, 
-            msb1: Bit::Zero, 
-            msb2: Bit::Zero, 
-            msb3: Bit::Zero, 
-            lsb3: Bit::Zero, 
-            lsb2: Bit::Zero, 
-            lsb1: Bit::Zero, 
-            lsb: Bit::Zero, 
-            endian: Endian::Little
+        Self {
+            msb: Bit::Zero,
+            msb1: Bit::Zero,
+            msb2: Bit::Zero,
+            msb3: Bit::Zero,
+            lsb3: Bit::Zero,
+            lsb2: Bit::Zero,
+            lsb1: Bit::Zero,
+            lsb: Bit::Zero,
+            endian: Endian::Little,
         }
     }
 
     pub fn from_decimal(d: u8, endian: Endian) -> Self {
-        let mut remainders: Vec<Bit> = vec![]; 
+        let mut remainders: Vec<Bit> = vec![];
 
         let mut qoutient = d / 2;
         let rem_first = d % 2;
@@ -120,7 +117,7 @@ impl Byte {
             remainders.push(rem_bit);
 
             if qoutient <= 0 {
-                break; 
+                break;
             }
         }
 
@@ -140,10 +137,14 @@ impl Byte {
 
     pub fn unravel(&self) -> Vec<Bit> {
         match self.endian {
-            Endian::Little => vec![self.lsb, self.lsb1, 
-                        self.lsb2, self.lsb3, self.msb3, self.msb2, self.msb1, self.msb],
-            Endian::Big => vec![self.msb, self.msb1, 
-                    self.msb2, self.msb3, self.lsb3, self.lsb2, self.lsb1, self.lsb],
+            Endian::Little => vec![
+                self.lsb, self.lsb1, self.lsb2, self.lsb3, self.msb3, self.msb2, self.msb1,
+                self.msb,
+            ],
+            Endian::Big => vec![
+                self.msb, self.msb1, self.msb2, self.msb3, self.lsb3, self.lsb2, self.lsb1,
+                self.lsb,
+            ],
         }
     }
 
@@ -175,9 +176,9 @@ impl Byte {
         let second_unwrapped = second.unwrap_to_vec();
 
         let flattened = vec![first_unwrapped, second_unwrapped]
-                    .into_iter()
-                    .flatten()
-                    .collect::<Vec<Bit>>();
+            .into_iter()
+            .flatten()
+            .collect::<Vec<Bit>>();
 
         Self::from_bit_vec_le(flattened)
     }
@@ -266,7 +267,7 @@ impl Byte {
             Endian::Big => Self::from_bit_vec_be(fin_bits),
         }
     }
-    
+
     pub fn into_u8(&self) -> u8 {
         let mut unwrapped = self.unravel();
 
@@ -291,13 +292,13 @@ impl Byte {
 
     pub fn shift_left(&self, num: usize) -> Byte {
         let bits = self.unravel();
-        
+
         let bits_truncated = &bits[num..].to_vec();
 
         let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-        
+
         trunc_clone.extend(rem);
 
         match self.endian {
@@ -306,14 +307,13 @@ impl Byte {
         }
     }
 
-
     pub fn shift_right(&self, num: usize) -> Byte {
         let bits = self.unravel();
 
         let prepend_bits = vec![Bit::Zero; 8 - num];
 
         let mut bits_clone = bits.clone();
-        
+
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
         let bits_splice = &bits_clone[0..8].to_vec();
@@ -345,7 +345,6 @@ impl Byte {
         let mut res: Vec<Bit> = vec![];
 
         loop {
-
             let pair = (self_bits[ai], other_bits[bi]);
 
             match pair {
@@ -362,7 +361,7 @@ impl Byte {
                     }
 
                     let mut num_ones = 2;
-                    
+
                     for i in found_index..ai {
                         if self_bits[i] == Bit::One {
                             self_bits[i] = Bit::Zero;
@@ -377,18 +376,16 @@ impl Byte {
                     if num_ones != 0 {
                         res.push(Bit::One);
                     }
-                },
+                }
                 (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
             }
-
 
             ai -= 1;
             bi -= 1;
 
             if ai == 0 || bi == 0 {
-                break;;
+                break;
             }
-
         }
 
         res.reverse();
@@ -399,7 +396,6 @@ impl Byte {
             Endian::Little => Self::from_bit_vec_le(res),
             Endian::Big => Self::from_bit_vec_be(res),
         }
-
     }
 
     pub fn divide_together(&self, other: Self) -> (Byte, Byte) {
@@ -417,12 +413,12 @@ impl Byte {
         loop {
             r = r << 1;
 
-            r.lsb =  n_bits[i];
+            r.lsb = n_bits[i];
 
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[7 - i] =  Bit::One;
+                q[7 - i] = Bit::One;
             }
 
             i -= 1;
@@ -430,42 +426,37 @@ impl Byte {
             if i == 0 {
                 break;
             }
-
         }
 
         (q, r)
-
     }
 
     pub fn multiply_together(&self, other: Self) -> Byte {
         let b = self.unravel();
- 
+
         let size = 7;
         let zeros = Self::new_zeros();
- 
+
         let mut sums: Vec<Self> = vec![];
- 
+
         for (i, d) in b.into_iter().enumerate() {
-             if d == Bit::Zero {
-                 sums.push(zeros.clone());
-             } else {
-                 let mut a_clone = self.clone();
-                 a_clone = a_clone << i;
-                 sums.push(a_clone);
-             }
+            if d == Bit::Zero {
+                sums.push(zeros.clone());
+            } else {
+                let mut a_clone = self.clone();
+                a_clone = a_clone << i;
+                sums.push(a_clone);
+            }
         }
- 
- 
+
         let mut res = Self::new_zeros();
- 
+
         sums.into_iter().for_each(|x| res = res + x);
- 
+
         res
- 
-     }
+    }
 
-
-     pub fn add_together(&self, other: Self) -> Byte {
+    pub fn add_together(&self, other: Self) -> Byte {
         let self_bits = self.unravel();
         let other_bits = other.unravel();
 
@@ -476,15 +467,14 @@ impl Byte {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-
             let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
-            
+
             carry = match val > 1 {
                 true => {
                     val %= 2;
 
                     1
-                },
+                }
                 false => 0,
             };
 
@@ -498,7 +488,6 @@ impl Byte {
             if ai == 0 || bi == 0 {
                 break;
             }
-            
         }
 
         let pad = 8 - res.len();
@@ -566,9 +555,7 @@ impl Byte {
 
         self.shift_right(num)
     }
-    
 }
-
 
 impl std::ops::Neg for Byte {
     type Output = Byte;
@@ -585,13 +572,13 @@ impl std::ops::Index<usize> for Byte {
         match index {
             0 => &self.msb,
             1 => &self.msb1,
-            2 => &self.msb2, 
+            2 => &self.msb2,
             3 => &self.msb3,
             4 => &self.lsb3,
             5 => &self.lsb2,
             6 => &self.lsb1,
             7 => &self.lsb,
-            _ => panic!("Index should not be larger than 8")
+            _ => panic!("Index should not be larger than 8"),
         }
     }
 }
@@ -601,17 +588,16 @@ impl std::ops::IndexMut<usize> for Byte {
         match index {
             0 => &mut self.msb,
             1 => &mut self.msb1,
-            2 => &mut self.msb2, 
+            2 => &mut self.msb2,
             3 => &mut self.msb3,
             4 => &mut self.lsb3,
             5 => &mut self.lsb2,
             6 => &mut self.lsb1,
             7 => &mut self.lsb,
-            _ => panic!("Index should not be larger than 8")
+            _ => panic!("Index should not be larger than 8"),
         }
     }
 }
-
 
 impl std::ops::BitAnd for Byte {
     type Output = Byte;
@@ -628,7 +614,6 @@ impl std::ops::BitOr for Byte {
         self.or(rhs)
     }
 }
-
 
 impl std::ops::BitXor for Byte {
     type Output = Byte;
@@ -668,10 +653,9 @@ impl std::ops::Sub for Byte {
     fn sub(self, rhs: Self) -> Self::Output {
         self.subtract_together(rhs)
     }
-    
 }
 
-impl std::ops::Mul  for Byte {
+impl std::ops::Mul for Byte {
     type Output = Byte;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -689,7 +673,6 @@ impl std::ops::Div for Byte {
     }
 }
 
-
 impl std::ops::Rem for Byte {
     type Output = Byte;
 
@@ -699,7 +682,6 @@ impl std::ops::Rem for Byte {
         r
     }
 }
-
 
 impl std::ops::Add<u8> for Byte {
     type Output = Byte;
@@ -733,9 +715,7 @@ impl std::ops::Div<u8> for Byte {
 
         q
     }
-
 }
-
 
 impl std::ops::Rem<u8> for Byte {
     type Output = Byte;

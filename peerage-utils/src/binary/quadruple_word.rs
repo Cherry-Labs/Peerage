@@ -1,26 +1,30 @@
 use crate::binary::bit::Bit;
-use crate::binary::nibble::Nibble;
 use crate::binary::byte::Byte;
 use crate::binary::byte_word::ByteWord;
 use crate::binary::lazy::HEX_MAP;
+use crate::binary::nibble::Nibble;
 
 #[derive(Clone, Copy, Debug, Hash, Default, Eq, PartialEq)]
 pub struct QuadrupleWord {
     upper_word: ByteWord,
     mid_upper_word: ByteWord,
     mid_lower_word: ByteWord,
-    lower_word: ByteWord
+    lower_word: ByteWord,
 }
 
 impl QuadrupleWord {
     pub fn new(
-        upper_word: ByteWord, 
-        mid_upper_word: ByteWord, 
+        upper_word: ByteWord,
+        mid_upper_word: ByteWord,
         mid_lower_word: ByteWord,
         lower_word: ByteWord,
-    ) -> Self
-    {
-        Self { upper_word, mid_upper_word, mid_lower_word, lower_word }
+    ) -> Self {
+        Self {
+            upper_word,
+            mid_upper_word,
+            mid_lower_word,
+            lower_word,
+        }
     }
 
     pub fn new_ones() -> Self {
@@ -76,9 +80,9 @@ impl QuadrupleWord {
         let mut bit_vec: Vec<Bit> = vec![];
 
         chars
-                    .into_iter()
-                    .map(|x| format!("{:08b}", x as u8))
-                    .for_each(|x| bit_vec.extend(Bit::vec_bit_from_char(x.chars().collect::<Vec<char>>())));
+            .into_iter()
+            .map(|x| format!("{:08b}", x as u8))
+            .for_each(|x| bit_vec.extend(Bit::vec_bit_from_char(x.chars().collect::<Vec<char>>())));
 
         Self::from_128_bits(bit_vec)
     }
@@ -87,57 +91,51 @@ impl QuadrupleWord {
         let usize_128_str = format!("{u:0128b}");
 
         let bits = usize_128_str
-                                .chars()
-                                .map(|x| {
-                                    let x_str = format!("{x}");
+            .chars()
+            .map(|x| {
+                let x_str = format!("{x}");
 
-                                    let x_u8 = x_str.parse::<u8>().unwrap();
+                let x_u8 = x_str.parse::<u8>().unwrap();
 
-                                    let bit: Bit = x_u8.into();
+                let bit: Bit = x_u8.into();
 
-                                    bit
-                                }).collect::<Vec<Bit>>();
-    
+                bit
+            })
+            .collect::<Vec<Bit>>();
+
         Self::from_128_bits(bits)
-
     }
 
     pub fn from_u128(u: u128) -> Self {
         let u_bits = format!("{u:0128b}");
-        
+
         let bits = u_bits
-                                .chars()
-                                .map(|x| {
-                                    let x_str = format!("{x}");
+            .chars()
+            .map(|x| {
+                let x_str = format!("{x}");
 
-                                    let x_u8 = x_str.parse::<u8>().unwrap();
+                let x_u8 = x_str.parse::<u8>().unwrap();
 
-                                    let bit: Bit = x_u8.into();
+                let bit: Bit = x_u8.into();
 
-                                    bit
-                                }).collect::<Vec<Bit>>();
-    
+                bit
+            })
+            .collect::<Vec<Bit>>();
+
         Self::from_128_bits(bits)
-
     }
 
     pub fn from_128_bits(v: Vec<Bit>) -> Self {
-
-        let upper_bits_ref = &v[0..32].to_vec();      
+        let upper_bits_ref = &v[0..32].to_vec();
         let mid_upper_bits_ref = &v[32..64].to_vec();
         let mid_lower_bits_ref = &v[64..96].to_vec();
         let lower_bits_ref = &v[96..128].to_vec();
 
-        let (
-            upper_bits,
-            mid_upper_bits,
-            mid_lower_bits,
-            lower_bits
-        ) = (
+        let (upper_bits, mid_upper_bits, mid_lower_bits, lower_bits) = (
             upper_bits_ref.clone(),
             mid_upper_bits_ref.clone(),
             mid_lower_bits_ref.clone(),
-            lower_bits_ref.clone()
+            lower_bits_ref.clone(),
         );
 
         let upper_word = ByteWord::from_32_bits(upper_bits);
@@ -154,16 +152,11 @@ impl QuadrupleWord {
         let mid_lower_bytes_ref = &v[8..12].to_vec();
         let lower_bytes_ref = &v[12..16].to_vec();
 
-        let (
-            upper_bytes,
-            mid_upper_bytes,
-            mid_lower_bytes,
-            lower_bytes
-        ) = (
+        let (upper_bytes, mid_upper_bytes, mid_lower_bytes, lower_bytes) = (
             upper_bytes_ref.clone(),
             mid_upper_bytes_ref.clone(),
             mid_lower_bytes_ref.clone(),
-            lower_bytes_ref.clone()
+            lower_bytes_ref.clone(),
         );
 
         let upper_word = ByteWord::from_byte_vec(upper_bytes);
@@ -172,7 +165,6 @@ impl QuadrupleWord {
         let lower_word = ByteWord::from_byte_vec(lower_bytes);
 
         Self::new(upper_word, mid_upper_word, mid_lower_word, lower_word)
-
     }
 
     pub fn from_octaplet_words_add_pairs(v: Vec<ByteWord>) -> Self {
@@ -181,7 +173,12 @@ impl QuadrupleWord {
         let mid_lower_word = v[2] + v[5];
         let lower_word = v[3] + v[4];
 
-        Self { upper_word, mid_upper_word, mid_lower_word, lower_word }
+        Self {
+            upper_word,
+            mid_upper_word,
+            mid_lower_word,
+            lower_word,
+        }
     }
 
     pub fn neg_self(&self) -> Self {
@@ -215,7 +212,10 @@ impl QuadrupleWord {
         let s3 = self.mid_lower_word.get_bits();
         let s4 = self.lower_word.get_bits();
 
-        vec![s1, s2, s3, s4].into_iter().flatten().collect::<Vec<Bit>>()
+        vec![s1, s2, s3, s4]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<Bit>>()
     }
 
     pub fn into_bits(&self) -> Vec<Bit> {
@@ -224,15 +224,16 @@ impl QuadrupleWord {
         let v3 = self.mid_lower_word.unravel_bit();
         let v4 = self.lower_word.unravel_bit();
 
-        vec![v1, v2, v3, v4].into_iter().flatten().collect::<Vec<Bit>>()
+        vec![v1, v2, v3, v4]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<Bit>>()
     }
 
     pub fn into_num_bits(&self) -> Vec<u8> {
         let vb = self.into_bits();
 
-        vb.into_iter()
-            .map(|x| x.into_u8())
-            .collect::<Vec<u8>>() 
+        vb.into_iter().map(|x| x.into_u8()).collect::<Vec<u8>>()
     }
 
     pub fn shuffle_fields(&mut self) {
@@ -241,15 +242,13 @@ impl QuadrupleWord {
         for (i, u) in new_shuffle.into_iter().enumerate() {
             self[i] = self[u]
         }
-
-
     }
 
     pub fn shuffle_manually(&mut self, new_shuffle: Vec<usize>) {
         for (i, u) in new_shuffle.into_iter().enumerate() {
             self[i] = self[u]
         }
-    } 
+    }
 
     pub fn into_u128(&self) -> u128 {
         let self_unwrapped = self.into_bits();
@@ -258,10 +257,8 @@ impl QuadrupleWord {
 
         self_unwrapped
             .into_iter()
-            .for_each(|x| {
-                bits_str = format!("{}{}", bits_str, x.into_u8())
-            });
-        
+            .for_each(|x| bits_str = format!("{}{}", bits_str, x.into_u8()));
+
         let num = u128::from_str_radix(&bits_str, 2).unwrap();
 
         num
@@ -293,7 +290,7 @@ impl QuadrupleWord {
         let self_bits = self.into_bits();
 
         let mut vec_nibble = [Nibble::new_zeros(); 32];
-        
+
         let mut j = 0usize;
 
         for i in (0usize..128usize).step_by(4) {
@@ -325,16 +322,15 @@ impl QuadrupleWord {
         Self::from_128_bits(bits)
     }
 
-
     pub fn shift_left(&self, num: usize) -> Self {
         let bits = self.into_bits();
-        
+
         let bits_truncated = &bits[num..].to_vec();
 
         let rem = vec![Bit::Zero; num];
 
         let mut trunc_clone = bits_truncated.clone();
-        
+
         trunc_clone.extend(rem);
 
         Self::from_128_bits(trunc_clone)
@@ -346,7 +342,7 @@ impl QuadrupleWord {
         let prepend_bits = vec![Bit::Zero; 128 - num];
 
         let mut bits_clone = bits.clone();
-        
+
         bits_clone.splice(0..0, prepend_bits.into_iter());
 
         let bits_splice = &bits_clone[0..128].to_vec();
@@ -398,7 +394,6 @@ impl QuadrupleWord {
         let mut res: Vec<Bit> = vec![];
 
         loop {
-
             let pair = (self_bits[ai], other_bits[bi]);
 
             match pair {
@@ -415,7 +410,7 @@ impl QuadrupleWord {
                     }
 
                     let mut num_ones = 2;
-                    
+
                     for i in found_index..ai {
                         if self_bits[i] == Bit::One {
                             self_bits[i] = Bit::Zero;
@@ -430,18 +425,16 @@ impl QuadrupleWord {
                     if num_ones != 0 {
                         res.push(Bit::One);
                     }
-                },
+                }
                 (Bit::Zero, Bit::Zero) => res.push(Bit::Zero),
             }
-
 
             ai -= 1;
             bi -= 1;
 
             if ai == 0 || bi == 0 {
-                break;;
+                break;
             }
-
         }
 
         res.reverse();
@@ -449,7 +442,6 @@ impl QuadrupleWord {
         res.splice(0..0, vec![Bit::Zero; 128 - res.len()]);
 
         Self::from_128_bits(res)
-
     }
 
     pub fn is_greater_than_or_equal(&self, other: Self) -> bool {
@@ -474,12 +466,12 @@ impl QuadrupleWord {
         loop {
             r = r << 1;
 
-            r[127] =  n_bits[i];
+            r[127] = n_bits[i];
 
             if r.is_greater_than_or_equal(other) {
                 r = r - d;
 
-                q[127 - i] =  Bit::One;
+                q[127 - i] = Bit::One;
             }
 
             i -= 1;
@@ -487,42 +479,37 @@ impl QuadrupleWord {
             if i == 0 {
                 break;
             }
-
         }
 
         (q, r)
-
     }
 
     pub fn multiply_together(&self, other: Self) -> Self {
         let b = self.into_bits();
- 
+
         let size = 127;
         let zeros = Self::new_zeros();
- 
+
         let mut sums: Vec<Self> = vec![];
- 
+
         for (i, d) in b.into_iter().enumerate() {
-             if d == Bit::Zero {
-                 sums.push(zeros.clone());
-             } else {
-                 let mut a_clone = self.clone();
-                 a_clone = a_clone << i;
-                 sums.push(a_clone);
-             }
+            if d == Bit::Zero {
+                sums.push(zeros.clone());
+            } else {
+                let mut a_clone = self.clone();
+                a_clone = a_clone << i;
+                sums.push(a_clone);
+            }
         }
- 
- 
+
         let mut res = Self::new_zeros();
- 
+
         sums.into_iter().for_each(|x| res = res + x);
- 
+
         res
- 
-     }
+    }
 
-
-     pub fn add_together(&self, other: Self) -> Self {
+    pub fn add_together(&self, other: Self) -> Self {
         let self_bits = self.into_bits();
         let other_bits = other.into_bits();
 
@@ -533,15 +520,14 @@ impl QuadrupleWord {
 
         let mut res: Vec<Bit> = vec![];
         loop {
-
             let mut val = self_bits[ai].into_u8() + other_bits[bi].into_u8() + carry;
-            
+
             carry = match val > 1 {
                 true => {
                     val %= 2;
 
                     1
-                },
+                }
                 false => 0,
             };
 
@@ -555,7 +541,6 @@ impl QuadrupleWord {
             if ai == 0 || bi == 0 {
                 break;
             }
-            
         }
 
         let pad = 128 - res.len();
@@ -566,7 +551,6 @@ impl QuadrupleWord {
 
         Self::from_128_bits(res)
     }
-
 
     pub fn add_with_decimal(&self, dec: u128) -> Self {
         let other = Self::from_u128(dec);
@@ -592,7 +576,6 @@ impl QuadrupleWord {
         self.divide_together(other)
     }
 
-   
     pub fn and_with_decimal(&self, dec: u128) -> Self {
         let other = Self::from_u128(dec);
 
@@ -622,9 +605,7 @@ impl QuadrupleWord {
 
         self.shift_right(num)
     }
-    
 }
-
 
 impl std::ops::Add for QuadrupleWord {
     type Output = QuadrupleWord;
@@ -657,7 +638,6 @@ impl std::ops::BitOr for QuadrupleWord {
         self.or_together(rhs)
     }
 }
-
 
 impl std::ops::BitXor for QuadrupleWord {
     type Output = QuadrupleWord;
@@ -755,7 +735,6 @@ impl std::ops::Index<usize> for QuadrupleWord {
     }
 }
 
-
 impl std::ops::IndexMut<usize> for QuadrupleWord {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         if index > 0 && index < 32 {
@@ -772,7 +751,6 @@ impl std::ops::IndexMut<usize> for QuadrupleWord {
     }
 }
 
-
 impl std::ops::Neg for QuadrupleWord {
     type Output = QuadrupleWord;
 
@@ -780,7 +758,6 @@ impl std::ops::Neg for QuadrupleWord {
         self.neg_self()
     }
 }
-
 
 impl std::ops::Add<u128> for QuadrupleWord {
     type Output = QuadrupleWord;
@@ -814,9 +791,7 @@ impl std::ops::Div<u128> for QuadrupleWord {
 
         q
     }
-
 }
-
 
 impl std::ops::Rem<u128> for QuadrupleWord {
     type Output = QuadrupleWord;
@@ -827,7 +802,6 @@ impl std::ops::Rem<u128> for QuadrupleWord {
         r
     }
 }
-
 
 impl std::ops::BitAnd<u128> for QuadrupleWord {
     type Output = QuadrupleWord;
