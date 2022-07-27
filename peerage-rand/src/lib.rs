@@ -7,6 +7,7 @@ mod byte_word;
 mod sesset;
 mod double_word;
 pub mod rand;
+pub mod zero_eighty;
 
 #[cfg(test)]
 mod tests {

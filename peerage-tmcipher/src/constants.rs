@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 lazy_static! {
-    pub static ref SHA512_PRIME: Vec<u64> = vec![
+    pub static ref CONST_PRIME: Vec<u64> = vec![
         0x428a2f98d728ae22,
         0x7137449123ef65cd,
         0xb5c0fbcfec4d3b2f,
@@ -81,4 +83,35 @@ lazy_static! {
         0x5fcb6fab3ad6faec,
         0x6c44198c4a475817,
     ];
+
+    pub static ref U64_CHAR: HashMap<u64, char> = {
+        let mut hm = HashMap::<u64, char>::new();
+
+        let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+        for (i, c) in characters.char_indices() {
+            let u = CONST_PRIME[i];
+
+            hm.insert(u, c);
+        }
+
+        hm
+
+    };
+
+
+    pub static ref CHAR_U64: HashMap<char, u64> = {
+        let mut hm = HashMap::<char, u64>::new();
+
+        let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+        for (i, c) in characters.char_indices() {
+            let u = CONST_PRIME[i];
+
+            hm.insert(c, u);
+        }
+
+        hm
+
+    };
 }

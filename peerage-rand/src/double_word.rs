@@ -50,12 +50,11 @@ impl RandomDoubleWord {
             .expect("Time went backwards");
     
 
-        let duration_usize = (since_the_epoch.as_secs_f64() / 1000_000.0) as usize;
-
-      
-        let qdp = DoubleWord::from_u64(duration_usize as u64);
+        let duration_usize = since_the_epoch.as_nanos();
+     
+        let dwp = DoubleWord::from_u64((duration_usize % (u64::MAX as u128)) as u64);
     
-        return qdp
+        return dwp
     }
 
     fn seed_mt(&mut self) {

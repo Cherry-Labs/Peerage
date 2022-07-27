@@ -1,11 +1,14 @@
 use crate::constants::*;
 use crate::key::KeyPhrase;
+use crate::constants::CONST_PRIME;
 use peerage_codecs::nibble_codec::NibbleCodec;
 use peerage_coll::collection::PeerageCollection;
-use peerage_rand::rand::*;
+use peerage_rand::{rand::*, zero_eighty::rand_between_0_and_80};
 use peerage_utils::bin_utils::*;
 use peerage_utils::bit_feq_table::*;
 use peerage_utils::traits::Key;
+
+
 
 #[derive(Clone, Copy)]
 pub struct Cipher {
@@ -743,18 +746,231 @@ impl Cipher {
     }
 
     fn key_qw_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
-        let mut bits_mut = bits.clone();
-
-        while bits_mut.len() % 128 != 0 {
-            bits_mut.splice(0..0, vec![Bit::Zero]);
-        }
-
-        let ret: Vec<Bit> = vec![];
-
         let qw_self = self.quadruple_words.clone();
         let qw_key  = self.keyphrase.quadruple_words.clone();
 
-        for b
+        let mut qw_bits = QuadrupleWord::vec_self_from_vec_bit(bits.clone());
 
+        for i in 0..qw_bits.len() {
+            for j in 0..128 {
+                qw_bits[i] = qw_bits[i] + qw_self[j] + qw_key[j];
+                qw_bits[i] = qw_bits[i] * qw_self[j] * qw_key[j];
+                qw_bits[i] = qw_bits[i] / qw_self[j] / qw_key[j];
+                qw_bits[i] = qw_bits[i] - qw_self[j] - qw_key[j];
+            }
+        }
+
+        QuadrupleWord::v_self_to_vec_bits(qw_bits)
     }
+
+    fn key_qw_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let qw_self = self.quadruple_words.clone();
+        let qw_key  = self.keyphrase.quadruple_words.clone();
+
+        let mut qw_bits = QuadrupleWord::vec_self_from_vec_bit(bits.clone());
+
+        for i in 0..qw_bits.len() {
+            for j in 0..128 {
+                qw_bits[i] = qw_bits[i] - qw_self[j] - qw_key[j];
+                qw_bits[i] = qw_bits[i] / qw_self[j] / qw_key[j];
+                qw_bits[i] = qw_bits[i] * qw_self[j] * qw_key[j];
+                qw_bits[i] = qw_bits[i] + qw_self[j] + qw_key[j];
+            }
+        }
+
+        QuadrupleWord::v_self_to_vec_bits(qw_bits)
+    }
+
+    fn key_dw_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let dw_self = self.double_words.clone();
+        let dw_key  = self.keyphrase.double_words.clone();
+
+        let mut dw_bits = DoubleWord::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..dw_bits.len() {
+            for j in 0..64 {
+                dw_bits[i] = dw_bits[i] + dw_self[j] - dw_key[j];
+                dw_bits[i] = dw_bits[i] - dw_self[j] + dw_key[j];
+                dw_bits[i] = dw_bits[i] * dw_self[j] / dw_key[j];
+                dw_bits[i] = dw_bits[i] / dw_self[j] * dw_key[j];
+            }
+        }
+
+        DoubleWord::v_self_to_vec_bits(dw_bits)
+    }
+
+    fn key_dw_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let dw_self = self.double_words.clone();
+        let dw_key  = self.keyphrase.double_words.clone();
+
+        let mut dw_bits = DoubleWord::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..dw_bits.len() {
+            for j in 0..64 {
+                dw_bits[i] = dw_bits[i] - dw_self[j] + dw_key[j];
+                dw_bits[i] = dw_bits[i] + dw_self[j] - dw_key[j];
+                dw_bits[i] = dw_bits[i] / dw_self[j] * dw_key[j];
+                dw_bits[i] = dw_bits[i] * dw_self[j] / dw_key[j];
+            }
+        }
+
+        DoubleWord::v_self_to_vec_bits(dw_bits)
+    }
+
+    fn key_bw_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let bw_self = self.byte_words.clone();
+        let bw_key  = self.keyphrase.byte_words.clone();
+
+        let mut bw_bits = ByteWord::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..bw_bits.len() {
+            for j in 0..32 {
+                bw_bits[i] = bw_bits[i] - bw_self[j] * bw_key[j];
+                bw_bits[i] = bw_bits[i] + bw_self[j] - bw_key[j];
+                bw_bits[i] = bw_bits[i] * bw_self[j] / bw_key[j];
+                bw_bits[i] = bw_bits[i] / bw_self[j] * bw_key[j];
+            }
+        }
+
+        ByteWord::v_self_to_vec_bits(bw_bits)
+    }
+
+    fn key_bw_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let bw_self = self.byte_words.clone();
+        let bw_key  = self.keyphrase.byte_words.clone();
+
+        let mut bw_bits = ByteWord::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..bw_bits.len() {
+            for j in 0..32 {
+                bw_bits[i] = bw_bits[i] + bw_self[j] / bw_key[j];
+                bw_bits[i] = bw_bits[i] - bw_self[j] + bw_key[j];
+                bw_bits[i] = bw_bits[i] / bw_self[j] * bw_key[j];
+                bw_bits[i] = bw_bits[i] * bw_self[j] / bw_key[j];
+            }
+        }
+
+        ByteWord::v_self_to_vec_bits(bw_bits)
+    }
+
+    fn key_by_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let by_self = self.bytes.clone();
+        let by_key  = self.keyphrase.bytes.clone();
+
+        let mut by_bits = Byte::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..by_bits.len() {
+            for j in 0..8 {
+                by_bits[i] = by_bits[i] - by_self[j] / by_key[j];
+                by_bits[i] = by_bits[i] - by_self[j] / by_key[j];
+                by_bits[i] = by_bits[i] * by_self[j] + by_key[j];
+                by_bits[i] = by_bits[i] * by_self[j] + by_key[j];
+            }
+        }
+
+        Byte::v_self_to_vec_bits(by_bits)
+    }
+
+    fn key_by_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let by_self = self.bytes.clone();
+        let by_key  = self.keyphrase.bytes.clone();
+
+        let mut by_bits = Byte::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..by_bits.len() {
+            for j in 0..8 {
+                by_bits[i] = by_bits[i] + by_self[j] * by_key[j];
+                by_bits[i] = by_bits[i] + by_self[j] * by_key[j];
+                by_bits[i] = by_bits[i] / by_self[j] - by_key[j];
+                by_bits[i] = by_bits[i] / by_self[j] - by_key[j];
+            }
+        }
+
+        Byte::v_self_to_vec_bits(by_bits)
+    }
+
+    fn key_se_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let se_self = self.sessets.clone();
+        let se_key  = self.keyphrase.sessets.clone();
+
+        let mut se_bits = Sesset::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..se_bits.len() {
+            for j in 0..6 {
+                se_bits[i] = se_bits[i] + se_self[j] / se_key[j];
+                se_bits[i] = se_bits[i] - se_self[j] * se_key[j];
+                se_bits[i] = se_bits[i] - se_self[j] * se_key[j];
+                se_bits[i] = se_bits[i] + se_self[j] / se_key[j];
+            }
+        }
+
+        Sesset::v_self_to_vec_bits(se_bits)
+    }
+
+    fn key_se_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let se_self = self.sessets.clone();
+        let se_key  = self.keyphrase.sessets.clone();
+
+        let mut se_bits = Sesset::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..se_bits.len() {
+            for j in 0..6 {
+                se_bits[i] = se_bits[i] - se_self[j] * se_key[j];
+                se_bits[i] = se_bits[i] + se_self[j] / se_key[j];
+                se_bits[i] = se_bits[i] + se_self[j] / se_key[j];
+                se_bits[i] = se_bits[i] - se_self[j] * se_key[j];
+            }
+        }
+
+        Sesset::v_self_to_vec_bits(se_bits)
+    }
+
+    fn key_ni_enc(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let ni_nilf = self.nibbles.clone();
+        let ni_key  = self.keyphrase.nibbles.clone();
+
+        let mut ni_bits = Nibble::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..ni_bits.len() {
+            for j in 0..4 {
+                ni_bits[i] = ni_bits[i] * ni_nilf[j] - ni_key[j];
+                ni_bits[i] = ni_bits[i] * ni_nilf[j] - ni_key[j];
+                ni_bits[i] = ni_bits[i] / ni_nilf[j] + ni_key[j];
+                ni_bits[i] = ni_bits[i] / ni_nilf[j] + ni_key[j];
+            }
+        }
+
+        Nibble::v_self_to_vec_bits(ni_bits)
+    }
+
+    fn key_ni_dec(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let ni_nilf = self.nibbles.clone();
+        let ni_key  = self.keyphrase.nibbles.clone();
+
+        let mut ni_bits = Nibble::vec_self_from_vec_bit(bits.clone());
+        
+        for i in 0..ni_bits.len() {
+            for j in 0..4 {
+                ni_bits[i] = ni_bits[i] / ni_nilf[j] + ni_key[j];
+                ni_bits[i] = ni_bits[i] / ni_nilf[j] + ni_key[j];
+                ni_bits[i] = ni_bits[i] * ni_nilf[j] - ni_key[j];
+                ni_bits[i] = ni_bits[i] * ni_nilf[j] - ni_key[j];
+            }
+        }
+
+        Nibble::v_self_to_vec_bits(ni_bits)
+    }
+
+    fn double_word_round(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let u64_nums = [0u64; 32];
+
+        for i in 0usize..32usize {
+            let rand_ind = rand_between_0_and_80();
+
+            let rand_num_prime = CONST_PRIME[rand_ind];
+
+            u64_nums[i] = rand_num_prime;
+        }
+    } 
+
 }

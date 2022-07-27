@@ -50,12 +50,11 @@ impl RandomNibble {
             .expect("Time went backwards");
     
 
-        let duration_usize = (since_the_epoch.as_secs_f32() / 1000_000.0) as usize;
-
-      
-        let qdp = Nibble::from_4_bit_number(duration_usize as u8 % 15);
+        let duration_usize = since_the_epoch.as_nanos();
+     
+        let nip = Nibble::from_4_bit_number((duration_usize % 16u128) as u8);
     
-        return qdp
+        return nip
     }
 
     fn seed_mt(&mut self) {

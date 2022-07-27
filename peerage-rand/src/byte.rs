@@ -50,12 +50,11 @@ impl RandomByte {
             .expect("Time went backwards");
     
 
-        let duration_usize = (since_the_epoch.as_secs_f32() / 1000_000.0) as usize;
+        let duration_usize = since_the_epoch.as_nanos();
+     
+        let byp = Byte::from_decimal((duration_usize % (u8::MAX as u128)) as u8, Endian::Little);
 
-      
-        let qdp = Byte::from_decimal(duration_usize as u8 % 255, Endian::Little);
-    
-        return qdp
+        return byp
     }
 
     fn seed_mt(&mut self) {

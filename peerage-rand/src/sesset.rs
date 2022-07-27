@@ -49,13 +49,11 @@ impl RandomSesset {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
     
-
-        let duration_usize = (since_the_epoch.as_secs_f32() / 1000_000.0) as usize;
-
-      
-        let qdp = Sesset::from_6_bit_number(duration_usize as u8 % 15);
-    
-        return qdp
+        let duration_usize = since_the_epoch.as_nanos();
+     
+        let sep = Sesset::from_6_bit_number((duration_usize % 64u128) as u8);
+        
+        return sep
     }
 
     fn seed_mt(&mut self) {

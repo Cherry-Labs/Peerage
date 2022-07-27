@@ -50,12 +50,11 @@ impl RandomByteWord {
             .expect("Time went backwards");
     
 
-        let duration_usize = (since_the_epoch.as_secs_f32() / 1000_000.0) as usize;
-
-      
-        let qdp = ByteWord::from_u32(duration_usize as u32);
+        let duration_usize = since_the_epoch.as_nanos();
+     
+        let bwp = ByteWord::from_u32((duration_usize % (u32::MAX as u128)) as u32);
     
-        return qdp
+        return bwp
     }
 
     fn seed_mt(&mut self) {
