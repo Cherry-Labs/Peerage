@@ -3,6 +3,7 @@
 mod constants;
 mod cipher;
 pub mod key;
+pub mod trig_identities;
 
 #[macro_use]
 extern crate lazy_static;

@@ -19,6 +19,7 @@ pub struct Cipher {
     bytes: [Byte; 8],
     sessets: [Sesset; 6],
     nibbles: [Nibble; 4],
+    rand_u64: [u64; 32],
     freq_counters: (
         NibbleFreqTable,
         SessetFreqTable,
@@ -58,6 +59,21 @@ impl Cipher {
             freq_counters,
         }
     }
+
+    fn get_rand_u64_array() -> [u64; 32] {
+        let mut u64_nums = [0u64; 32];
+
+        for i in 0usize..32usize {
+            let rand_ind = rand_between_0_and_80();
+
+            let rand_num_prime = CONST_PRIME[rand_ind];
+
+            u64_nums[i] = rand_num_prime;
+        }
+
+        u64_nums
+    } 
+
 
     pub fn encode(&self) -> String {
         let quadruple_words = PeerageCollection::from_vector(self.quadruple_words.to_vec());
@@ -961,16 +977,15 @@ impl Cipher {
         Nibble::v_self_to_vec_bits(ni_bits)
     }
 
-    fn double_word_round(&self, bits: Vec<Bit>) -> Vec<Bit> {
-        let u64_nums = [0u64; 32];
+    
+    fn u64_round(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let rand_array = self.get_rand_u64_array();
 
-        for i in 0usize..32usize {
-            let rand_ind = rand_between_0_and_80();
+        let mut bits_mut = bits.clone();
 
-            let rand_num_prime = CONST_PRIME[rand_ind];
+        while bits_mut.len() % 32 != 0 {
 
-            u64_nums[i] = rand_num_prime;
         }
-    } 
+    }
 
 }
