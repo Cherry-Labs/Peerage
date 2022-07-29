@@ -50,9 +50,9 @@ impl RandomDoubleWord {
             .expect("Time went backwards");
     
 
-        let duration_usize = since_the_epoch.as_nanos();
+        let duration = since_the_epoch.as_nanos();
      
-        let dwp = DoubleWord::from_u64((duration_usize % (u64::MAX as u128)) as u64);
+        let dwp = DoubleWord::from_u64((duration % (u64::MAX as u128)) as u64);
     
         return dwp
     }

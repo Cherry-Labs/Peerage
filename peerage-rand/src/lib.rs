@@ -8,6 +8,7 @@ mod sesset;
 mod double_word;
 pub mod rand;
 pub mod zero_eighty;
+pub mod f64_rand;
 
 #[cfg(test)]
 mod tests {

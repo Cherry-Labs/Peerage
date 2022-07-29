@@ -49,9 +49,9 @@ impl RandomSesset {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
     
-        let duration_usize = since_the_epoch.as_nanos();
+        let duration = since_the_epoch.as_nanos();
      
-        let sep = Sesset::from_6_bit_number((duration_usize % 64u128) as u8);
+        let sep = Sesset::from_6_bit_number((duration % 64u128) as u8);
         
         return sep
     }

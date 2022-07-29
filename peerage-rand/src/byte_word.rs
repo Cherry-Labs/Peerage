@@ -50,9 +50,9 @@ impl RandomByteWord {
             .expect("Time went backwards");
     
 
-        let duration_usize = since_the_epoch.as_nanos();
+        let duration = since_the_epoch.as_nanos();
      
-        let bwp = ByteWord::from_u32((duration_usize % (u32::MAX as u128)) as u32);
+        let bwp = ByteWord::from_u32((duration % (u32::MAX as u128)) as u32);
     
         return bwp
     }

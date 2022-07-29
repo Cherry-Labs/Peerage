@@ -7,10 +7,10 @@ pub fn rand_between_0_and_80() -> usize {
         .expect("Time went backwards");
     
 
-    let mut duration_usize = since_the_epoch.as_nanos();
+    let mut duration = since_the_epoch.as_nanos();
 
-    duration_usize += duration_usize + 80;
-    duration_usize *= duration_usize - 80;
+    duration += duration + 80;
+    duration *= duration - 80;
 
-    (duration_usize % 80) as usize
+    (duration % 80) as usize
 }

@@ -42,6 +42,20 @@ impl Bit {
         }
     }
 
+    pub fn vec_self_to_vec_f64(v: Vec<Self>) -> Vec<f64> {
+        v.into_iter()
+            .map(|x| x.into_u8() as f64)
+            .collect::<Vec<f64>>()
+    
+    }
+
+    pub fn vec_f64_to_vec_self(v: Vec<f64>) -> Vec<Bit> {
+        v.into_iter()
+            .map(|x| x.round() as u8)
+            .map(|u| Bit::from_u8(u))
+            .collect::<Vec<Bit>>()
+    }
+
     pub fn vec_from_vec(v: Vec<u8>) -> Vec<Bit> {
         v.into_iter().map(|x| Bit::from_u8(x)).collect::<Vec<Bit>>()
     }

@@ -1,9 +1,215 @@
-pub struct TrigIdentities {
-    sine_theta: SineTheta,
-    cosine_theta: SineTheta,
-    tangent_theta: TangentTheta,
-    cotangent_theta: CotangentTheta,
+use peerage_utils::bin_utils::Bit;
+use peerage_rand::f64_rand::random_f64;
+
+pub struct TrigIdentities(f64);
+
+impl TrigIdentities {
+    pub fn new_rand() -> Self {
+        let rand = random_f64();
+
+        Self(rand)
+    }
+
+    pub fn unwrap(&self) -> f64 {
+        let TrigIdentities(item) = self;
+    
+        *item
+    }
+
+    pub fn enc_bits(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let rand = self.unwrap();
+        
+        let bits_f64 = Bit::vec_self_to_vec_f64(bits);
+
+        let mut m = 0usize;
+
+        let v = bits_f64
+            .into_iter()
+            .map(|xx| {
+                let x = match m % 2 == 0 {
+                    true => xx - rand,
+                    false => xx * rand,
+                };
+
+                m += 1;
+
+                let sine_x = SineTheta::from(x);
+                let sine_x_unwrap = sine_x.unwrap();
+
+                let cosine_x_conv = sine_x.to_cosine();
+                let cosine_x_conv_unwrap = cosine_x_conv.unwrap();
+
+                let tan_x_conv = sine_x.to_tangent();
+                let tan_x_conv_unwrap = tan_x_conv.unwrap();
+
+                let cotan_x_conv = sine_x.to_cotangent();
+                let cotan_x_conv_unwrap = cotan_x_conv.unwrap();
+
+                rand - sine_x_unwrap
+                        / cosine_x_conv_unwrap
+                        / tan_x_conv_unwrap
+                        / (cotan_x_conv_unwrap + 0.00000001)    
+            })
+            .map(|x| {
+                let cosine_x = CosineTheta::from(x);
+                let cosine_x_unwrap = cosine_x.unwrap();
+
+                let sine_x_conv = cosine_x.to_sine();
+                let sine_x_conv_unwrap = sine_x_conv.unwrap();
+
+                let tan_x_conv = cosine_x.to_tangent();
+                let tan_x_conv_unwrap = tan_x_conv.unwrap();
+
+
+                let cotan_x_conv = cosine_x.to_cotangent();
+                let cotan_x_conv_unwrap = cotan_x_conv.unwrap();
+
+                rand - cosine_x_unwrap
+                        / sine_x_conv_unwrap
+                        / tan_x_conv_unwrap
+                        / (cotan_x_conv_unwrap + 0.00000001)          
+            })
+            .map(|x| {
+                let tan_x = TangentTheta::from(x);
+                let tan_x_unwrap = tan_x.unwrap();
+
+                let sine_x_conv = tan_x.to_sine();
+                let sine_x_conv_unwrap = sine_x_conv.unwrap();
+
+                let cosine_x_conv = tan_x.to_cosine();
+                let cosine_x_conv_unwrap = cosine_x_conv.unwrap();
+
+                let cotan_x_conv = tan_x.to_cotangent();
+                let cotan_x_conv_unwrap = cotan_x_conv.unwrap();
+
+                rand - tan_x_unwrap
+                        / sine_x_conv_unwrap
+                        / cosine_x_conv_unwrap
+                        / (cotan_x_conv_unwrap + 0.00000001)  
+            })
+            .map(|x| {
+                let cotan_x = CotangentTheta::from(x);
+                let cotan_x_unwrap = cotan_x.unwrap();
+
+                let sine_x_conv = cotan_x.to_sine();
+                let sine_x_conv_unwrap = sine_x_conv.unwrap();
+
+                let cosine_x_conv = cotan_x.to_cosine();
+                let cosine_x_conv_unwrap =cosine_x_conv.unwrap();
+
+                let tan_x_conv = cotan_x.to_tangent();
+                let tan_x_conv_unwrap = tan_x_conv.unwrap();
+
+                rand - tan_x_conv_unwrap
+                        / sine_x_conv_unwrap
+                        / cosine_x_conv_unwrap
+                        / (cotan_x_unwrap + 0.00000001)  
+            })
+            .map(|x| x.abs())
+            .collect::<Vec<f64>>();
+
+        Bit::vec_f64_to_vec_self(v)
+    }
+
+
+    pub fn dec_bits(&self, bits: Vec<Bit>) -> Vec<Bit> {
+        let rand = self.unwrap();
+        
+        let bits_f64 = Bit::vec_self_to_vec_f64(bits);
+
+        let mut m = 0usize;
+
+        let v = bits_f64
+            .into_iter()
+            .map(|xx| {
+                let x = match m % 2 == 0 {
+                    true => xx + rand,
+                    false => xx / rand,
+                };
+
+                m += 1;
+
+                let sine_x = SineTheta::from(x);
+                let sine_x_unwrap = sine_x.unwrap();
+
+                let cosine_x_conv = sine_x.to_cosine();
+                let cosine_x_conv_unwrap = cosine_x_conv.unwrap();
+
+                let tan_x_conv = sine_x.to_tangent();
+                let tan_x_conv_unwrap = tan_x_conv.unwrap();
+
+                let cotan_x_conv = sine_x.to_cotangent();
+                let cotan_x_conv_unwrap = cotan_x_conv.unwrap();
+
+                rand + sine_x_unwrap
+                        * cosine_x_conv_unwrap
+                        * tan_x_conv_unwrap
+                        * cotan_x_conv_unwrap    
+            })
+            .map(|x| {
+                let cosine_x = CosineTheta::from(x);
+                let cosine_x_unwrap = cosine_x.unwrap();
+
+                let sine_x_conv = cosine_x.to_sine();
+                let sine_x_conv_unwrap = sine_x_conv.unwrap();
+
+                let tan_x_conv = cosine_x.to_tangent();
+                let tan_x_conv_unwrap = tan_x_conv.unwrap();
+
+
+                let cotan_x_conv = cosine_x.to_cotangent();
+                let cotan_x_conv_unwrap = cotan_x_conv.unwrap();
+
+                rand + cosine_x_unwrap
+                        * sine_x_conv_unwrap
+                        * tan_x_conv_unwrap
+                        * (cotan_x_conv_unwrap + 0.00000001)          
+            })
+            .map(|x| {
+                let tan_x = TangentTheta::from(x);
+                let tan_x_unwrap = tan_x.unwrap();
+
+                let sine_x_conv = tan_x.to_sine();
+                let sine_x_conv_unwrap = sine_x_conv.unwrap();
+
+                let cosine_x_conv = tan_x.to_cosine();
+                let cosine_x_conv_unwrap = cosine_x_conv.unwrap();
+
+                let cotan_x_conv = tan_x.to_cotangent();
+                let cotan_x_conv_unwrap = cotan_x_conv.unwrap();
+
+                rand + tan_x_unwrap
+                        * sine_x_conv_unwrap
+                        * cosine_x_conv_unwrap
+                        * (cotan_x_conv_unwrap + 0.00000001)  
+            })
+            .map(|x| {
+                let cotan_x = CotangentTheta::from(x);
+                let cotan_x_unwrap = cotan_x.unwrap();
+
+                let sine_x_conv = cotan_x.to_sine();
+                let sine_x_conv_unwrap = sine_x_conv.unwrap();
+
+                let cosine_x_conv = cotan_x.to_cosine();
+                let cosine_x_conv_unwrap =cosine_x_conv.unwrap();
+
+                let tan_x_conv = cotan_x.to_tangent();
+                let tan_x_conv_unwrap = tan_x_conv.unwrap();
+
+                rand + tan_x_conv_unwrap
+                        * sine_x_conv_unwrap
+                        * cosine_x_conv_unwrap
+                        * (cotan_x_unwrap + 0.00000001)  
+            })
+            .map(|x| x.abs())
+            .collect::<Vec<f64>>();
+
+        Bit::vec_f64_to_vec_self(v)
+    }
+
+
 }
+
 
 
 pub struct SineTheta(f64);
@@ -26,6 +232,12 @@ impl SineTheta {
         let SineTheta(sine) = self;
 
         sine.clone()
+    }
+
+    pub fn unwrap_mult_10(&self) -> i32 {
+        let SineTheta(sine) = self;
+
+        (sine.clone() * 10.0) as i32
     }
 
     pub fn mutate(&mut self, self_value: f64) {
@@ -82,6 +294,12 @@ impl CosineTheta {
         cosine.clone()
     }
 
+    pub fn unwrap_mult_10(&self) -> i32 {
+        let CosineTheta(cosine) = self;
+
+        (cosine.clone() * 10.0) as i32
+    }
+
     pub fn mutate(&mut self, cosine: f64) {
         *self = CosineTheta(cosine)
     }
@@ -136,6 +354,12 @@ impl TangentTheta {
         tangent.clone()
     }
 
+    pub fn unwrap_mult_10(&self) -> i32 {
+        let TangentTheta(tangent) = self;
+
+        (tangent.clone() * 10.0) as i32
+    }
+
     pub fn mutate(&mut self, tangent: f64) {
         *self = TangentTheta(tangent)
     }
@@ -186,6 +410,12 @@ impl CotangentTheta {
         let CotangentTheta(cotangent) = self;
 
         cotangent.clone()
+    }
+
+    pub fn unwrap_mult_10(&self) -> i32 {
+        let CotangentTheta(cotangent) = self;
+
+        (cotangent.clone() * 10.0) as i32
     }
 
     pub fn mutate(&mut self, cotangent: f64) {

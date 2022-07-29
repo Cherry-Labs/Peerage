@@ -50,9 +50,9 @@ impl RandomNibble {
             .expect("Time went backwards");
     
 
-        let duration_usize = since_the_epoch.as_nanos();
+        let duration = since_the_epoch.as_nanos();
      
-        let nip = Nibble::from_4_bit_number((duration_usize % 16u128) as u8);
+        let nip = Nibble::from_4_bit_number((duration % 16u128) as u8);
     
         return nip
     }

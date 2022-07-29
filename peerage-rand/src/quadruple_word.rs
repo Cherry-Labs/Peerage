@@ -50,9 +50,9 @@ impl RandomQuadrupleWord {
             .expect("Time went backwards");
     
 
-        let duration_usize = since_the_epoch.as_nanos();
+        let duration = since_the_epoch.as_nanos();
      
-        let qdp = QuadrupleWord::from_u128(duration_usize);
+        let qdp = QuadrupleWord::from_u128(duration);
     
         return qdp
     }

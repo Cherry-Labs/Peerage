@@ -50,9 +50,9 @@ impl RandomByte {
             .expect("Time went backwards");
     
 
-        let duration_usize = since_the_epoch.as_nanos();
+        let duration = since_the_epoch.as_nanos();
      
-        let byp = Byte::from_decimal((duration_usize % (u8::MAX as u128)) as u8, Endian::Little);
+        let byp = Byte::from_decimal((duration % (u8::MAX as u128)) as u8, Endian::Little);
 
         return byp
     }
