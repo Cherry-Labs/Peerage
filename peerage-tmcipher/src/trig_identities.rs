@@ -1,11 +1,25 @@
+pub struct TrigIdentities {
+    sine_theta: SineTheta,
+    cosine_theta: SineTheta,
+    tangent_theta: TangentTheta,
+    cotangent_theta: CotangentTheta,
+}
+
+
 pub struct SineTheta(f64);
 pub struct CosineTheta(f64);
 pub struct TangentTheta(f64);
 pub struct CotangentTheta(f64);
 
 impl SineTheta {
-    pub fn new(self_value: f64) -> Self {
-        Self(self_value)
+    pub fn new(sine: f64) -> Self {
+        Self(sine)
+    }
+
+    pub fn from(angle: f64) -> Self {
+        let angle_sine  = angle.sin();
+
+        Self(angle_sine)
     }
 
     pub fn unwrap(&self) -> f64 {
@@ -52,8 +66,14 @@ impl SineTheta {
 }
 
 impl CosineTheta {
-    pub fn new(self_value: f64) -> Self {
-        Self(self_value)
+    pub fn new(cosine: f64) -> Self {
+        Self(cosine)
+    }
+
+    pub fn from(angle: f64) -> Self {
+        let angle_cosine  = angle.cos();
+
+        Self(angle_cosine)
     }
 
     pub fn unwrap(&self) -> f64 {
@@ -100,8 +120,14 @@ impl CosineTheta {
 }
 
 impl TangentTheta {
-    pub fn new(self_value: f64) -> Self {
-        Self(self_value)
+    pub fn new(tangent: f64) -> Self {
+        Self(tangent)
+    }
+
+    pub fn from(angle: f64) -> Self {
+        let angle_tangent  = angle.tan();
+
+        Self(angle_tangent)
     }
 
     pub fn unwrap(&self) -> f64 {
@@ -146,10 +172,16 @@ impl TangentTheta {
 }
 
 impl CotangentTheta {
-    pub fn new(self_value: f64) -> Self {
-        Self(self_value)
+    pub fn new(cotangent: f64) -> Self {
+        Self(cotangent)
     }
 
+    pub fn from(angle: f64) -> Self {
+        let angle_cotangent  = 1.0 / angle.tan();
+
+        Self(angle_cotangent)
+    }
+    
     pub fn unwrap(&self) -> f64 {
         let CotangentTheta(cotangent) = self;
 
