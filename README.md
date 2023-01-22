@@ -1,12 +1,8 @@
 # Peerage
 
-*Note*: There has been, and there are, many idiots in tech who had a passion project. Shane Isaac, Yandre Dev, that guy who wanted Nintendo to give him a dev kit... Except they were all bad coders, but I'm not. I am creating most of the tools, utilities and protocols in this project from scratch. But I am not above asking for help. If you think you can help me, please contact me via Discord. PRs are welcome too.
+Peerage (pronounced peer-aazh not peer-age!) is a P2P communication and file sharing tool  with monetization abilities. The app is made of "rooms" and these rooms are customizable through HTML, CSS and JavaScript. But the room resides on your PC, not a server, and anyone who connect to your room accepts some of the load. Peers discover each othr through a ledger and muliicast DNS. Speaking of ledgers you can make your room VIP and have people who pay the token registered in the ledger to acces it. The token is not a cryptocurrency, it's not mined or anything, it's just, like, a representation for the other cryptocurrencies. You basically pay in crypto to buy this token and the token is in the ledger... you know, like NeoPets currency but P2P! I had originally written 'our token' but that's wrong, the token does not belong to anyone but the holder. This is entirely decentralized. You can do "other" things with this token too. The ledger is shared by all members, only one aspect of ledger is active (aka uncompressed) active at time. The other aspects are compressed.
 
-## What is Peerage?
-
-Peerage (pronounced peer-aazh not peer-age!) is a P2P communication and file sharing tool  with monetization abilities. The app is made of "rooms" and these rooms are customizable through HTML, CSS and JavaScript. But the room resides on your PC, not a server, and anyone who connect to your room accepts some of the load. Peers discover each othr through a ledger and muliicast DNS.  Speakinh of ledgers you can make your room VIP and have people who pay the token registered in the ledger to acces it. The token is not a cryptocurrency, it's not mined or anything, it's just, like, a representation for the other cryptocurrencies. You basically pay in crypto to buy this token and the token is in the ledger... you know, like NeoPets currency but P2P! I had originally written 'our token' but that's wrong, the token does not belong to anyone but the holder. This is entirely decentralized. You can do "other" things with this token too. The ledger is shared by all members, only one aspect of ledger is active (aka uncompressed) active at time. The other aspects are compressed.
-
-As far as the network is concerned, I, being a hip young go-getter (I'm 29 but I have to get dentures :( take care of your teeth kids!) will use QUIC as the main transport. I will use come up with common discovery and multicast methods too. All these will be of my own implementation, although I might copy off libp2p like the loser that I am. But I won't use libp2p. I still have to plan the network side of thing, but it will siurely be planned by late this month.
+As far as the network is concerned, I, being a hip young go-getter will use QUIC as the main transport. I will use come up with common discovery and multicast methods too. All these will be of my own implementation, although I might copy off libp2p like the loser that I am. But I won't use libp2p. I still have to plan the network side of thing, but it will siurely be planned by late this month.
 
 So, every room has a ledger head, an storage middle, and a cryptographic end. Each of these sections are what make of a 'Rapid Tree' which I have explained below.
 
@@ -57,31 +53,3 @@ This is a holder enum, a bit like Option, a bit like Box. I need to rework it a 
 
 
 Explanation for the rest coming.
-
-### I wanna help! What should I do?
-
-Since all I've been doing instead of my job is this, my boss must be rather cross with me --- insomuch that he has not paid me for a while. So any amount is appreciated.
-
-You can help me by "buying me a coffee" (but I'm not going to buy coffee with it lol gonna buy tea).
-
-![](coffee.png)
-
-Send me any amount you can to this ERC20 Ether address. 
-
-
-`0x503A3B99c0c086fD81186a0d5ac815eBd15e5983`
-
-It's protected by Nano S Ledger hardware wallet, I bought it the moment I started working in crypto. PLEASE buy a hardware wallet! You can use them through MetaMask!
-
-Note: After you donate to me tell me in Discord (if you want) sO I can add you to patron lis. 
-
-## Final Words
-
-This is a dream I have and as you can see I am going forward, changing things, finalizing things, it would be great if my needs are taken care of, I don't need much money --- I can live off with 300 USD a month. Yes I am e-begging but I don't care. I know Peerage is going ot be revolutionary, something great, something I can be proud of.
-
-
-## I hate/love/admire this project, where can I find you?
-
-Find me on Discord where you can give me criticism, insult me, or send me a heart emoji (a RED one!).
-
-My Discord: Chubak#7400
